@@ -98,6 +98,7 @@ endfunction
 function! popc#popc#Init()
     call popc#init#Init()
     call popc#key#Init()
+    call popc#search#Init()
     call popc#ui#Init()
     call popc#layer#com#Init()
 endfunction

@@ -61,6 +61,12 @@ function! popc#ui#Create(layer)
 
     call s:setBuffer()
     call s:dispBuffer()
+    if s:lyr.mode == s:MODE.Search
+        set guicursor-=n:block-PopcSel-blinkon0
+        call popc#search#Search(a:layer)
+        set guicursor+=n:block-PopcSel-blinkon0
+        call popc#ui#Destroy()
+    endif
 endfunction
 " }}}
 
