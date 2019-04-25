@@ -92,7 +92,7 @@ endfunction
 " }}}
 
 " FUNCTION: s:tab.num(...) dict {{{
-" get tab's num or buffer's num of tab a:1
+" @param(a:1): get tab's num or buffer's num of tab a:1
 function! s:tab.num(...) dict
     return (a:0 == 0 ? len(self.idx) : len(self.idx[a:1]))
 endfunction
@@ -101,13 +101,14 @@ endfunction
 " FUNCTION: s:tab.isTabEmpty(...) dict {{{
 function! s:tab.isTabEmpty(...) dict
     let l:tidx = (a:0 == 0) ? (tabpagenr() - 1) : a:1
-    return empty(self.idx[l:tidx])
+    return !self.num(l:tidx)
 endfunction
 " }}}
 
-" FUNCTION: s:tab.isTabModified(tidx) dict {{{
-function! s:tab.isTabModified(tidx) dict
-    for bnr in self.idx[a:tidx]
+" FUNCTION: s:tab.isTabModified(...) dict {{{
+function! s:tab.isTabModified(...) dict
+    let l:tidx = (a:0 == 0) ? (tabpagenr() - 1) : a:1
+    for bnr in self.idx[l:tidx]
         if getbufvar(str2nr(bnr), '&modified')
             return 1
         endif
@@ -339,7 +340,7 @@ function! s:getIndexs(index)
         let l:bidx = s:tab.pos[l:tidx]
     endif
 
-    return [l:tidx, l:bidx, s:tab.idx[l:tidx][l:bidx]]
+    return [l:tidx, l:bidx, (s:tab.num() && s:tab.num(l:tidx)) ? s:tab.idx[l:tidx][l:bidx] : '']
 endfunction
 " }}}
 
@@ -507,6 +508,10 @@ endfunction
 
 " FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
 function! popc#layer#buf#SwitchBuffer(type)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
     let l:tidx = tabpagenr() - 1
     let l:bidx = index(s:tab.idx[l:tidx], string(bufnr('%')))
 
