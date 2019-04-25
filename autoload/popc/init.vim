@@ -4,36 +4,6 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'defaultSymbols' : {
-        \ 'unicode' : {
-            \ 'Popc'   : '⌘',
-            \ 'Buf'    : '•',
-            \ 'Wks'    : '፨',
-            \ 'Bm'     : '♥',
-            \ 'Tab'    : '▫',
-            \ 'CTab'   : '▪',
-            \ 'WIn'    : '★',
-            \ 'WOut'   : '☆',
-            \ 'Rank'   : '≡',
-            \ 'Arr'    : '→',
-            \ 'Dots'   : '…',
-            \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
-        \ },
-        \ 'ascii' : {
-            \ 'Popc'   : '#',
-            \ 'Buf'    : '*',
-            \ 'Wks'    : '&',
-            \ 'Bm'     : '$',
-            \ 'Tab'    : '~',
-            \ 'CTab'   : '%',
-            \ 'WIn'    : '*',
-            \ 'WOut'   : '-',
-            \ 'Rank'   : '=',
-            \ 'Arr'    : '->',
-            \ 'Dots'   : '...',
-            \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-        \ },
-    \ },
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'useTabline'     : 1,
@@ -59,7 +29,39 @@ let s:conf = {
         \ 'quit'             : ['q', 'Esc'],
         \ },
     \ }
+let s:defaultSymbols = {
+    \ 'unicode' : {
+        \ 'Popc'   : '⌘',
+        \ 'Buf'    : '•',
+        \ 'Wks'    : '፨',
+        \ 'Bm'     : '♥',
+        \ 'Tab'    : '▫',
+        \ 'CTab'   : '▪',
+        \ 'WIn'    : '★',
+        \ 'WOut'   : '☆',
+        \ 'Rank'   : '≡',
+        \ 'Arr'    : '→',
+        \ 'Dots'   : '…',
+        \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
+        \ },
+    \ 'ascii' : {
+        \ 'Popc'   : '#',
+        \ 'Buf'    : '*',
+        \ 'Wks'    : '&',
+        \ 'Bm'     : '$',
+        \ 'Tab'    : '~',
+        \ 'CTab'   : '%',
+        \ 'WIn'    : '*',
+        \ 'WOut'   : '-',
+        \ 'Rank'   : '=',
+        \ 'Arr'    : '->',
+        \ 'Dots'   : '...',
+        \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        \ },
+    \ }
+let s:json = {}
 let s:rootDir = ''
+
 
 " SECTION: functions {{{1
 
@@ -67,6 +69,7 @@ let s:rootDir = ''
 function! popc#init#Init()
     call s:initConfig()
     call s:checkConfig()
+    call s:readJson()
 
     augroup PopcInitInit
         autocmd!
@@ -97,10 +100,27 @@ function! popc#init#GetRoot()
 endfunction
 " }}}
 
+" FUNCTION: s:readJson() {{{
+function! s:readJson()
+    if filereadable(s:conf.jsonPath . '/.popc.json')
+        let s:json = json_decode(join(readfile(s:conf.jsonPath . '/.popc.json')))
+    else
+        let s:json = {'bookmarks' : [], 'workspaces' : []}
+        call popc#init#SaveJson()
+    endif
+endfunction
+" }}}
+
 " FUNCTION: popc#init#SaveJson() {{{
 function! popc#init#SaveJson()
-    let l:json = json_encode(s:conf.json)
+    let l:json = json_encode(s:json)
     call writefile([l:json], s:conf.jsonPath . '/.popc.json')
+endfunction
+" }}}
+
+" FUNCTION: popc#init#GetJson() {{{
+function! popc#init#GetJson()
+    return s:json
 endfunction
 " }}}
 
@@ -116,21 +136,14 @@ function! s:initConfig()
     endfor
 
     " set confiuration's dictionary and list
-    let s:conf.symbols = deepcopy(s:conf.useUnicode ? s:conf.defaultSymbols.unicode : s:conf.defaultSymbols.ascii)
+    let s:conf.symbols = deepcopy(s:conf.useUnicode ? s:defaultSymbols.unicode : s:defaultSymbols.ascii)
+    unlet s:defaultSymbols
     for k in ['symbols', 'separator', 'subSeparator', 'useLayer',
             \  'commonMaps', 'operationMaps']
         if exists('g:Popc_' . k)
             call extend(s:conf[k], g:{'Popc_' . k}, 'force')
         endif
     endfor
-
-    " read configuration from json file
-    if filereadable(s:conf.jsonPath . '/.popc.json')
-        let s:conf.json = json_decode(join(readfile(s:conf.jsonPath . '/.popc.json')))
-    else
-        let s:conf.json = {'bookmarks' : [], 'workspace' : []}
-        call popc#init#SaveJson()
-    endif
 endfunction
 " }}}
 
