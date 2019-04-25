@@ -243,6 +243,13 @@ function! s:createBuffer()
     let l:text = ''
     let l:textCnt = 0
 
+    " set root path
+    let l:root = popc#init#GetRoot()
+    if !empty(l:root)
+        silent execute 'lcd ' . l:root
+    endif
+
+    " create buffer
     if s:lyr.info.state == s:STATE.Sigtab
         let [l:textCnt, l:text] = s:createTabBuffer(tabpagenr() - 1)
     elseif s:lyr.info.state == s:STATE.Alltab
