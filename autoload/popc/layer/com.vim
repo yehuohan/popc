@@ -17,6 +17,9 @@ function! popc#layer#com#Init()
     if s:conf.useLayer.Bookmark
         call popc#key#AddComMaps('popc#layer#bms#Pop', 'b')
     endif
+    if s:conf.useLayer.Workspace
+        call popc#key#AddComMaps('popc#layer#wks#Pop', 'w')
+    endif
     for m in values(s:conf.commonMaps)
         " {'layerName': [funcName, key]}
         call popc#key#AddComMaps(m[0], m[1])

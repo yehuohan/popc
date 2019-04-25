@@ -16,7 +16,7 @@ let s:conf = {
     \ 'maxHeight'      : 0,
     \ 'json'           : {},
     \ 'jsonPath'       : expand($HOME),
-    \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 0, 'File': 0, 'Reg': 0},
+    \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
     \ 'useRoots'       : ['.root', '.git', '.svn'],
     \ 'commonMaps'     : {},
     \ 'operationMaps'  : {
@@ -84,6 +84,9 @@ function! popc#init#Init()
     endif
     if s:conf.useLayer.Bookmark
         command! -nargs=0 -range PopcBookmark :call popc#popc#Popc('Bookmark')
+    endif
+    if s:conf.useLayer.Workspace
+        command! -nargs=0 -range PopcWorkspace :call popc#popc#Popc('Workspace')
     endif
 endfunction
 " }}}

@@ -116,6 +116,8 @@ function! popc#popc#Popc(layername)
         call popc#layer#buf#Pop('h')
     elseif a:layername ==# 'Bookmark'
         call popc#layer#bms#Pop('b')
+    elseif a:layername ==# 'Workspace'
+        call popc#layer#wks#Pop('w')
     endif
 endfunction
 " }}}
