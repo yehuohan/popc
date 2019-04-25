@@ -620,9 +620,13 @@ function! popc#layer#buf#GetBufs(tabnr) abort
     if !s:tab.num()
         return l:list
     endif
-
     call s:tab.checkBuffer(l:tidx)
-    let l:curIdx = index(s:tab.idx[l:tidx], string(winbufnr(popc#ui#GetRecover().winnr)))
+
+    if getbufvar(bufnr('%'), '&filetype') == 'Popc'
+        let l:curIdx = index(s:tab.idx[l:tidx], string(winbufnr(popc#ui#GetRecover().winnr)))
+    else
+        let l:curIdx = index(s:tab.idx[l:tidx], string(bufnr('%')))
+    endif
     for k in range(s:tab.num(l:tidx))
         let l:bnr = s:tab.idx[l:tidx][k]
         let b = getbufinfo(str2nr(l:bnr))[0]
