@@ -30,7 +30,7 @@ function! popc#layer#com#Init()
         call popc#layer#bms#Init()
     endif
     if s:conf.useLayer.Workspace
-        call popc#layer#pro#Init()
+        call popc#layer#wks#Init()
     endif
     if s:conf.useLayer.File
         call popc#layer#fls#Init()
