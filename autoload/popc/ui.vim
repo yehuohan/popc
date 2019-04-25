@@ -128,7 +128,7 @@ function! s:setBuffer()
     endif
 
     " set auto-command
-    augroup PopcUiBuffer
+    augroup PopcUiSetBuffer
         autocmd!
         autocmd BufLeave <buffer> call popc#ui#Destroy()
         autocmd CursorMoved <buffer> call s:cursorMovedCallback()

@@ -193,7 +193,7 @@ function! popc#layer#buf#Init()
     call s:lyr.setInfo('state', s:STATE.Sigtab)
     call s:lyr.setInfo('cursorMovedCb', 'popc#layer#buf#CursorMovedCb')
 
-    augroup PopcLayerBuf
+    augroup PopcLayerBufInit
         autocmd!
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
