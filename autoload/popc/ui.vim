@@ -8,6 +8,14 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let b:text = ''             " buffer text
 let b:size = -1             " line-size of buffer text
+let s:hi = {
+    \ 'text'        : 'PmenuSbar',
+    \ 'selected'    : 'ToolbarLine',
+    \ 'label'       : 'IncSearch',
+    \ 'modifiedTxt' : 'WildMenu',
+    \ 'modifiedSel' : 'PmenuSel',
+    \ 'blankTxt'    : 'Normal',
+    \ }
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file'  : '',
@@ -23,15 +31,11 @@ function! popc#ui#Init()
 
     " set highlight
     if s:conf.useTabline || s:conf.useStatusline
-        let l:hi = {
-            \ 'text'        : 'PmenuSbar',
-            \ 'selected'    : 'ToolbarLine',
-            \ 'label'       : 'IncSearch',
-            \ 'modifiedTxt' : 'WildMenu',
-            \ 'modifiedSel' : 'PmenuSel',
-            \ 'blankTxt'    : 'Normal',
-            \ }
-        call popc#ui#InitHi(l:hi)
+        call popc#ui#InitHi(s:hi)
+        augroup PopcUiInit
+            autocmd!
+            autocmd ColorScheme * call popc#ui#InitHi(s:hi)
+        augroup END
 
         set showtabline=2
         silent execute 'set tabline=%!' . s:conf.tabLine
@@ -288,27 +292,29 @@ endfunction
 
 " FUNCTION: popc#ui#InitHi(hi) {{{
 function! popc#ui#InitHi(hi)
-    let l:label       = has_key(a:hi, 'label') ? a:hi.label : a:hi.selected
-    let l:modifiedTxt = has_key(a:hi, 'modifiedTxt') ? a:hi.modifiedTxt : a:hi.text
-    let l:modifiedSel = has_key(a:hi, 'modifiedSel') ? a:hi.modifiedSel : a:hi.selected
-    let l:blankTxt    = has_key(a:hi, 'blankTxt') ? a:hi.blankTxt : a:hi.text
+    let s:hi.text        = a:hi.text
+    let s:hi.selected    = a:hi.selected
+    let s:hi.label       = has_key(a:hi, 'label')       ? a:hi.label       : a:hi.selected
+    let s:hi.modifiedTxt = has_key(a:hi, 'modifiedTxt') ? a:hi.modifiedTxt : a:hi.text
+    let s:hi.modifiedSel = has_key(a:hi, 'modifiedSel') ? a:hi.modifiedSel : a:hi.selected
+    let s:hi.blankTxt    = has_key(a:hi, 'blankTxt')    ? a:hi.blankTxt    : a:hi.text
 
     " menu
-    execute printf('highlight default link PopcText     %s', a:hi.text)
-    execute printf('highlight default link PopcSel      %s', a:hi.selected)
+    execute printf('highlight default link PopcText     %s', s:hi.text)
+    execute printf('highlight default link PopcSel      %s', s:hi.selected)
 
     " statusline
-    execute printf('highlight default link PopcSlLabel  %s', l:label)
-    execute printf('highlight default link PopcSl       %s', a:hi.text)
+    execute printf('highlight default link PopcSlLabel  %s', s:hi.label)
+    execute printf('highlight default link PopcSl       %s', s:hi.text)
     call s:createHiSep('PopcSlLabel', 'PopcSl', 'PopcSlSep')
 
     " tabline
-    execute printf('highlight default link PopcTlLabel  %s', l:label)
-    execute printf('highlight default link PopcTl       %s', a:hi.text)
-    execute printf('highlight default link PopcTlSel    %s', a:hi.selected)
-    execute printf('highlight default link PopcTlM      %s', l:modifiedTxt)
-    execute printf('highlight default link PopcTlMSel   %s', l:modifiedSel)
-    execute printf('highlight default link PopcTlBlank  %s', l:blankTxt)
+    execute printf('highlight default link PopcTlLabel  %s', s:hi.label)
+    execute printf('highlight default link PopcTl       %s', s:hi.text)
+    execute printf('highlight default link PopcTlSel    %s', s:hi.selected)
+    execute printf('highlight default link PopcTlM      %s', s:hi.modifiedTxt)
+    execute printf('highlight default link PopcTlMSel   %s', s:hi.modifiedSel)
+    execute printf('highlight default link PopcTlBlank  %s', s:hi.blankTxt)
     " lable -> separator -> title
     call s:createHiSep('PopcTlLabel', 'PopcTl'     , 'PopcTlSepL0')
     call s:createHiSep('PopcTlLabel', 'PopcTlM'    , 'PopcTlSepL1')
