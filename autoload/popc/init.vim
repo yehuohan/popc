@@ -4,6 +4,7 @@
 " SECTION: variables {{{1
 
 let s:conf = {
+    \ 'jsonPath'       : expand($HOME),
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'useTabline'     : 1,
@@ -14,8 +15,6 @@ let s:conf = {
     \ 'statusLine'     : 'popc#ui#StatusLine()',
     \ 'tabLine'        : 'popc#ui#TabLine()',
     \ 'maxHeight'      : 0,
-    \ 'json'           : {},
-    \ 'jsonPath'       : expand($HOME),
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
     \ 'useRoots'       : ['.root', '.git', '.svn'],
     \ 'commonMaps'     : {},
@@ -59,8 +58,12 @@ let s:defaultSymbols = {
         \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
         \ },
     \ }
-let s:json = {}
 let s:rootDir = ''
+let s:json = {
+    \ 'json' : {},
+    \ 'file' : '',
+    \ 'dir' : '',
+    \ }
 
 
 " SECTION: functions {{{1
@@ -105,19 +108,25 @@ endfunction
 
 " FUNCTION: s:readJson() {{{
 function! s:readJson()
-    if filereadable(s:conf.jsonPath . '/.popc.json')
-        let s:json = json_decode(join(readfile(s:conf.jsonPath . '/.popc.json')))
+    let s:json.file = s:conf.jsonPath . '/.popc.json'
+    let s:json.dir = s:conf.jsonPath . '/.popc'
+
+    if filereadable(s:json.file)
+        let s:json.json = json_decode(join(readfile(s:json.file)))
     else
-        let s:json = {'bookmarks' : [], 'workspaces' : []}
+        let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
+    endif
+    if !isdirectory(s:json.dir)
+        call mkdir(s:json.dir, 'p')
     endif
 endfunction
 " }}}
 
 " FUNCTION: popc#init#SaveJson() {{{
 function! popc#init#SaveJson()
-    let l:json = json_encode(s:json)
-    call writefile([l:json], s:conf.jsonPath . '/.popc.json')
+    let l:json = json_encode(s:json.json)
+    call writefile([l:json], s:json.file)
 endfunction
 " }}}
 

@@ -26,7 +26,7 @@ function! popc#layer#wks#Init()
     let s:lyr = s:popc.addLayer('Workspace')
     call s:lyr.setInfo('sort', 'path')
     call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
-    let s:wks = popc#init#GetJson().workspaces
+    let s:wks = popc#init#GetJson().json.workspaces
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1])
