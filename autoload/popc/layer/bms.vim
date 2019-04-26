@@ -106,7 +106,7 @@ function! popc#layer#bms#Add(key)
         return
     endif
     for item in s:bms
-        if l:name ==# item.name && l:path == item.path
+        if l:name ==# item.name && l:path ==# item.path
             call popc#ui#Msg('Bookmark ''' . l:name . ''' is already existed.')
             return
         endif
