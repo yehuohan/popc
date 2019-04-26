@@ -43,15 +43,18 @@ function! s:search()
             let loop = 0
         elseif ch ==# "\<BS>"
             let l:chars = l:chars[0:-2]
+        elseif ch ==# "\<CR>"
+            "
+        elseif ch ==# "\<C-j>"
+            call popc#ui#MoveBar('down')
+        elseif ch ==# 'ê'
+            call popc#ui#MoveBar('pgdown')
+        elseif ch ==# "\<C-k>"
+            call popc#ui#MoveBar('up')
+        elseif ch ==# 'ë'
+            call popc#ui#MoveBar('pgup')
         elseif ch =~# '\p'
             let l:chars .= ch
-        elseif ch =~# "\<CR>"
-        elseif ch =~# "\<C-j>"
-            call popc#ui#MoveBar('down')
-            "call popc#ui#MoveBar('pgdown')
-        elseif ch =~# "\<C-k>"
-            call popc#ui#MoveBar('up')
-            "call popc#ui#MoveBar('pgup')
         endif
     endwhile
 endfunction
