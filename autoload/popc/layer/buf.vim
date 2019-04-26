@@ -245,7 +245,7 @@ function! s:createBuffer()
     let l:textCnt = 0
 
     " set root path
-    let l:root = popc#init#GetRoot()
+    let l:root = popc#layer#com#GetRoot()
     if !empty(l:root)
         silent execute 'lcd ' . l:root
     endif

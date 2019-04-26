@@ -58,7 +58,6 @@ let s:defaultSymbols = {
         \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
         \ },
     \ }
-let s:rootDir = ''
 let s:json = {
     \ 'json' : {},
     \ 'file' : '',
@@ -73,11 +72,6 @@ function! popc#init#Init()
     call s:initConfig()
     call s:checkConfig()
     call s:readJson()
-
-    augroup PopcInitInit
-        autocmd!
-        autocmd BufAdd * let s:rootDir=s:findRoot()
-    augroup END
 
     if s:conf.useLayer.Buffer
         command! -nargs=0 -range Popc :call popc#popc#Popc('Buffer')
@@ -97,12 +91,6 @@ endfunction
 " FUNCTION: popc#init#GetConfig() {{{
 function! popc#init#GetConfig()
     return s:conf
-endfunction
-" }}}
-
-" FUNCTION: popc#init#GetRoot() {{{
-function! popc#init#GetRoot()
-    return s:rootDir
 endfunction
 " }}}
 
@@ -164,27 +152,5 @@ function! s:checkConfig()
     if s:conf.useTabline && !s:conf.useLayer.Buffer
         let s:conf.useLayer.Buffer = 1
     endif
-endfunction
-" }}}
-
-" FUNCTION: s:findRoot() {{{
-function! s:findRoot()
-    if empty(s:conf.useRoots) || !empty(s:rootDir)
-        return s:rootDir
-    endif
-
-    let l:dir = fnamemodify('.', ':p:h')
-    let l:dirLast = ''
-    while l:dir !=# l:dirLast
-        let l:dirLast = l:dir
-        for m in s:conf.useRoots
-            let l:root = l:dir . '/' . m
-            if filereadable(l:root) || isdirectory(l:root)
-                return fnameescape(l:dir)
-            endif
-        endfor
-        let l:dir = fnamemodify(l:dir, ':p:h:h')
-    endwhile
-    return ''
 endfunction
 " }}}
