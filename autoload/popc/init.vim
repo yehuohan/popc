@@ -170,7 +170,7 @@ endfunction
 " FUNCTION: s:findRoot() {{{
 function! s:findRoot()
     if empty(s:conf.useRoots) || !empty(s:rootDir)
-        return ''
+        return s:rootDir
     endif
 
     let l:dir = fnamemodify('.', ':p:h')
