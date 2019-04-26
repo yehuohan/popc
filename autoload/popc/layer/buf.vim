@@ -191,6 +191,7 @@ endfunction
 function! popc#layer#buf#Init()
     let s:lyr = s:popc.addLayer('Buffer')
     call s:lyr.setInfo('state', s:STATE.Sigtab)
+    call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
     call s:lyr.setInfo('cursorMovedCb', 'popc#layer#buf#CursorMovedCb')
 
     augroup PopcLayerBufInit
@@ -364,7 +365,6 @@ endfunction
 function! s:pop(state)
     call s:lyr.setMode(s:MODE.Normal)
     call s:lyr.setInfo('state', a:state)
-    call s:lyr.setInfo('centerText',  s:conf.symbols.Buf)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
 endfunction
