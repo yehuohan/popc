@@ -217,10 +217,15 @@ function! s:tabCallback(type)
     elseif a:type ==# 'close'
         " all tab will be deleted from here
         if exists('s:lastTidx')
+            let l:bnrs = copy(s:tab.idx[s:lastTidx])
             call s:tab.removeTab(s:lastTidx)
             unlet s:lastTidx
+            for bnr in l:bnrs
+                if !has_key(s:tab.cnt, bnr) && !getbufvar(str2nr(bnr), "&modified")
+                    silent execute 'noautocmd bdelete! ' . bnr
+                endif
+            endfor
         endif
-        "call s:tab.removeTab(l:tidx)
     elseif a:type == 'leave'
         let s:lastTidx = l:tidx
     endif
@@ -463,7 +468,7 @@ function! s:closeBuffer(tidx, bidx)
     " remove Popc's internal buffer data
     call s:tab.removeBuffer(a:tidx, l:bnr)
 
-    " close vim's buffer buf keep tab (use noautocmd to avoid 'updateBuffer')
+    " close vim's buffer but keep tab (use noautocmd to avoid 'updateBuffer')
     let l:tnr = tabpagenr()
     silent execute 'noautocmd' . string(a:tidx + 1) . 'tabnext'
     if s:tab.isTabEmpty(a:tidx)
