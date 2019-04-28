@@ -162,12 +162,6 @@ function! s:dispBuffer()
     " set buffer text and maps
     let b:text = s:lyr.bufs.txt
     let b:size = s:lyr.bufs.cnt
-    if empty(b:text)
-        let b:text = '  Nothing to pop.'
-        while strwidth(b:text) < &columns
-            let b:text .= ' '
-        endwhile
-    endif
     call popc#key#SetMaps(s:lyr)
 
     " resize buffer

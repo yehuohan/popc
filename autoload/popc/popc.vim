@@ -64,7 +64,15 @@ endfunction
 function! s:layer.setBufs(cnt, text) dict
     let self.bufs.cnt = a:cnt
     if (self.mode == s:MODE.Normal) || (self.mode == s:MODE.Search)
-        let self.bufs.txt = a:text
+        if empty(a:text)
+            let l:text = '  Nothing to pop.'
+            while strwidth(l:text) < &columns
+                let l:text .= ' '
+            endwhile
+        else
+            let l:text = a:text
+        endif
+        let self.bufs.txt = l:text
     elseif self.mode == s:MODE.Help
         let l:line = '  --- ' . g:popc_version . ' (In layer ' . self.name . ') ---'
         while strwidth(l:line) < &columns
