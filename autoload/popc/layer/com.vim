@@ -4,18 +4,12 @@
 " SECTION: variables {{{1
 
 let s:conf = popc#init#GetConfig()
-let s:rootDir = ''
 
 
 " SECTION: api functions {{{1
 
 " FUNCTION: popc#layer#com#Init() {{{
 function! popc#layer#com#Init()
-    augroup PopcLayerComInit
-        autocmd!
-        autocmd BufAdd * let s:rootDir=empty(s:rootDir) ? popc#layer#com#FindRoot() : s:rootDir
-    augroup END
-
     " common maps init
     if s:conf.useLayer.Buffer
         call popc#key#AddComMaps('popc#layer#buf#Pop', 'h')
@@ -113,33 +107,5 @@ function! popc#layer#com#SortByPath(a, b)
             return 0
         endif
     endif
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#com#GetRoot() {{{
-function! popc#layer#com#GetRoot()
-    return s:rootDir
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#com#FindRoot() {{{
-function! popc#layer#com#FindRoot()
-    if empty(s:conf.useRoots)
-        return ''
-    endif
-
-    let l:dir = fnamemodify('.', ':p:h')
-    let l:dirLast = ''
-    while l:dir !=# l:dirLast
-        let l:dirLast = l:dir
-        for m in s:conf.useRoots
-            let l:root = l:dir . '/' . m
-            if filereadable(l:root) || isdirectory(l:root)
-                return fnameescape(l:dir)
-            endif
-        endfor
-        let l:dir = fnamemodify(l:dir, ':p:h:h')
-    endwhile
-    return ''
 endfunction
 " }}}
