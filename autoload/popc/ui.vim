@@ -131,6 +131,12 @@ function! s:setBuffer()
         set timeoutlen=10
     endif
 
+    " set root path
+    let l:root = popc#layer#com#GetRoot()
+    if !empty(l:root)
+        silent execute 'lcd ' . l:root
+    endif
+
     " set auto-command
     augroup PopcUiSetBuffer
         autocmd!
@@ -160,8 +166,7 @@ endfunction
 " FUNCTION: s:dispBuffer() {{{
 function! s:dispBuffer()
     " set buffer text and maps
-    let b:text = s:lyr.bufs.txt
-    let b:size = s:lyr.bufs.cnt
+    let [b:size, b:text] = s:lyr.getBufs()
     call popc#key#SetMaps(s:lyr)
 
     " resize buffer

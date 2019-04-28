@@ -58,7 +58,7 @@ function! s:createBuffer()
         let l:text .= l:line . "\n"
     endfor
 
-    call s:lyr.setBufs(len(s:wks), l:text)
+    call s:lyr.setBufs(v:t_string, len(s:wks), l:text)
 endfunction
 " }}}
 
@@ -117,7 +117,7 @@ endfunction
 " FUNCTION: popc#layer#wks#Help(key) {{{
 function! popc#layer#wks#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
+    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

@@ -8,7 +8,7 @@ let s:layer = {
     \ 'name' : '',
     \ 'mode' : 0,
     \ 'maps' : {},
-    \ 'bufs' : {'cnt': 0, 'txt': ''},
+    \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
     \ 'info' : {
         \ 'centerText' : '',
         \ 'lastIndex' : 1,
@@ -60,36 +60,54 @@ function! s:layer.setMode(md) dict
 endfunction
 " }}}
 
-" FUNCTION: s:layer.setBufs(cnt, text) dict {{{
-function! s:layer.setBufs(cnt, text) dict
-    let self.bufs.cnt = a:cnt
-    if (self.mode == s:MODE.Normal) || (self.mode == s:MODE.Search)
-        if empty(a:text)
-            let l:text = '  Nothing to pop.'
-            while strwidth(l:text) < &columns
-                let l:text .= ' '
-            endwhile
-        else
-            let l:text = a:text
-        endif
-        let self.bufs.txt = l:text
-    elseif self.mode == s:MODE.Help
+" FUNCTION: s:layer.setBufs(type, ...) dict {{{
+" @type: v:t_func or v:t_string
+" @a:0: funcref for v:t_func or cnt,txt for v:t_string
+function! s:layer.setBufs(type, ...) dict
+    let self.bufs.typ = a:type
+    if self.bufs.typ == v:t_func
+        let self.bufs.fnc = a:1
+    elseif self.bufs.typ == v:t_string
+        let self.bufs.cnt = a:1
+        let self.bufs.txt = a:2
+    endif
+endfunction
+" }}}
+
+" FUNCTION: s:layer.getBufs() dict {{{
+function! s:layer.getBufs() dict
+    if self.bufs.typ == v:t_func
+        let [l:cnt, l:txt] = self.bufs.fnc()
+    elseif self.bufs.typ == v:t_string
+        let [l:cnt, l:txt] = [self.bufs.cnt, self.bufs.txt]
+    endif
+
+    " creat buffer text
+    if empty(l:txt)
+        let l:txt = '  Nothing to pop.'
+        while strwidth(l:txt) < &columns
+            let l:txt .= ' '
+        endwhile
+        let l:cnt = 1
+    endif
+    if self.mode == s:MODE.Help
+        " append help information
+        let l:text = ''
         let l:line = '  --- ' . g:popc_version . ' (In layer ' . self.name . ') ---'
         while strwidth(l:line) < &columns
             let l:line .= '-'
         endwhile
-        let self.bufs.txt = l:line . "\n"
-
-        let self.bufs.txt .= repeat(' ', &columns) . "\n" . a:text . repeat(' ', &columns) . "\n"
-
+        let l:text = l:line . "\n"
+        let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns) . "\n"
         let l:line = '  --- Copyright (c) yehuohan<yehuohan@gmail.com, yehuohan@qq.com>'
         while strwidth(l:line) < &columns
             let l:line .= '-'
         endwhile
-        let self.bufs.txt .= l:line
 
-        let self.bufs.cnt += 4
+        let l:txt .= l:line
+        let l:cnt += 4
     endif
+    return [l:cnt, l:txt]
 endfunction
 " }}}
 

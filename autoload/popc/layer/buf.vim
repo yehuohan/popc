@@ -249,12 +249,6 @@ function! s:createBuffer()
     let l:text = ''
     let l:textCnt = 0
 
-    " set root path
-    let l:root = popc#layer#com#GetRoot()
-    if !empty(l:root)
-        silent execute 'lcd ' . l:root
-    endif
-
     " create buffer
     if s:lyr.info.state == s:STATE.Sigtab
         let [l:textCnt, l:text] = s:createTabBuffer(tabpagenr() - 1)
@@ -267,7 +261,7 @@ function! s:createBuffer()
     elseif s:lyr.info.state == s:STATE.Listab
         let [l:textCnt, l:text] = s:createTabList()
     endif
-    call s:lyr.setBufs(l:textCnt, l:text)
+    return [l:textCnt, l:text]
 endfunction
 " }}}
 
@@ -370,7 +364,7 @@ endfunction
 function! s:pop(state)
     call s:lyr.setMode(s:MODE.Normal)
     call s:lyr.setInfo('state', a:state)
-    call s:createBuffer()
+    call s:lyr.setBufs(v:t_func, funcref('s:createBuffer'))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
@@ -601,7 +595,7 @@ function! popc#layer#buf#Search(key)
 
     call popc#ui#Destroy()
     call s:lyr.setMode(s:MODE.Search)
-    "call s:lyr.setBufs(, s:createSearchBuffer())
+    "call s:lyr.setBufs(v:t_func, funcref('s:createSearchBuffer'))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
@@ -609,7 +603,7 @@ endfunction
 " FUNCTION: popc#layer#buf#Help(key) {{{
 function! popc#layer#buf#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
+    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
