@@ -365,6 +365,9 @@ function! s:pop(state)
     call s:lyr.setMode(s:MODE.Normal)
     call s:lyr.setInfo('state', a:state)
     call s:lyr.setBufs(v:t_func, funcref('s:createBuffer'))
+    if a:state ==# s:STATE.Sigtab
+        call s:lyr.setInfo('lastIndex', s:tab.pos[tabpagenr() - 1])
+    endif
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
@@ -374,7 +377,6 @@ function! popc#layer#buf#Pop(key)
     if (a:key ==# 'h')
         \ || (a:key ==# 'a' && s:lyr.info.state == s:STATE.Alltab)
         \ || (a:key ==# 'l' && s:lyr.info.state == s:STATE.Listab)
-        call s:lyr.setInfo('lastIndex', s:tab.pos[tabpagenr() - 1])
         let l:state = s:STATE.Sigtab
     elseif a:key ==# 'a'
         " calculate buffer index from Sigle or Listab
@@ -468,8 +470,10 @@ function! s:closeBuffer(tidx, bidx)
     if s:tab.isTabEmpty(a:tidx)
         enew
     else
-        silent execute 'noautocmd buffer ' . s:tab.idx[a:tidx][
-                    \ (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1]
+        if str2nr(l:bnr) == bufnr('%')
+            silent execute 'noautocmd buffer ' . s:tab.idx[a:tidx][
+                        \ (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1]
+        endif
     endif
     if !has_key(s:tab.cnt, l:bnr)
         " delete bnr if no tab contain bnr
