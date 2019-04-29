@@ -250,15 +250,15 @@ function! s:createBuffer()
     let l:textCnt = 0
 
     " create buffer
-    if s:lyr.info.state == s:STATE.Sigtab
+    if s:lyr.info.state ==# s:STATE.Sigtab
         let [l:textCnt, l:text] = s:createTabBuffer(tabpagenr() - 1)
-    elseif s:lyr.info.state == s:STATE.Alltab
+    elseif s:lyr.info.state ==# s:STATE.Alltab
         for k in range(s:tab.num())
             let [c, t] = s:createTabBuffer(k)
             let l:textCnt += c
             let l:text .= t
         endfor
-    elseif s:lyr.info.state == s:STATE.Listab
+    elseif s:lyr.info.state ==# s:STATE.Listab
         let [l:textCnt, l:text] = s:createTabList()
     endif
     return [l:textCnt, l:text]
@@ -279,7 +279,7 @@ function! s:createTabBuffer(tidx)
         let b = getbufinfo(str2nr(l:bnr))[0]
 
         let l:line  = '  '
-        if s:lyr.info.state == s:STATE.Alltab
+        if s:lyr.info.state ==# s:STATE.Alltab
             if a:tidx == tabpagenr() - 1
                 let l:line .= (k > 0) ? '|' : s:conf.symbols.CTab
             else
@@ -330,9 +330,9 @@ function! s:getIndexs(index)
     let l:tidx = 0
     let l:bidx = a:index
 
-    if s:lyr.info.state == s:STATE.Sigtab
+    if s:lyr.info.state ==# s:STATE.Sigtab
         let l:tidx = tabpagenr() - 1
-    elseif s:lyr.info.state == s:STATE.Alltab
+    elseif s:lyr.info.state ==# s:STATE.Alltab
         " calc the bufnr index and tab index in all tabs
         for k in range(s:tab.num())
             if l:bidx >= s:tab.num(k)
@@ -342,7 +342,7 @@ function! s:getIndexs(index)
                 break
             endif
         endfor
-    elseif s:lyr.info.state == s:STATE.Listab
+    elseif s:lyr.info.state ==# s:STATE.Listab
         let l:tidx = l:bidx
         let l:bidx = s:tab.pos[l:tidx]
     endif
@@ -353,7 +353,7 @@ endfunction
 
 " FUNCTION: popc#layer#buf#CursorMovedCb(index) {{{
 function! popc#layer#buf#CursorMovedCb(index)
-    if (s:lyr.info.state == s:STATE.Sigtab) || (s:lyr.info.state == s:STATE.Alltab)
+    if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
         let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
         call s:tab.set('pos', l:tidx, l:bidx)
     endif
@@ -375,12 +375,12 @@ endfunction
 " FUNCTION: popc#layer#buf#Pop(key) {{{
 function! popc#layer#buf#Pop(key)
     if (a:key ==# 'h')
-        \ || (a:key ==# 'a' && s:lyr.info.state == s:STATE.Alltab)
-        \ || (a:key ==# 'l' && s:lyr.info.state == s:STATE.Listab)
+        \ || (a:key ==# 'a' && s:lyr.info.state ==# s:STATE.Alltab)
+        \ || (a:key ==# 'l' && s:lyr.info.state ==# s:STATE.Listab)
         let l:state = s:STATE.Sigtab
     elseif a:key ==# 'a'
         " calculate buffer index from Sigle or Listab
-        if (s:lyr.info.state == s:STATE.Sigtab) || (s:lyr.info.state == s:STATE.Listab)
+        if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Listab)
             let [l:tidx, l:bidx] = s:getIndexs(popc#ui#GetIndex())[0:1]
             for k in range(s:tab.num())
                 if k < l:tidx
@@ -392,7 +392,7 @@ function! popc#layer#buf#Pop(key)
         let l:state = s:STATE.Alltab
     elseif a:key ==# 'l'
         " calculate tab index from Sigle or Alltab
-        if (s:lyr.info.state == s:STATE.Sigtab) || (s:lyr.info.state == s:STATE.Alltab)
+        if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
             call s:lyr.setInfo('lastIndex', s:getIndexs(popc#ui#GetIndex())[0])
         endif
         let l:state = s:STATE.Listab
@@ -411,7 +411,7 @@ function! popc#layer#buf#Load(key)
     let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
 
     call popc#ui#Destroy()
-    if s:lyr.info.state == s:STATE.Listab
+    if s:lyr.info.state ==# s:STATE.Listab
         " load tab
         if a:key ==# 'CR'
             silent execute string(l:tidx + 1) . 'tabnext'
@@ -493,7 +493,7 @@ function! popc#layer#buf#Close(key)
 
     let [l:tidx, l:bidx] = s:getIndexs(popc#ui#GetIndex())[0:1]
 
-    if a:key ==# 'C' || s:lyr.info.state == s:STATE.Listab
+    if a:key ==# 'C' || s:lyr.info.state ==# s:STATE.Listab
         for k in range(s:tab.num(l:tidx) - 1, 0, -1)
             call s:closeBuffer(l:tidx, k)
         endfor
@@ -553,7 +553,7 @@ function! popc#layer#buf#MoveBuffer(key)
     call popc#ui#Destroy()
 
     " goto origin tab
-    if s:lyr.info.state == s:STATE.Alltab
+    if s:lyr.info.state ==# s:STATE.Alltab
         silent execute string(l:tidx + 1) . 'tabnext'
     endif
     " goto target tab
@@ -563,7 +563,7 @@ function! popc#layer#buf#MoveBuffer(key)
         silent normal! gt
     endif
     " move buffer from origin tab to target tab
-    if s:lyr.info.state == s:STATE.Listab
+    if s:lyr.info.state ==# s:STATE.Listab
         for k in s:tab.idx[l:tidx]
             silent execute 'buffer ' . k
         endfor
