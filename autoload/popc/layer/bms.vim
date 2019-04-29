@@ -131,7 +131,7 @@ function! popc#layer#bms#Delete(key)
     let l:index = popc#ui#GetIndex()
     let l:name = s:bms[l:index].name
 
-    if !popc#ui#Confirm('Delete bookmark: ' . l:name . " ?")
+    if !popc#ui#Confirm('Delete bookmark ''' . l:name . ''' ?')
         return
     endif
 
