@@ -11,7 +11,6 @@ let s:tab = {
     \ 'idx' : [],
     \ 'pos' : [],
     \ 'lbl' : [],
-    \ 'nam' : [],
     \ 'cnt' : {},
     \ }                 " only manager Popc's internal tab-buffers data instead of
                         " operateing(edit,open,close...) vim's tab-buffers actually
@@ -29,7 +28,6 @@ let s:tab = {
 "   ],
 "   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][pos[k]]
 "   'lbl' : ['tab1', 'tab2', ...],      " all tab's label
-"   'nam' : ['test', 'TEST', ...],      " all tab's name
 "   'cnt' :                             " reference counter of each bufnr
 "   {
 "       'nr3' : 1,
@@ -64,7 +62,6 @@ function! s:tab.insertTab(tidx) dict
     call insert(self.idx, [], a:tidx)
     call insert(self.pos, 0,  a:tidx)
     call insert(self.lbl, '', a:tidx)
-    call insert(self.nam, '', a:tidx)
 endfunction
 " }}}
 
@@ -80,14 +77,6 @@ function! s:tab.removeTab(tidx) dict
     call remove(self.idx, a:tidx)
     call remove(self.pos, a:tidx)
     call remove(self.lbl, a:tidx)
-    call remove(self.nam, a:tidx)
-endfunction
-" }}}
-
-" FUNCTION: s:tab.set(opt, tidx, bidx) dict {{{
-" @opt: pos, lbl, nam
-function! s:tab.set(opt, tidx, bidx) dict
-    let self[a:opt][a:tidx] = a:bidx
 endfunction
 " }}}
 
@@ -307,10 +296,11 @@ function! s:createTabList()
     let l:text = ''
 
     for k in range(s:tab.num())
+        let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
         let l:line = '  '
         let l:line .= (k == tabpagenr() - 1) ? s:conf.symbols.CTab : s:conf.symbols.Tab
         let l:line .= s:tab.isTabModified(k) ? '+' : ' '
-        let l:line .= ' ' . '[' . (empty(s:tab.nam[k]) ? s:tab.lbl[k] : s:tab.nam[k]) . ']'
+        let l:line .= ' ' . '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
                         \ . popc#ui#Num2RankStr(s:tab.num(k))
 
         while strwidth(l:line) < &columns
@@ -355,7 +345,7 @@ endfunction
 function! popc#layer#buf#CursorMovedCb(index)
     if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
         let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
-        call s:tab.set('pos', l:tidx, l:bidx)
+        let s:tab.pos[l:tidx] = l:bidx
     endif
 endfunction
 " }}}
@@ -582,8 +572,8 @@ endfunction
 " FUNCTION: popc#layer#buf#SetTabName(key) {{{
 function! popc#layer#buf#SetTabName(key)
     let l:tidx = s:getIndexs(popc#ui#GetIndex())[0]
-    let l:name = popc#ui#Input('Input tab name: ', s:tab.nam[l:tidx])
-    call s:tab.set('nam', l:tidx, l:name)
+    let l:name = popc#ui#Input('Input tab name: ', gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
+    call settabvar(l:tidx + 1, 'PopcLayerBuf_TabName', l:name)
     call s:pop(s:lyr.info.state)
 endfunction
 " }}}
@@ -648,9 +638,10 @@ endfunction
 function! popc#layer#buf#GetTabs() abort
     let l:list = []
     for k in range(s:tab.num())
+        let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
         call add(l:list, {
                     \ 'index' : k,
-                    \ 'title' : '[' . (empty(s:tab.nam[k]) ? s:tab.lbl[k] : s:tab.nam[k]) . ']'
+                    \ 'title' : '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
                               \ . popc#ui#Num2RankStr(s:tab.num(k)),
                     \ 'modified' : s:tab.isTabModified(k),
                     \ 'selected' : (k+1 == tabpagenr()) ? 1 : 0,
