@@ -624,7 +624,7 @@ function! popc#layer#buf#GetBufs(tabnr) abort
         let l:bnr = s:tab.idx[l:tidx][k]
         let b = getbufinfo(str2nr(l:bnr))[0]
         call add(l:list, {
-                    \ 'index' : k,
+                    \ 'index' : string(k+1),
                     \ 'title' : empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':t'),
                     \ 'modified' : b.changed ? 1 : 0,
                     \ 'selected' : (k == l:curIdx) ? 1 : 0,
@@ -640,7 +640,7 @@ function! popc#layer#buf#GetTabs() abort
     for k in range(s:tab.num())
         let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
         call add(l:list, {
-                    \ 'index' : k,
+                    \ 'index' : string(k+1),
                     \ 'title' : '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
                               \ . popc#ui#Num2RankStr(s:tab.num(k)),
                     \ 'modified' : s:tab.isTabModified(k),
