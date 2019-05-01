@@ -115,24 +115,22 @@ function! s:tab.insertBuffer(tidx, bnr) dict
     let b = getbufinfo(str2nr(l:bnr))[0]
     if b.loaded && b.listed && getbufvar(str2nr(l:bnr), '&filetype') != 'Popc'
         if !has_key(l:cbnr, l:bnr)
-            " add buffer to s:tab.bnr
-            call extend(l:cbnr, {l:bnr : b.name}, 'force')
-
             " insert index in order to s:tab.idx
-            if (len(l:cidx) == 0) || (l:cbnr[l:cidx[-1]] <= l:cbnr[l:bnr])
+            if (len(l:cidx) == 0) || (l:cbnr[l:cidx[-1]] <= b.name)
                 call add(l:cidx, l:bnr)
             else
                 for k in range(len(l:cidx))
-                    if l:cbnr[l:bnr] < l:cbnr[l:cidx[k]]
+                    if b.name < l:cbnr[l:cidx[k]]
                         call insert(l:cidx, l:bnr, k)
                         break
                     endif
                 endfor
             endif
-
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
         endif
+        " add or update buffer to s:tab.bnr
+        call extend(l:cbnr, {l:bnr : b.name}, 'force')
         " set tabel to s:tab.lbl
         let self.lbl[a:tidx] = empty(b.name) ? l:bnr . '.NoName' : fnamemodify(b.name, ':t')
     endif
