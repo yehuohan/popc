@@ -547,9 +547,9 @@ function! popc#ui#Input(promot, ...)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#Confirm(promot) {{{
-function! popc#ui#Confirm(promot)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . a:promot . ' (yN): '
+" FUNCTION: popc#ui#Confirm(prompt) {{{
+function! popc#ui#Confirm(prompt)
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . a:prompt . ' (yN): '
     redraw
     return input(l:msg) ==# 'y'
 endfunction
