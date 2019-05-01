@@ -233,8 +233,13 @@ function! s:tabCallback(type)
         let l:tnr = s:updateTabNr()
         if assert_true(l:tnr >= 0, 'l:tnr >= 0')
             echoerr v:errors[-1]
+            return
         endif
         let l:tidx = l:tnr - 1  " s:tab.idx[-1] means the last is the closed tab when l:tnr=0
+        if assert_true(s:tab.num() > 0 && l:tidx < s:tab.num(), 's:tab.num() > 0 && l:tidx < s:tab.num()')
+            echoerr v:errors[-1]
+            return
+        endif
         let l:bnrs = copy(s:tab.idx[l:tidx])
         call s:tab.removeTab(l:tidx)
         for bnr in l:bnrs
