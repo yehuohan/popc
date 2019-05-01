@@ -682,3 +682,41 @@ function! popc#layer#buf#GetTabs() abort
 endfunction
 " }}}
 
+" SECTION: api for workspace {{{1
+
+" FUNCTION: popc#layer#buf#Empty() {{{
+function! popc#layer#buf#Empty()
+    call popc#ui#Destroy()
+
+    " detect modified buffer
+    let l:mbuf = []
+    for k in range(s:tab.num())
+        call s:tab.isTabModified(k, l:mbuf)
+    endfor
+    if len(l:mbuf) > 0
+        let l:prompt = 'There are buffers containing unsaved changes:'
+        for bnr in l:mbuf
+            let l:prompt .= "\n" . getbufinfo(bnr)[0].name
+        endfor
+        let l:prompt .= "\n" . 'Continue anyway?'
+        if !popc#ui#Confirm(l:prompt)
+            return
+        endif
+    endif
+
+    " close all tab and buffer
+    silent! execute '0tabnew'
+    silent! execute 'tabonly!'
+    silent! execute '%bwipeout!'
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#GetView(tabnr) {{{
+function! popc#layer#buf#GetView(tabnr)
+    let l:tidx = a:tabnr - 1
+    if s:tab.isTabEmpty(l:tidx)
+        return []
+    endif
+    return s:tab.idx[l:tidx]
+endfunction
+" }}}

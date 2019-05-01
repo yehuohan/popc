@@ -152,5 +152,8 @@ function! s:checkConfig()
     if s:conf.useTabline && !s:conf.useLayer.Buffer
         let s:conf.useLayer.Buffer = 1
     endif
+    if s:conf.useLayer.Workspace
+        let s:conf.useLayer.Buffer = 1
+    endif
 endfunction
 " }}}
