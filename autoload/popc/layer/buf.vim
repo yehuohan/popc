@@ -190,6 +190,7 @@ function! popc#layer#buf#Init()
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
+        autocmd BufNew    * call s:lyr.setInfo('rootDir', popc#ui#FindRoot())
     augroup END
 
     for md in s:mapsData

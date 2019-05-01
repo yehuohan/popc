@@ -10,8 +10,9 @@ let s:layer = {
     \ 'maps' : {},
     \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
     \ 'info' : {
-        \ 'centerText' : '',
-        \ 'lastIndex' : 1,
+        \ 'rootDir'       : '',
+        \ 'lastIndex'     : 0,
+        \ 'centerText'    : '',
         \ 'cursorMovedCb' : '',
         \ }
     \ }

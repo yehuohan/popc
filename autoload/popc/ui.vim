@@ -8,7 +8,6 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let b:text = ''             " buffer text
 let b:size = -1             " line-size of buffer text
-let s:rootDir = ''
 let s:hi = {
     \ 'text'        : 'PmenuSbar',
     \ 'selected'    : 'ToolbarLine',
@@ -41,10 +40,6 @@ function! popc#ui#Init()
         set showtabline=2
         silent execute 'set tabline=%!' . s:conf.tabLine
     endif
-    augroup PopcUiInitRoot
-        autocmd!
-        autocmd BufAdd * let s:rootDir=empty(s:rootDir) ? s:findRoot() : s:rootDir
-    augroup END
 endfunction
 " }}}
 
@@ -137,8 +132,8 @@ function! s:setBuffer()
     endif
 
     " set root path
-    if !empty(s:rootDir)
-        silent execute 'lcd ' . s:rootDir
+    if !empty(s:lyr.info.rootDir)
+        silent execute 'lcd ' . s:lyr.info.rootDir
     endif
 
     " set auto-command
@@ -268,37 +263,6 @@ endfunction
 " FUNCTION: popc#ui#GetRecover() {{{
 function! popc#ui#GetRecover()
     return s:recover
-endfunction
-" }}}
-
-
-" SETCION: root dir {{{1
-
-" FUNCTION: popc#ui#GetRoot() {{{
-function! popc#ui#GetRoot()
-    return s:rootDir
-endfunction
-" }}}
-
-" FUNCTION: s:findRoot() {{{
-function! s:findRoot()
-    if empty(s:conf.useRoots)
-        return ''
-    endif
-
-    let l:dir = fnamemodify('.', ':p:h')
-    let l:dirLast = ''
-    while l:dir !=# l:dirLast
-        let l:dirLast = l:dir
-        for m in s:conf.useRoots
-            let l:root = l:dir . '/' . m
-            if filereadable(l:root) || isdirectory(l:root)
-                return fnameescape(l:dir)
-            endif
-        endfor
-        let l:dir = fnamemodify(l:dir, ':p:h:h')
-    endwhile
-    return ''
 endfunction
 " }}}
 
@@ -523,6 +487,28 @@ endfunction
 
 
 " SETCION: utils {{{1
+
+" FUNCTION: popc#ui#FindRoot() {{{
+function! popc#ui#FindRoot()
+    if empty(s:conf.useRoots)
+        return ''
+    endif
+
+    let l:dir = fnamemodify('.', ':p:h')
+    let l:dirLast = ''
+    while l:dir !=# l:dirLast
+        let l:dirLast = l:dir
+        for m in s:conf.useRoots
+            let l:root = l:dir . '/' . m
+            if filereadable(l:root) || isdirectory(l:root)
+                return fnameescape(l:dir)
+            endif
+        endfor
+        let l:dir = fnamemodify(l:dir, ':p:h:h')
+    endwhile
+    return ''
+endfunction
+" }}}
 
 " FUNCTION: popc#ui#Num2RankStr(num) {{{
 function! popc#ui#Num2RankStr(num)
