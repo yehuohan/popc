@@ -62,7 +62,7 @@ endfunction
 
 " FUNCTION: s:layer.setBufs(type, ...) dict {{{
 " @type: v:t_func or v:t_string
-" @a:0: funcref for v:t_func or cnt,txt for v:t_string
+" @param(a:000): funcref for v:t_func or cnt,txt for v:t_string
 function! s:layer.setBufs(type, ...) dict
     let self.bufs.typ = a:type
     if self.bufs.typ == v:t_func
