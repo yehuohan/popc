@@ -529,7 +529,9 @@ endfunction
 function! popc#ui#Input(promot, ...)
     let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:promot, '\M\n', '\n   ', 'g')
     redraw
-    return a:0 == 0 ? input(l:msg) : input(l:msg, a:1)
+    return a:0 == 0 ? input(l:msg) : 
+         \ a:0 == 1 ? input(l:msg, a:1) :
+         \            input(l:msg, a:1, a:2)
 endfunction
 " }}}
 
