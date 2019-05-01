@@ -187,7 +187,6 @@ function! popc#layer#buf#Init()
         autocmd!
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
-        autocmd TabLeave  * call s:tabCallback('leave')
         autocmd BufEnter  * call s:bufCallback('enter')
     augroup END
 
@@ -197,26 +196,50 @@ function! popc#layer#buf#Init()
 endfunction
 " }}}
 
+" FUNCTION: s:updateTabNr() {{{
+function! s:updateTabNr()
+    let l:closedTabNr = 0
+    for tnr in range(1, tabpagenr('$'))
+        let l:nr = gettabvar(tnr, 'PopcLayerBuf_TabNr')
+        if type(l:nr) == v:t_number
+            if l:nr != tnr
+                if l:nr > tnr && l:closedTabNr == 0
+                    " this is the closed tab
+                    let l:closedTabNr = l:nr - 1
+                endif
+                call settabvar(tnr, 'PopcLayerBuf_TabNr', tnr)
+            endif
+        else
+            " this is a new tab
+            call settabvar(tnr, 'PopcLayerBuf_TabNr', tnr)
+        endif
+    endfor
+    " l:closedTabNr = 0 means the last tab is the closed tab
+    return l:closedTabNr
+endfunction
+" }}}
+
 " FUNCTION: s:tabCallback(type) {{{
 function! s:tabCallback(type)
     let l:tidx = tabpagenr() - 1
     if a:type ==# 'new'
         " all tab will be added from here
         call s:tab.insertTab(l:tidx)
+        call s:updateTabNr()
     elseif a:type ==# 'close'
         " all tab will be deleted from here
-        if exists('s:lastTidx')
-            let l:bnrs = copy(s:tab.idx[s:lastTidx])
-            call s:tab.removeTab(s:lastTidx)
-            unlet s:lastTidx
-            for bnr in l:bnrs
-                if !has_key(s:tab.cnt, bnr) && !getbufvar(str2nr(bnr), "&modified")
-                    silent execute 'noautocmd bdelete! ' . bnr
-                endif
-            endfor
+        let l:tnr = s:updateTabNr()
+        if assert_true(l:tnr >= 0, 'l:tnr >= 0')
+            echoerr v:errors[-1]
         endif
-    elseif a:type == 'leave'
-        let s:lastTidx = l:tidx
+        let l:tidx = l:tnr - 1  " s:tab.idx[-1] means the last is the closed tab when l:tnr=0
+        let l:bnrs = copy(s:tab.idx[l:tidx])
+        call s:tab.removeTab(l:tidx)
+        for bnr in l:bnrs
+            if !has_key(s:tab.cnt, bnr) && !getbufvar(str2nr(bnr), "&modified")
+                silent execute 'noautocmd bdelete! ' . bnr
+            endif
+        endfor
     endif
 endfunction
 " }}}
