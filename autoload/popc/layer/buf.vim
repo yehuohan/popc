@@ -94,15 +94,19 @@ function! s:tab.isTabEmpty(...) dict
 endfunction
 " }}}
 
-" FUNCTION: s:tab.isTabModified(...) dict {{{
-function! s:tab.isTabModified(...) dict
-    let l:tidx = (a:0 == 0) ? (tabpagenr() - 1) : a:1
-    for bnr in self.idx[l:tidx]
+" FUNCTION: s:tab.isTabModified(tidx, ...) dict {{{
+" @param(a:1): list to store nr of modified buffer
+function! s:tab.isTabModified(tidx, ...) dict
+    for bnr in self.idx[a:tidx]
         if getbufvar(str2nr(bnr), '&modified')
-            return 1
+            if a:0 >= 1
+                call add(a:1, str2nr(bnr))
+            else
+                return 1
+            endif
         endif
     endfor
-    return 0
+    return (a:0 >= 1 && len(a:1) > 0) ? 1: 0
 endfunction
 " }}}
 
@@ -160,7 +164,7 @@ endfunction
 
 " FUNCTION: s:tab.checkBuffer(tidx) dict {{{
 function! s:tab.checkBuffer(tidx) dict
-    " remove unloaded or unlisted buffer of tab
+    " remove buffer not closed by s:closeBuffer
     for k in range(self.num(a:tidx) - 1, 0, -1)    " traversal must in reverse order
         let l:bnr = self.idx[a:tidx][k]
         let b = getbufinfo(str2nr(l:bnr))
