@@ -461,7 +461,7 @@ function! s:closeBuffer(tidx, bidx)
         enew
     else
         if str2nr(l:bnr) == bufnr('%')
-            silent execute 'noautocmd buffer ' . s:tab.idx[a:tidx][
+            silent execute 'buffer ' . s:tab.idx[a:tidx][
                         \ (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1]
         endif
     endif
@@ -650,3 +650,4 @@ function! popc#layer#buf#GetTabs() abort
     return l:list
 endfunction
 " }}}
+
