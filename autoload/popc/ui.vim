@@ -541,7 +541,7 @@ endfunction
 
 " FUNCTION: popc#ui#Input(promot, ...) {{{
 function! popc#ui#Input(promot, ...)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . a:promot
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:promot, '\M\n', '\n   ', 'g')
     redraw
     return a:0 == 0 ? input(l:msg) : input(l:msg, a:1)
 endfunction
@@ -549,7 +549,7 @@ endfunction
 
 " FUNCTION: popc#ui#Confirm(prompt) {{{
 function! popc#ui#Confirm(prompt)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . a:prompt . ' (yN): '
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
     redraw
     return input(l:msg) ==# 'y'
 endfunction
@@ -558,6 +558,6 @@ endfunction
 " FUNCTION: popc#ui#Msg(msg) {{{
 function! popc#ui#Msg(msg)
     redraw
-    echo ' ' . s:conf.symbols.Popc . ' ' . a:msg
+    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
 endfunction
 " }}}
