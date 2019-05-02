@@ -167,9 +167,13 @@ function! s:tab.checkBuffer(tidx) dict
     " remove buffer not closed by s:closeBuffer
     for k in range(self.num(a:tidx) - 1, 0, -1)    " traversal must in reverse order
         let l:bnr = self.idx[a:tidx][k]
-        let b = getbufinfo(str2nr(l:bnr))
-        if empty(b) || !b[0].listed || !b[0].loaded
+        if !bufexists(str2nr(l:bnr))
             call s:tab.removeBuffer(a:tidx, l:bnr)
+        else
+            let b = getbufinfo(str2nr(l:bnr))[0]
+            if !b.listed || !b.loaded
+                call s:tab.removeBuffer(a:tidx, l:bnr)
+            endif
         endif
     endfor
 endfunction
