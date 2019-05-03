@@ -84,10 +84,23 @@ function! s:createView(tnr, bnrs)
     let l:view.name = gettabvar(a:tnr, 'PopcLayerBuf_TabName')
     " buffer's file
     for bnr in a:bnrs
-        let l:bname = bufname(str2nr(bnr))
+        let l:bname = getbufinfo(str2nr(bnr))[0].name
         if !empty(l:bname)
-            call add(l:view.files, fnamemodify(l:bname, ':p'))
+            call add(l:view.files, l:bname)
         endif
+    endfor
+    " tab's window layout
+    let l:wids = gettabinfo(a:tnr)[0].windows
+    for wid in l:wids
+        let l:bnr = winbufnr(wid)
+        if -1 == index(a:bnrs, string(l:bnr))
+            continue
+        endif
+        call add(l:view.windows, {
+                                \ 'bname' : bufname(l:bnr),
+                                \ 'wid' : winwidth(wid),
+                                \ 'hei' : winheight(wid),
+                                \ })
     endfor
 
     return l:view
@@ -107,6 +120,13 @@ function! s:dispView(tnr, view)
         if filereadable(fname)
             silent execute 'edit ' . fname
         endif
+    endfor
+    " tab's window layout
+    for k in range(len(a:view.windows))
+        if k > 0
+            silent execute float2nr(fmod(k, 2)) ? 'split' : 'vsplit'
+        endif
+        silent execute 'buffer ' . string(bufnr(a:view.windows[k].bname))
     endfor
 endfunction
 " }}}
@@ -169,7 +189,7 @@ function! popc#layer#wks#Load(key)
 
     call popc#ui#Destroy()
     if a:key ==# 'CR' || a:key ==# 'Space'
-        call popc#layer#wks#Close('C')
+        call popc#layer#buf#Empty()
         call s:loadWorkspace(l:name)
     elseif a:key ==? 't'
         call s:loadWorkspace(l:name, tabpagenr('$'))
