@@ -49,6 +49,7 @@ let s:mapsData = [
     \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                              'Switch to left/right(i/o) tab'],
     \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                              'Move buffer to left/right(I/O) tab'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                                  'Set current tab name'],
+    \ ['popc#layer#buf#Edit'         , ['e'],                                  'Edit a new file'],
     \ ['popc#layer#buf#Search'       , ['/'],                                  'Search buffer content'],
     \ ['popc#layer#buf#Help'         , ['?'],                                  'Show help of buffers layer'],
     \ ]
@@ -609,6 +610,33 @@ function! popc#layer#buf#SetTabName(key)
     let l:tidx = s:getIndexs(popc#ui#GetIndex())[0]
     let l:name = popc#ui#Input('Input tab name: ', gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
     call settabvar(l:tidx + 1, 'PopcLayerBuf_TabName', l:name)
+    call s:pop(s:lyr.info.state)
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#Edit(key) {{{
+function! popc#layer#buf#Edit(key)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
+    let l:bnr = s:getIndexs(popc#ui#GetIndex())[2]
+    let l:name = getbufinfo(str2nr(l:bnr))[0].name
+    if empty(l:name)
+        return
+    endif
+    let l:file = substitute(fnamemodify(l:name, ':h'), '\\', '/', 'g')
+    if l:file[len(l:file) - 1] != '/'
+        let l:file .= '/'
+    endif
+    let l:file = popc#ui#Input('Edit new file: ', l:file)
+    if empty(l:file)
+        return
+    endif
+
+    call popc#ui#Toggle(0)
+    silent execute 'edit ' . l:file
+    call popc#ui#Toggle(1)
     call s:pop(s:lyr.info.state)
 endfunction
 " }}}
