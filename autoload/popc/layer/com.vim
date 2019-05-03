@@ -20,7 +20,7 @@ function! popc#layer#com#Init()
     if s:conf.useLayer.Workspace
         call popc#key#AddComMaps('popc#layer#wks#Pop', 'w')
     endif
-    for m in values(s:conf.commonMaps)
+    for m in values(s:conf.layerComMaps)
         " {'layerName': [funcName, key]}
         call popc#key#AddComMaps(m[0], m[1])
     endfor
@@ -41,6 +41,10 @@ function! popc#layer#com#Init()
     if s:conf.useLayer.Reg
         call popc#layer#reg#Init()
     endif
+    for l in values(s:conf.layerInit)
+        " {'layerName': initFuncName}
+        call function(l)()
+    endfor
 endfunction
 " }}}
 

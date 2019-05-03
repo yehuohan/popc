@@ -17,7 +17,8 @@ let s:conf = {
     \ 'maxHeight'      : 0,
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
     \ 'useRoots'       : ['.root', '.git', '.svn'],
-    \ 'commonMaps'     : {},
+    \ 'layerInit'      : {},
+    \ 'layerComMaps'   : {},
     \ 'operationMaps'  : {
         \ 'moveCursorDown'   : ['j', 'C-j'],
         \ 'moveCursorUp'     : ['k', 'C-k'],
@@ -139,7 +140,7 @@ function! s:initConfig()
     let s:conf.symbols = deepcopy(s:conf.useUnicode ? s:defaultSymbols.unicode : s:defaultSymbols.ascii)
     unlet s:defaultSymbols
     for k in ['symbols', 'separator', 'subSeparator', 'useLayer',
-            \  'commonMaps', 'operationMaps']
+            \ 'layerInit', 'layerComMaps', 'operationMaps']
         if exists('g:Popc_' . k)
             call extend(s:conf[k], g:{'Popc_' . k}, 'force')
         endif
