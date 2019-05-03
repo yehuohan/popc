@@ -160,8 +160,7 @@ endfunction
 function! s:loadWorkspace(name, path, ...)
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     if !filereadable(l:file)
-        call popc#ui#Msg('Nothing in workspace''' . a:name . '''.')
-        return
+        return 0
     endif
 
     let l:base = (a:0 >= 1) ? a:1 : 0
@@ -181,6 +180,7 @@ function! s:loadWorkspace(name, path, ...)
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
     call s:lyr.setInfo('rootDir', a:path)
+    return 1
 endfunction
 " }}}
 
@@ -206,14 +206,21 @@ function! popc#layer#wks#Load(key)
     call popc#ui#Destroy()
     if a:key ==# 'CR' || a:key ==# 'Space'
         call popc#layer#buf#Empty()
-        call s:loadWorkspace(l:name, l:path)
+        let l:ret = s:loadWorkspace(l:name, l:path)
     elseif a:key ==? 't'
-        call s:loadWorkspace(l:name, l:path, tabpagenr('$'))
+        let l:ret = s:loadWorkspace(l:name, l:path, tabpagenr('$'))
     endif
-    if a:key ==# 'Space' || a:key ==# 'T'
+    if l:ret
+        if a:key ==# 'Space' || a:key ==# 'T'
+            call popc#layer#wks#Pop('w')
+        endif
+        call popc#ui#Msg('Load workspace ''' . l:name . ''' successful.')
+    else
+        call remove(s:wks, l:index)
+        call popc#init#SaveJson()
         call popc#layer#wks#Pop('w')
+        call popc#ui#Msg('Nothing in workspace ''' . l:name . ''' and remove it.')
     endif
-    call popc#ui#Msg('Load workspace ''' . l:name . ''' successful.')
 endfunction
 " }}}
 
