@@ -31,6 +31,8 @@ let s:mapsData = [
 function! popc#layer#wks#Init()
     let s:lyr = s:popc.addLayer('Workspace')
     call s:lyr.setInfo('sort', 'path')
+    call s:lyr.setInfo('wksName', '')
+    call s:lyr.setInfo('rootDir', '')
     call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
     let s:wks = popc#init#GetJson().json.workspaces
 
@@ -124,15 +126,15 @@ function! s:dispView(tnr, view)
     " tab's window layout
     for k in range(len(a:view.windows))
         if k > 0
-            silent execute float2nr(fmod(k, 2)) ? 'split' : 'vsplit'
+            silent execute float2nr(fmod(k, 2)) ? 'vsplit' : 'split'
         endif
         silent execute 'buffer ' . string(bufnr(a:view.windows[k].bname))
     endfor
 endfunction
 " }}}
 
-" FUNCTION: s:saveWorkspace(name) {{{
-function! s:saveWorkspace(name)
+" FUNCTION: s:saveWorkspace(name, path) {{{
+function! s:saveWorkspace(name, path)
     let l:ws = []
     for tnr in range(1, tabpagenr('$'))
         call add(l:ws, s:createView(tnr, popc#layer#buf#GetView(tnr)))
@@ -141,12 +143,16 @@ function! s:saveWorkspace(name)
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     let l:jsonWs = json_encode(l:ws)
     call writefile([l:jsonWs], l:file)
+
+    " set root and name of layer
+    call s:lyr.setInfo('wksName', a:name)
+    call s:lyr.setInfo('rootDir', a:path)
 endfunction
 " }}}
 
-" FUNCTION: s:loadWorkspace(name, ...) {{{
+" FUNCTION: s:loadWorkspace(name, path, ...) {{{
 " param(a:1): the base tab nr to display view of tab
-function! s:loadWorkspace(name, ...)
+function! s:loadWorkspace(name, path, ...)
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     if !filereadable(l:file)
         call popc#ui#Msg('Nothing in workspace''' . a:name . '''.')
@@ -166,6 +172,10 @@ function! s:loadWorkspace(name, ...)
     if &title
         silent execute 'set titlestring=' . a:name
     endif
+
+    " set root and name of layer
+    call s:lyr.setInfo('wksName', a:name)
+    call s:lyr.setInfo('rootDir', a:path)
 endfunction
 " }}}
 
@@ -186,13 +196,14 @@ function! popc#layer#wks#Load(key)
 
     let l:index = popc#ui#GetIndex()
     let l:name = s:wks[l:index].name
+    let l:path = s:wks[l:index].path
 
     call popc#ui#Destroy()
     if a:key ==# 'CR' || a:key ==# 'Space'
         call popc#layer#buf#Empty()
-        call s:loadWorkspace(l:name)
+        call s:loadWorkspace(l:name, l:path)
     elseif a:key ==? 't'
-        call s:loadWorkspace(l:name, tabpagenr('$'))
+        call s:loadWorkspace(l:name, l:path, tabpagenr('$'))
     endif
     if a:key ==# 'Space' || a:key ==# 'T'
         call popc#layer#wks#Pop('w')
@@ -223,7 +234,7 @@ function! popc#layer#wks#Add(key)
     endif
     let l:path = fnamemodify(l:path, ':p')
     " save workspace
-    call s:saveWorkspace(l:name)
+    call s:saveWorkspace(l:name, l:path)
     call add(s:wks, {'name' : l:name, 'path' : l:path})
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w')
@@ -233,6 +244,25 @@ endfunction
 
 " FUNCTION: popc#layer#wks#Save(key) {{{
 function! popc#layer#wks#Save(key)
+    if empty(s:wks)
+        return
+    endif
+
+    let l:index = popc#ui#GetIndex()
+    let l:name = s:wks[l:index].name
+    let l:path = s:wks[l:index].path
+
+    if empty(s:lyr.info.wksName)
+        if !popc#ui#Confirm('Override workspace ''' . l:name . ''' ?')
+            return
+        endif
+    elseif l:name !=# s:lyr.info.wksName
+        call popc#ui#Msg('This is NOT current workspace: ' . s:lyr.info.wksName . ' [' . s:lyr.info.rootDir . ']')
+        return
+    endif
+
+    call s:saveWorkspace(l:name, l:path)
+    call popc#ui#Msg('Save workspace ''' . l:name . ''' successful.')
 endfunction
 " }}}
 
