@@ -38,6 +38,7 @@ function! popc#ui#Init()
         augroup END
     endif
     if s:conf.useTabline
+        set showtabline=2
         silent execute 'set tabline=%!' . s:conf.tabLine
     endif
 endfunction
