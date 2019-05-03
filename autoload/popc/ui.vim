@@ -36,8 +36,8 @@ function! popc#ui#Init()
             autocmd!
             autocmd ColorScheme * call popc#ui#InitHi(s:hi)
         augroup END
-
-        set showtabline=2
+    endif
+    if s:conf.useTabline
         silent execute 'set tabline=%!' . s:conf.tabLine
     endif
 endfunction
