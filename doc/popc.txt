@@ -16,17 +16,21 @@ Table of Contents                                                     *popc-toc*
 
 1. Overview                                                      |popc-overview|
 2. Usage                                                            |popc-usage|
- 2.1 Settings                                                    |popc-settings|
- 2.2 Buffer layer                                                  |popc-buffer|
- 2.3 Bookmark layer                                              |popc-bookmark|
-3. Add customized layer                                         |popc-add-layer|
-4. License                                                        |popc-license|
+ 2.1 Installation                                            |popc-installation|
+ 2.2 Configuration                                          |popc-configuration|
+ 2.3 Statusline                                                |popc-statusline|
+ 2.4 Tabline                                                      |popc-tabline|
+ 2.5 Highlight                                                  |popc-highlight|
+3. Layer                                                            |popc-layer|
+ 3.1 Buffer layer                                                  |popc-buffer|
+ 3.2 Bookmark layer                                              |popc-bookmark|
+ 3.3 Workspace layer                                            |popc-workspace|
+4. Add customized layer                                         |popc-add-layer|
+5. License                                                        |popc-license|
 
 
 ================================================================================
 1. Overview                                                      *popc-overview*
-
-(Popc is in development)
 
 Popc in layer manager, including layer buffer, bookmark.....
 
@@ -35,29 +39,204 @@ Popc in layer manager, including layer buffer, bookmark.....
 ================================================================================
 2. Usage                                                            *popc-usage*
 
- 2.1 Settings                                                    *popc-settings*
+--------------------------------------------------------------------------------
+ 2.1 Installation                                            *popc-installation*
+
+Example for vim-plug:
+>
+    Plug 'yehuohan/popc'
+<
+You should meet the requirements below:
+>
+    vim8.0 or higher
+    enable hidden option
+<
 
                                                                       |popc-toc|
 
 --------------------------------------------------------------------------------
- 2.2 Buffer layer                                                  *popc-buffer*
+ 2.2 Configuration                                          *popc-configuration*
+
+There some options start with `g:Popc_` used to config popc. The default value
+is below:
+
+basic configs:
+>
+    jsonPath      = expand($HOME)
+    useUnicode    = 1
+    useTabline    = 1
+    useStatusline = 1
+    usePowerFont  = 0
+    separator     = {'left' : '', 'right' : ''}
+    subSeparator  = {'left' : '', 'right' : ''}
+    statusLine    = 'popc#ui#StatusLine()'
+    tabLine       = 'popc#ui#TabLine()'
+    maxHeight     = 0
+    useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
+    useRoots      = ['.root', '.git', '.svn']
+<
+configs about key maps:
+>
+    commonMaps       = {}
+    moveCursorDown   = ['j', 'C-j']
+    moveCursorUp     = ['k', 'C-k']
+    moveCursorBottom = ['J']
+    moveCursorTop    = ['K']
+    moveCursorPgDown = ['M-j']
+    moveCursorPgUp   = ['M-k']
+    quit             = ['q', 'Esc']
+<
 
                                                                       |popc-toc|
 
 --------------------------------------------------------------------------------
- 2.3 Bookmark layer                                              *popc-bookmark*
+ 2.3 Statusline                                                *popc-statusline*
+
+Set your own statusline by provide a function to `g:Popc_statusLine`, and set
+`g:Popc_useStatusline` to 1 which means use the statusline for popc. Function
+`popc#ui#GetStatusLineSegments()` can get the content for statusline.
+
+An example with airline:
+>
+    function! StatusLine()
+        let [l:left, l:center, l:right] = popc#ui#GetStatusLineSegments()
+        let b = airline#builder#new({ 'active': 1 })
+        call b.add_section('airline_a', l:left)
+        call b.add_section('airline_b', '')
+        call b.add_section('airline_c', l:center)
+        call b.split()
+        call b.add_section('airline_y', '')
+        call b.add_section('airline_z', l:right)
+        return b.build()
+    endfunction
+    let g:Popc_statusLine='StatusLine()'
+<
+
+                                                                      |popc-toc|
+
+--------------------------------------------------------------------------------
+ 2.4 Tabline                                                      *popc-tabline*
+
+Set your own tabline by provide a function to `g:Popc_tabLine`, and set
+`g:Popc_useTabline` to 1 which means use the tabline for popc. Function
+`popc#layer#buf#GetTabs()` and `popc#layer#buf#GetBufs()` can get the
+information of tabs and buffers of each tab for tabline.
+
+Attention: the tabline of popc is used for buffer layer. So if `useTabLine` is
+set to 1, `useLayer.Buffer` will be set to 1 automatically.
+
+                                                                      |popc-toc|
+
+--------------------------------------------------------------------------------
+ 2.5 Highlight                                                  *popc-highlight*
+
+Customize highlight via `popc#ui#InitHi()`:
+>
+    let g:hi = {
+        \ 'text'        : 'PmenuSbar',
+        \ 'selected'    : 'ToolbarLine',
+        \ 'label'       : 'IncSearch',
+        \ 'modifiedTxt' : 'WildMenu',
+        \ 'modifiedSel' : 'PmenuSel',
+        \ 'blankTxt'    : 'Normal',
+        \ }
+    call popc#ui#InitHi(g:hi)
+<
+g:hi is a dictionary to save highlight name, and g:hi.text and g:hi.selected is
+necessary at least.
 
                                                                       |popc-toc|
 
 ================================================================================
-3. Add customized layer                                         *popc-add-layer*
+3. Layer                                                            *popc-layer*
 
-Bookmark layer(autoload/popc/layer/bms.vim) can be a good example.
+--------------------------------------------------------------------------------
+ 3.1 Buffer layer                                                  *popc-buffer*
+
+Buffer layer is used to manager all tab and buffers of each tab. In buffer layer
+you can switch to one tab or buffer easily.
+
+Use the following example maps to open buffer layer:
+>
+    nnoremap <C-Space> :Popc<CR>
+    inoremap <C-Space> <Esc>:Popc<CR>
+    nnoremap <leader><leader>h :PopcBuffer<CR>
+>
+And use the following example maps for switching tabs and buffers, which can be
+very convenient with tabline.
+>
+    nnoremap <M-i> gT
+    nnoremap <M-o> gt
+    nnoremap <M-u> :PopcBufferSwitchLeft<CR>
+    nnoremap <M-p> :PopcBufferSwitchRight<CR>
+>
+In buffer layer, press '?' to see all command help:
+>
+    h,a,l                | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
+    CR,Space,s,S,v,V,t,T | Load buffers (CR-Load, Space-Load and stay, svt-Split or tabedit, SVT-Split or tabedit and stay)
+    c,C                  | Close one buffer (C-Close tab's all buffer)
+    i,o                  | Switch to left/right(i/o) tab
+    I,O                  | Move buffer to left/right(I/O) tab
+    n                    | Set current tab name
+    ?                    | Show help of buffers layer
+<
+
+                                                                      |popc-toc|
+
+--------------------------------------------------------------------------------
+ 3.2 Bookmark layer                                              *popc-bookmark*
+
+Bookmar layer is used to manager all bookmark file.
+
+Use the following example maps to open buffer layer:
+>
+    nnoremap <leader><leader>b :PopcBookmark<CR>
+<
+In bookmark layer, press '?' to see all command help:
+>
+    b                    | Pop bookmarks layer
+    CR,Space,s,S,v,V,t,T | Load bookmark (CR-Open, Space-Stay, sSvV-Split, tT-Tab)
+    a                    | Add file as bookmark
+    d                    | Delete one bookmark
+    g                    | Display sorted bookmaks
+    ?                    | Show help of bookmarks layer
+<
+
+                                                                      |popc-toc|
+
+--------------------------------------------------------------------------------
+ 3.3 Workspace layer                                            *popc-workspace*
+
+Workspace layer is used to manager all working session.
+
+Use the following example maps to open buffer layer:
+>
+    nnoremap <leader><leader>w :PopcWorkspace<CR>
+<
+In workspace layer, press '?' to see all command help:
+>
+    w            | Pop workspace layer
+    CR,Space,t,T | Load workspace (CR-Open, Space-Stay, tT-Tab)
+    a            | Add new workspace
+    s            | Save the workspace
+    d            | Delete the workspace
+    C            | Close current workspace
+    n            | Set workspace's name
+    g            | Display sorted workspaces
+    ?            | Show help of workspaces layer
+<
+                                                                      |popc-toc|
+
+================================================================================
+4. Add customized layer                                         *popc-add-layer*
+
+All you need to do is implement one layer struct and add to s:popc. The bookmark
+layer(autoload/popc/layer/bms.vim) can be a good example.
 
                                                                       |popc-toc|
 
 ================================================================================
-4. License                                                        *popc-license*
+5. License                                                        *popc-license*
 
 MIT License
 
