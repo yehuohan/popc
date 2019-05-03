@@ -144,6 +144,11 @@ function! s:saveWorkspace(name, path)
     let l:jsonWs = json_encode(l:ws)
     call writefile([l:jsonWs], l:file)
 
+    " set widget's title
+    if &title
+        silent execute 'set titlestring=' . a:name
+    endif
+
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
     call s:lyr.setInfo('rootDir', a:path)
