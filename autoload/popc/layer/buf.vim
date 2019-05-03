@@ -42,6 +42,7 @@ let s:STATE = {
     \ 'Alltab' : 'a',
     \ 'Listab' : 'l',
     \ }
+let s:rootBuf = ''
 let s:mapsData = [
     \ ['popc#layer#buf#Pop'          , ['h', 'a', 'l'],                        'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
     \ ['popc#layer#buf#Load'         , ['CR','Space','s','S','v','V','t','T'], 'Load buffers (CR-Load, Space-Load and stay, svt-Split or tabedit, SVT-Split or tabedit and stay)'],
@@ -195,7 +196,7 @@ function! popc#layer#buf#Init()
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
-        autocmd BufNew    * call s:lyr.setInfo('rootDir', popc#ui#FindRoot())
+        autocmd BufNew    * let s:rootBuf=popc#ui#FindRoot()
     augroup END
 
     for md in s:mapsData
@@ -391,9 +392,16 @@ function! s:pop(state)
     call s:lyr.setMode(s:MODE.Normal)
     call s:lyr.setInfo('state', a:state)
     call s:lyr.setBufs(v:t_func, funcref('s:createBuffer'))
+    " set lastIndex
     if a:state ==# s:STATE.Sigtab
         call s:lyr.setInfo('lastIndex', s:tab.pos[tabpagenr() - 1])
     endif
+    " set rootDir
+    let l:root = popc#layer#wks#GetCurrentWks()[1]
+    if empty(l:root)
+        let l:root = s:rootBuf
+    endif
+    call s:lyr.setInfo('rootDir', l:root)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
