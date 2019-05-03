@@ -77,6 +77,8 @@ basic configs:
 <
 configs about key maps:
 >
+    layerInit        = {},
+    layerComMaps     = {},
     commonMaps       = {}
     moveCursorDown   = ['j', 'C-j']
     moveCursorUp     = ['k', 'C-k']
@@ -230,8 +232,8 @@ In workspace layer, press '?' to see all command help:
 ================================================================================
 4. Add customized layer                                         *popc-add-layer*
 
-All you need to do is implement one layer struct and add to s:popc. The bookmark
-layer(autoload/popc/layer/bms.vim) can be a good example.
+All you need to do is implement one layer struct and add to s:popc. The file
+`autoload/popc/layer/exp.vim` can be a good example layer to start.
 
                                                                       |popc-toc|
 

@@ -30,7 +30,7 @@ More usage help in [popc.txt](https://github.com/yehuohan/popc/blob/master/doc/p
 
 ## Add Customized layer
 
-All you need to do is implement one *layer* struct and add to *s:popc*. The [Bookmark layer](https://github.com/yehuohan/popc/blob/master/autoload/popc/layer/bms.vim) can be a simple and good example.
+All you need to do is implement one *layer* struct and add to *s:popc*. The [Example layer](https://github.com/yehuohan/popc/blob/master/autoload/popc/layer/exp.vim) can be a good example layer to start.
 
 
 ## Thinks
