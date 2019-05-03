@@ -98,14 +98,15 @@ function! s:layer.getBufs() dict
         while strwidth(l:line) < &columns
             let l:line .= '-'
         endwhile
-        let l:text = l:line . "\n"
+        let l:text .= l:line . "\n"
         let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns) . "\n"
         let l:line = '  --- Copyright (c) yehuohan<yehuohan@gmail.com, yehuohan@qq.com>'
         while strwidth(l:line) < &columns
             let l:line .= '-'
         endwhile
+        let l:text .= l:line
 
-        let l:txt .= l:line
+        let l:txt = l:text
         let l:cnt += 4
     endif
     return [l:cnt, l:txt]
