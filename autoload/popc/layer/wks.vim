@@ -239,7 +239,10 @@ function! popc#layer#wks#Add(key)
         endif
     endfor
     " workspace path
-    let l:path = popc#ui#Input('Input workspace root: ', popc#ui#FindRoot(), 'dir')
+    let l:path = popc#ui#Input(
+                \ 'Input workspace root: ',
+                \ empty(s:lyr.info.rootDir) ? popc#ui#FindRoot() : s:lyr.info.rootDir,
+                \ 'dir')
     if empty(l:path)
         call popc#ui#Msg('No root for workspace.')
         return
