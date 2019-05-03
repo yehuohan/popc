@@ -613,22 +613,6 @@ function! popc#layer#buf#SetTabName(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Search(key) {{{
-function! popc#layer#buf#Search(key)
-    if s:tab.isTabEmpty()
-        return
-    endif
-
-    " TODO(required or not?): search content of tab's buffer
-    return
-
-    call popc#ui#Destroy()
-    call s:lyr.setMode(s:MODE.Search)
-    "call s:lyr.setBufs(v:t_func, funcref('s:createSearchBuffer'))
-    call popc#ui#Create(s:lyr.name)
-endfunction
-" }}}
-
 " FUNCTION: popc#layer#buf#Help(key) {{{
 function! popc#layer#buf#Help(key)
     call s:lyr.setMode(s:MODE.Help)
