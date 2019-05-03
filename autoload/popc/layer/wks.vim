@@ -291,6 +291,24 @@ endfunction
 
 " FUNCTION: popc#layer#wks#SetName(key) {{{
 function! popc#layer#wks#SetName(key)
+    if empty(s:wks)
+        return
+    endif
+
+    let l:name = popc#ui#Input('Input new workspace name: ')
+    if empty(l:name)
+        call popc#ui#Msg('No new name for workspace.')
+        return
+    endif
+
+    let s:wks[popc#ui#GetIndex()].name = l:name
+    if &title
+        silent execute 'set titlestring=' . l:name
+    endif
+
+    call popc#init#SaveJson()
+    call popc#layer#wks#Pop('w')
+    call popc#ui#Msg('Rename workspace to ''' . l:name . ''' successful.')
 endfunction
 " }}}
 
