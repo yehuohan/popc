@@ -346,6 +346,12 @@ function! popc#layer#wks#Sort(key)
 endfunction
 " }}}
 
+" FUNCTION: popc#layer#wks#GetCurrentWks() {{{
+function! popc#layer#wks#GetCurrentWks()
+    return [s:lyr.info.wksName, s:lyr.info.rootDir]
+endfunction
+" }}}
+
 " FUNCTION: popc#layer#wks#Help(key) {{{
 function! popc#layer#wks#Help(key)
     call s:lyr.setMode(s:MODE.Help)
