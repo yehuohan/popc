@@ -113,3 +113,60 @@ function! popc#layer#com#SortByPath(a, b)
     endif
 endfunction
 " }}}
+
+" FUNCTION: s:getParentDir(l, s) {{{
+" @l: long dir
+" @s: short dir
+function! s:getParentDir(l, s)
+    let l:ldir = substitute(a:l, '\\', '/', 'g')
+    let l:sdir = substitute(a:s, '\\', '/', 'g')
+    let l:sdirLast = l:sdir
+    while l:ldir . '/' !~# '^' . l:sdir . '/'
+        let l:sdir = fnamemodify(l:sdir, ':h')
+        if l:sdirLast ==# l:sdir
+            let l:sdir = ''
+            break
+        endif
+        let l:sdirLast = l:sdir
+    endwhile
+    return l:sdir
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#com#GetParentDir(dirs) {{{
+function! popc#layer#com#GetParentDir(dirs)
+    if empty(a:dirs)
+        return ''
+    endif
+    if len(a:dirs) == 1
+        return a:dirs[0]
+    endif
+
+    " find the max and min length of dir
+    let l:maxSize = strlen(a:dirs[0])
+    let l:minSize = strlen(a:dirs[0])
+    let l:min = 0
+    let l:max = 0
+    for k in range(len(a:dirs))
+        let l:dsize = strlen(a:dirs[k])
+        if l:dsize < l:minSize
+            let l:min = k
+            let l:minSize = l:dsize
+        endif
+        if l:dsize > l:maxSize
+            let l:max = k
+            let l:maxSize = l:dsize
+        endif
+    endfor
+    " get parent dir
+    let l:pdir = s:getParentDir(a:dirs[l:max], a:dirs[l:min])
+    for d in a:dirs
+        if empty(l:pdir)
+            break
+        else
+            let l:pdir = s:getParentDir(d, l:pdir)
+        endif
+    endfor
+    return l:pdir
+endfunction
+" }}}

@@ -387,6 +387,18 @@ function! popc#layer#buf#CursorMovedCb(index)
 endfunction
 " }}}
 
+" FUNCTION: s:getParentDir(tidx) {{{
+function! s:getParentDir(tidx)
+    let l:dirs = []
+    for bnr in s:tab.idx[a:tidx]
+        if bufexists(str2nr(bnr))
+            call add(l:dirs, fnamemodify(getbufinfo(str2nr(bnr))[0].name, ':h'))
+        endif
+    endfor
+    return popc#layer#com#GetParentDir(l:dirs)
+endfunction
+" }}}
+
 " FUNCTION: s:pop(state) {{{
 function! s:pop(state)
     call s:lyr.setMode(s:MODE.Normal)
@@ -400,6 +412,9 @@ function! s:pop(state)
     let l:root = popc#layer#wks#GetCurrentWks()[1]
     if empty(l:root)
         let l:root = s:rootBuf
+    endif
+    if empty(l:root)
+        let l:root = s:getParentDir(tabpagenr() - 1)
     endif
     call s:lyr.setInfo('rootDir', l:root)
     call popc#ui#Create(s:lyr.name)
