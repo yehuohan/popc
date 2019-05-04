@@ -75,16 +75,16 @@ function! popc#init#Init()
     call s:readJson()
 
     if s:conf.useLayer.Buffer
-        command! -nargs=0 -range Popc :call popc#popc#Popc('Buffer')
-        command! -nargs=0 -range PopcBuffer :call popc#popc#Popc('Buffer')
-        command! -nargs=0 -range PopcBufferSwitchLeft :call popc#layer#buf#SwitchBuffer('left')
-        command! -nargs=0 -range PopcBufferSwitchRight :call popc#layer#buf#SwitchBuffer('right')
+        command! -nargs=0 Popc :call popc#popc#Popc('Buffer')
+        command! -nargs=0 PopcBuffer :call popc#popc#Popc('Buffer')
+        command! -nargs=0 PopcBufferSwitchLeft :call popc#layer#buf#SwitchBuffer('left')
+        command! -nargs=0 PopcBufferSwitchRight :call popc#layer#buf#SwitchBuffer('right')
     endif
     if s:conf.useLayer.Bookmark
-        command! -nargs=0 -range PopcBookmark :call popc#popc#Popc('Bookmark')
+        command! -nargs=0 PopcBookmark :call popc#popc#Popc('Bookmark')
     endif
     if s:conf.useLayer.Workspace
-        command! -nargs=0 -range PopcWorkspace :call popc#popc#Popc('Workspace')
+        command! -nargs=0 PopcWorkspace :call popc#popc#Popc('Workspace')
     endif
 endfunction
 " }}}
