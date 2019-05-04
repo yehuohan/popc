@@ -25,6 +25,7 @@ Table of Contents                                                     *popc-toc*
  3.1 Buffer layer                                                  |popc-buffer|
  3.2 Bookmark layer                                              |popc-bookmark|
  3.3 Workspace layer                                            |popc-workspace|
+ 3.4 Common maps for layer                                         |popc-common|
 4. Add customized layer                                         |popc-add-layer|
 5. License                                                        |popc-license|
 
@@ -226,6 +227,18 @@ In workspace layer, press '?' to see all command help:
     n            | Set workspace's name
     g            | Display sorted workspaces
     ?            | Show help of workspaces layer
+<
+
+                                                                      |popc-toc|
+
+--------------------------------------------------------------------------------
+ 3.4 Common maps for layer                                         *popc-common*
+
+There are common key-maps to switch from layer to another layer: 
+>
+    h   | Goto buffers layer
+    b   | Goto bookmarks layer
+    w   | Goto workspace layer
 <
                                                                       |popc-toc|
 
