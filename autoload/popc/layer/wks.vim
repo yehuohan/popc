@@ -126,7 +126,7 @@ function! s:dispView(tnr, view)
     " tab's window layout
     for k in range(len(a:view.windows))
         if k > 0
-            silent execute float2nr(fmod(k, 2)) ? 'vsplit' : 'split'
+            silent execute (k % 2) ? 'vsplit' : 'split'
         endif
         silent execute 'buffer ' . string(bufnr(a:view.windows[k].bname))
     endfor
