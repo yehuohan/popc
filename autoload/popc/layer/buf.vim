@@ -298,6 +298,12 @@ function! s:createTabBuffer(tidx)
     let l:cbnr = s:tab.bnr[a:tidx]
     let l:cidx = s:tab.idx[a:tidx]
 
+    " BUG: it's unknown why it's necessary to 'lcd' again in Popc buffer when
+    " close a buffer.
+    if getbufvar(bufnr('%'), '&filetype') == 'Popc'
+        execute 'lcd ' . getcwd()
+    endif
+
     " join lines
     let l:winid = win_getid(popc#ui#GetRecover().winnr, a:tidx + 1)
     for k in range(len(l:cidx))
