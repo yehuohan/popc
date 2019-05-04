@@ -101,7 +101,7 @@ Set your own statusline by provide a function to `g:Popc_statusLine`, and set
 An example with airline:
 >
     function! StatusLine()
-        let [l:left, l:center, l:right] = popc#ui#GetStatusLineSegments()
+        let [l:left, l:center, l:right] = popc#ui#GetStatusLineSegments('a')
         let b = airline#builder#new({ 'active': 1 })
         call b.add_section('airline_a', l:left)
         call b.add_section('airline_b', '')
