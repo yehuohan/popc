@@ -216,6 +216,16 @@ Use the following example maps to open buffer layer:
 >
     nnoremap <leader><leader>w :PopcWorkspace<CR>
 <
+Search file in workspace With LeaderF:
+>
+    nnoremap <leader><leader>fw :call PopcWksSearch()<CR>
+    function! PopcWksSearch()
+        let l:wksRoot = popc#layer#wks#GetCurrentWks()[1]
+        if !empty(l:wksRoot)
+            silent execute ':LeaderfFile ' . l:wksRoot
+        endif
+    endfunction
+<
 In workspace layer, press '?' to see all command help:
 >
     w            | Pop workspace layer
