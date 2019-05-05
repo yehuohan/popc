@@ -51,7 +51,6 @@ let s:mapsData = [
     \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                              'Move buffer to left/right(I/O) tab'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                                  'Set current tab name'],
     \ ['popc#layer#buf#Edit'         , ['e'],                                  'Edit a new file'],
-    \ ['popc#layer#buf#Search'       , ['/'],                                  'Search buffer content'],
     \ ['popc#layer#buf#Help'         , ['?'],                                  'Show help of buffers layer'],
     \ ]
 
