@@ -52,13 +52,15 @@ function! s:createBuffer()
         let l:wid = strwidth(item.name)
         let l:max = (l:wid > l:max) ? l:wid : l:max
     endfor
-    let l:max += 2
+    let l:max += 4
 
     " get context
     for k in range(len(s:wks))
-        let l:line =  '  ' . s:wks[k].name
-        let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' ' . s:conf.symbols.Arr . ' '
-        let l:line .= s:wks[k].path
+        let l:line =  '  '
+        let l:line .= (s:lyr.info.wksName ==# s:wks[k].name) ? s:conf.symbols.WIn : ' '
+        let l:line .= ' ' . s:wks[k].name
+        let l:line .= ' ' . repeat(' ', l:max - strwidth(l:line)) . s:conf.symbols.Arr
+        let l:line .= ' ' . s:wks[k].path
         while strwidth(l:line) < &columns
             let l:line .= ' '
         endwhile
