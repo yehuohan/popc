@@ -222,7 +222,7 @@ Search file in workspace With LeaderF:
     function! PopcWksSearch()
         let l:wksRoot = popc#layer#wks#GetCurrentWks()[1]
         if !empty(l:wksRoot)
-            silent execute ':LeaderfFile ' . l:wksRoot
+            execute ':LeaderfFile ' . l:wksRoot
         endif
     endfunction
 <
