@@ -7,6 +7,10 @@ let [s:popc, s:MODE] = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:wks = []          " workspaces from .popc.json
+let s:ws = {
+    \ 'tabnr' : 1,
+    \ 'views' : []
+    \ }
 let s:view = {
     \ 'name': '',
     \ 'files': [],
@@ -137,20 +141,20 @@ endfunction
 
 " FUNCTION: s:saveWorkspace(name, path) {{{
 function! s:saveWorkspace(name, path)
-    let l:ws = []
+    " create ws
+    let l:ws = deepcopy(s:ws)
     for tnr in range(1, tabpagenr('$'))
-        call add(l:ws, s:createView(tnr, popc#layer#buf#GetView(tnr)))
+        call add(l:ws.views, s:createView(tnr, popc#layer#buf#GetView(tnr)))
     endfor
-
+    let l:ws.tabnr = tabpagenr('%')
+    " save to file
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     let l:jsonWs = json_encode(l:ws)
     call writefile([l:jsonWs], l:file)
-
     " set widget's title
     if &title
         silent execute 'set titlestring=' . a:name
     endif
-
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
     call s:lyr.setInfo('rootDir', a:path)
@@ -160,25 +164,25 @@ endfunction
 " FUNCTION: s:loadWorkspace(name, path, ...) {{{
 " param(a:1): the base tab nr to display view of tab
 function! s:loadWorkspace(name, path, ...)
+    " read from file
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     if !filereadable(l:file)
         return 0
     endif
-
+    " get ws
     let l:base = (a:0 >= 1) ? a:1 : 0
     let l:ws = json_decode(join(readfile(l:file)))
-    for k in range(len(l:ws))
+    for k in range(len(l:ws.views))
         if tabpagenr('$') < (l:base + k + 1)
             tabedit
         endif
-        call s:dispView(l:base + k + 1, l:ws[k])
+        call s:dispView(l:base + k + 1, l:ws.views[k])
     endfor
-
+    silent execute string(l:ws.tabnr) . 'tabnext'
     " set widget's title
     if &title
         silent execute 'set titlestring=' . a:name
     endif
-
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
     call s:lyr.setInfo('rootDir', a:path)
