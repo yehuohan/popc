@@ -352,16 +352,18 @@ function! popc#layer#wks#Sort(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#wks#GetCurrentWks() {{{
-function! popc#layer#wks#GetCurrentWks()
-    return [s:lyr.info.wksName, s:lyr.info.rootDir]
-endfunction
-" }}}
-
 " FUNCTION: popc#layer#wks#Help(key) {{{
 function! popc#layer#wks#Help(key)
     call s:lyr.setMode(s:MODE.Help)
     call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
+endfunction
+" }}}
+
+" SECTION: api functions {{{1
+
+" FUNCTION: popc#layer#wks#GetCurrentWks() {{{
+function! popc#layer#wks#GetCurrentWks()
+    return [s:lyr.info.wksName, s:lyr.info.rootDir]
 endfunction
 " }}}
