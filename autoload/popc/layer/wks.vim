@@ -210,6 +210,7 @@ function! popc#layer#wks#Load(key)
     let l:path = s:wks[l:index].path
 
     call popc#ui#Destroy()
+    call popc#ui#Msg('Loading workspace ''' . l:name . ''' ......')
     if a:key ==# 'CR' || a:key ==# 'Space'
         call popc#layer#buf#Empty()
         let l:ret = s:loadWorkspace(l:name, l:path)
