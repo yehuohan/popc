@@ -146,7 +146,7 @@ function! s:saveWorkspace(name, path)
     for tnr in range(1, tabpagenr('$'))
         call add(l:ws.views, s:createView(tnr, popc#layer#buf#GetView(tnr)))
     endfor
-    let l:ws.tabnr = tabpagenr('%')
+    let l:ws.tabnr = tabpagenr()
     " save to file
     let l:file = popc#init#GetJson().dir . '/wks.' . a:name
     let l:jsonWs = json_encode(l:ws)
