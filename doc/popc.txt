@@ -164,7 +164,7 @@ Use the following example maps to open buffer layer:
     nnoremap <C-Space> :Popc<CR>
     inoremap <C-Space> <Esc>:Popc<CR>
     nnoremap <leader><leader>h :PopcBuffer<CR>
->
+<
 And use the following example maps for switching tabs and buffers, which can be
 very convenient with tabline.
 >
@@ -172,7 +172,18 @@ very convenient with tabline.
     nnoremap <M-o> gt
     nnoremap <M-u> :PopcBufferSwitchLeft<CR>
     nnoremap <M-p> :PopcBufferSwitchRight<CR>
+<
+Search text in buffers with LeaderF:
 >
+    " a:type = 'sigtab' search text in buffers of current tab
+    " a:type = 'alltab' search text in buffers of all tab
+    function! PopcBufSearch(pat, type)
+        let l:files = popc#layer#buf#GetFiles(a:type)
+        if !empty(l:files)
+            execute ':Leaderf rg -e ' a:pat . ' ' . join(l:files, ' ')
+        endif
+    endfunction
+<
 In buffer layer, press '?' to see all command help:
 >
     h,a,l                | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
@@ -216,7 +227,7 @@ Use the following example maps to open buffer layer:
 >
     nnoremap <leader><leader>w :PopcWorkspace<CR>
 <
-Search file in workspace With LeaderF:
+Search file in workspace with LeaderF:
 >
     nnoremap <leader><leader>fw :call PopcWksSearch()<CR>
     function! PopcWksSearch()
