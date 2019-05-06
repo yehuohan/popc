@@ -6,8 +6,6 @@
 let [s:popc, s:MODE] = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
-let b:text = ''             " buffer text
-let b:size = -1             " line-size of buffer text
 let s:hi = {
     \ 'text'        : 'PmenuSbar',
     \ 'selected'    : 'ToolbarLine',
