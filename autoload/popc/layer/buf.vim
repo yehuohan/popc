@@ -678,7 +678,7 @@ endfunction
 " }}}
 
 
-" SECTION: api for tabline {{{1
+" SECTION: api functions {{{1
 
 " FUNCTION: popc#layer#buf#GetBufs(tabnr) abort {{{
 function! popc#layer#buf#GetBufs(tabnr) abort
@@ -726,8 +726,6 @@ function! popc#layer#buf#GetTabs() abort
 endfunction
 " }}}
 
-" SECTION: api for workspace {{{1
-
 " FUNCTION: popc#layer#buf#Empty() {{{
 function! popc#layer#buf#Empty()
     call popc#ui#Destroy()
@@ -762,5 +760,25 @@ function! popc#layer#buf#GetView(tabnr)
         return []
     endif
     return s:tab.idx[l:tidx]
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#GetFiles(type) {{{
+function! popc#layer#buf#GetFiles(type)
+    " get files
+    let l:files = []
+    if a:type == 'sigtab'
+        let l:tidx = tabpagenr() - 1
+        for bnr in s:tab.idx[l:tidx]
+            call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+        endfor
+    elseif a:type == 'alltab'
+        for k in range(s:tab.num())
+            for bnr in s:tab.idx[k]
+                call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+            endfor
+        endfor
+    endif
+    return l:files
 endfunction
 " }}}
