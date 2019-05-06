@@ -23,7 +23,6 @@ function! popc#layer#bms#Init()
     let s:lyr = s:popc.addLayer('Bookmark')
     call s:lyr.setInfo('sort', 'path')
     call s:lyr.setInfo('centerText', s:conf.symbols.Bm)
-    let s:bms = popc#init#GetJson().json.bookmarks
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1])
@@ -61,6 +60,7 @@ endfunction
 
 " FUNCTION: popc#layer#bms#Pop(key) {{{
 function! popc#layer#bms#Pop(key)
+    let s:bms = popc#init#GetJson('json').bookmarks
     call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)

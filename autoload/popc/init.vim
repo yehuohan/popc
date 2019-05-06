@@ -72,7 +72,7 @@ let s:json = {
 function! popc#init#Init()
     call s:initConfig()
     call s:checkConfig()
-    call s:readJson()
+    call s:initJson()
 
     if s:conf.useLayer.Buffer
         command! -nargs=0 Popc :call popc#popc#Popc('Buffer')
@@ -95,14 +95,12 @@ function! popc#init#GetConfig()
 endfunction
 " }}}
 
-" FUNCTION: s:readJson() {{{
-function! s:readJson()
+" FUNCTION: s:initJson() {{{
+function! s:initJson()
     let s:json.file = s:conf.jsonPath . '/.popc.json'
     let s:json.dir = s:conf.jsonPath . '/.popc'
 
-    if filereadable(s:json.file)
-        let s:json.json = json_decode(join(readfile(s:json.file)))
-    else
+    if !filereadable(s:json.file)
         let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
     endif
@@ -119,9 +117,14 @@ function! popc#init#SaveJson()
 endfunction
 " }}}
 
-" FUNCTION: popc#init#GetJson() {{{
-function! popc#init#GetJson()
-    return s:json
+" FUNCTION: popc#init#GetJson(type) {{{
+function! popc#init#GetJson(type)
+    if a:type == 'json'
+        let s:json.json = json_decode(join(readfile(s:json.file)))
+        return s:json.json
+    elseif a:type == 'dir'
+        return s:json.dir
+    endif
 endfunction
 " }}}
 

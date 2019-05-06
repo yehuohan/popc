@@ -38,7 +38,6 @@ function! popc#layer#wks#Init()
     call s:lyr.setInfo('wksName', '')
     call s:lyr.setInfo('rootDir', '')
     call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
-    let s:wks = popc#init#GetJson().json.workspaces
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1])
@@ -78,6 +77,7 @@ endfunction
 
 " FUNCTION: popc#layer#wks#Pop(key) {{{
 function! popc#layer#wks#Pop(key)
+    let s:wks = popc#init#GetJson('json').workspaces
     call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
@@ -148,7 +148,7 @@ function! s:saveWorkspace(name, path)
     endfor
     let l:ws.tabnr = tabpagenr()
     " save to file
-    let l:file = popc#init#GetJson().dir . '/wks.' . a:name
+    let l:file = popc#init#GetJson('dir') . '/wks.' . a:name
     let l:jsonWs = json_encode(l:ws)
     call writefile([l:jsonWs], l:file)
     " set widget's title
@@ -165,7 +165,7 @@ endfunction
 " param(a:1): the base tab nr to display view of tab
 function! s:loadWorkspace(name, path, ...)
     " read from file
-    let l:file = popc#init#GetJson().dir . '/wks.' . a:name
+    let l:file = popc#init#GetJson('dir') . '/wks.' . a:name
     if !filereadable(l:file)
         return 0
     endif
@@ -299,7 +299,7 @@ function! popc#layer#wks#Delete(key)
         return
     endif
 
-    let l:file = popc#init#GetJson().dir . '/wks.' . l:name
+    let l:file = popc#init#GetJson('dir') . '/wks.' . l:name
     if filereadable(l:file)
         call delete(l:file)
     endif
