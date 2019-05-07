@@ -127,6 +127,7 @@ function! s:dispView(tnr, view)
     for fname in a:view.files
         if filereadable(fname)
             silent execute 'edit ' . fname
+            silent normal! '"
         endif
     endfor
     " tab's window layout
