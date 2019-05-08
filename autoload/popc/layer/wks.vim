@@ -282,6 +282,8 @@ function! popc#layer#wks#Save(key)
     elseif l:name !=# s:lyr.info.wksName
         call popc#ui#Msg('This is NOT current workspace: ' . s:lyr.info.wksName . ' [' . s:lyr.info.rootDir . ']')
         return
+    elseif !popc#ui#Confirm('Save to workspace ''' . l:name . ''' ?')
+        return
     endif
 
     call s:saveWorkspace(l:name, l:path)
