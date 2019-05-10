@@ -8,10 +8,10 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:hi = {
     \ 'text'        : 'PmenuSbar',
-    \ 'selected'    : 'ToolbarLine',
+    \ 'selected'    : 'PmenuSel',
     \ 'label'       : 'IncSearch',
-    \ 'modifiedTxt' : 'WildMenu',
-    \ 'modifiedSel' : 'PmenuSel',
+    \ 'modifiedTxt' : '',
+    \ 'modifiedSel' : 'DiffChange',
     \ 'blankTxt'    : 'Normal',
     \ }
 let s:recover = {
@@ -24,8 +24,8 @@ let s:recover = {
 
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
-    highlight default link PopcText     PmenuSbar
-    highlight default link PopcSel      ToolbarLine
+    highlight default link PopcText PmenuSbar
+    highlight default link PopcSel  PmenuSel
 
     " set highlight
     if s:conf.useTabline || s:conf.useStatusline
@@ -285,6 +285,7 @@ function! s:createHiSep(hifg, hibg, hinew)
     let c[2] = empty(c[2]) ? 'NONE' : c[2]
     let c[3] = empty(c[3]) ? 'NONE' : c[3]
     execute printf('highlight %s guifg=%s guibg=%s ctermfg=%s ctermbg=%s', a:hinew, c[0], c[1], c[2], c[3])
+    return a:hinew
 endfunction
 " }}}
 
@@ -293,9 +294,9 @@ function! popc#ui#InitHi(hi)
     let s:hi.text        = a:hi.text
     let s:hi.selected    = a:hi.selected
     let s:hi.label       = has_key(a:hi, 'label')       ? a:hi.label       : a:hi.selected
-    let s:hi.modifiedTxt = has_key(a:hi, 'modifiedTxt') ? a:hi.modifiedTxt : a:hi.text
-    let s:hi.modifiedSel = has_key(a:hi, 'modifiedSel') ? a:hi.modifiedSel : a:hi.selected
     let s:hi.blankTxt    = has_key(a:hi, 'blankTxt')    ? a:hi.blankTxt    : a:hi.text
+    let s:hi.modifiedSel = has_key(a:hi, 'modifiedSel') ? a:hi.modifiedSel : a:hi.selected
+    let s:hi.modifiedTxt = s:createHiSep(s:hi.modifiedSel, s:hi.text, 'PopcModifiedTxt')
 
     " menu
     execute printf('highlight default link PopcText     %s', s:hi.text)
@@ -528,7 +529,7 @@ endfunction
 function! popc#ui#Input(promot, ...)
     let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:promot, '\M\n', '\n   ', 'g')
     redraw
-    return a:0 == 0 ? input(l:msg) : 
+    return a:0 == 0 ? input(l:msg) :
          \ a:0 == 1 ? input(l:msg, a:1) :
          \            input(l:msg, a:1, a:2)
 endfunction

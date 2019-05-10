@@ -137,10 +137,9 @@ Customize highlight via `popc#ui#InitHi()`:
 >
     let g:hi = {
         \ 'text'        : 'PmenuSbar',
-        \ 'selected'    : 'ToolbarLine',
+        \ 'selected'    : 'PmenuSel',
         \ 'label'       : 'IncSearch',
-        \ 'modifiedTxt' : 'WildMenu',
-        \ 'modifiedSel' : 'PmenuSel',
+        \ 'modifiedSel' : 'DiffChange',
         \ 'blankTxt'    : 'Normal',
         \ }
     call popc#ui#InitHi(g:hi)
