@@ -188,7 +188,6 @@ function! popc#layer#buf#Init()
     let s:lyr = s:popc.addLayer('Buffer')
     call s:lyr.setInfo('state', s:STATE.Sigtab)
     call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
-    call s:lyr.setInfo('cursorMovedCb', 'popc#layer#buf#CursorMovedCb')
 
     augroup PopcLayerBufInit
         autocmd!
@@ -196,6 +195,7 @@ function! popc#layer#buf#Init()
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
         autocmd BufNew    * let s:rootBuf=popc#ui#FindRoot()
+        autocmd User PopcUiIndexChanged call s:indexChanged(s:lyr.info.lastIndex)
     augroup END
 
     for md in s:mapsData
@@ -383,8 +383,8 @@ function! s:getIndexs(index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#CursorMovedCb(index) {{{
-function! popc#layer#buf#CursorMovedCb(index)
+" FUNCTION: s:indexChanged(index) {{{
+function! s:indexChanged(index)
     if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
         let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
         let s:tab.pos[l:tidx] = l:bidx

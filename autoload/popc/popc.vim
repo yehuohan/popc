@@ -13,7 +13,6 @@ let s:layer = {
         \ 'rootDir'       : '',
         \ 'lastIndex'     : 0,
         \ 'centerText'    : '',
-        \ 'cursorMovedCb' : '',
         \ }
     \ }
 let s:MODE = {

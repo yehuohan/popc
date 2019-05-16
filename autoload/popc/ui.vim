@@ -139,7 +139,6 @@ function! s:setBuffer()
     augroup PopcUiSetBuffer
         autocmd!
         autocmd BufLeave <buffer> call popc#ui#Destroy()
-        autocmd CursorMoved <buffer> call s:cursorMovedCallback()
     augroup END
 
     " set up syntax highlighting
@@ -181,22 +180,10 @@ function! s:dispBuffer()
 endfunction
 " }}}
 
-" FUNCTION: s:cursorMovedCallback() {{{
-function! s:cursorMovedCallback()
-    if s:lyr.mode == s:MODE.Normal
-        if !empty(s:lyr.info.cursorMovedCb)
-            call function(s:lyr.info.cursorMovedCb)(popc#ui#GetIndex())
-        endif
-    endif
-endfunction
-" }}}
-
 " FUNCTION: popc#ui#MoveBar(dir, ...) {{{
 function! popc#ui#MoveBar(dir, ...)
-    " exchange the first 2 char ('> ') with spaces
     setlocal modifiable
-    call setline(line('.'), ' ' . strpart(getline(line('.')), 1))
-
+    let l:oldLine = line('.')
     if b:size < 1
         return
     endif
@@ -220,7 +207,6 @@ function! popc#ui#MoveBar(dir, ...)
             let l:pos = line('$')
         endif
     elseif a:dir ==# 'num'
-        " as index
         let l:pos = (a:0 >= 1) ? a:1 : 0
     endif
 
@@ -232,13 +218,18 @@ function! popc#ui#MoveBar(dir, ...)
         call cursor(l:pos, 1)
     endif
 
-    " mark current line with '>'
-    call setline(line('.'), '>' . strpart(getline(line('.')), 1))
+    " mark index line with '>'
+    let l:newLine = line('.')
+    if l:oldLine != l:newLine
+        call setline(l:oldLine, ' ' . strpart(getline(l:oldLine), 1))
+    endif
+    call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
     setlocal nomodifiable
 
     " save layer index
     if s:lyr.mode == s:MODE.Normal
         call s:lyr.setInfo('lastIndex', popc#ui#GetIndex())
+        doautocmd User PopcUiIndexChanged
     endif
 endfunction
 " }}}
