@@ -85,24 +85,18 @@ function! s:layer.getBufs() dict
     " creat buffer text
     if empty(l:txt)
         let l:txt = '  Nothing to pop.'
-        while strwidth(l:txt) < &columns
-            let l:txt .= ' '
-        endwhile
+        let l:txt .= repeat(' ', &columns - strwidth(l:txt))
         let l:cnt = 1
     endif
     if self.mode == s:MODE.Help
         " append help information
         let l:text = ''
         let l:line = '  --- ' . g:popc_version . ' (In layer ' . self.name . ') ---'
-        while strwidth(l:line) < &columns
-            let l:line .= '-'
-        endwhile
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
         let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns) . "\n"
         let l:line = '  --- Copyright (c) yehuohan<yehuohan@gmail.com, yehuohan@qq.com>'
-        while strwidth(l:line) < &columns
-            let l:line .= '-'
-        endwhile
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line
 
         let l:txt = l:text

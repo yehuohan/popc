@@ -66,10 +66,7 @@ function! popc#layer#com#createHelpBuffer(mapsData)
         let l:line =  '  ' . join(md[1], ',')
         let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' | '
         let l:line .= md[2]
-        while strwidth(l:line) < &columns
-            let l:line .= ' '
-        endwhile
-
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
 

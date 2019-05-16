@@ -47,10 +47,7 @@ function! s:createBuffer()
         let l:line =  '  ' . s:bms[k].name
         let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' ' . s:conf.symbols.Arr . ' '
         let l:line .= s:bms[k].path
-        while strwidth(l:line) < &columns
-            let l:line .= ' '
-        endwhile
-
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
 

@@ -44,9 +44,7 @@ function! s:createBuffer()
     for k in range(len(s:exp))
         let l:line = '  ' . string(k) . ' '
         let l:line .= s:exp[k]
-        while strwidth(l:line) < &columns
-            let l:line .= ' '
-        endwhile
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
 

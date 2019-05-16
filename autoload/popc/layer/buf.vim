@@ -322,10 +322,7 @@ function! s:createTabBuffer(tidx)
         let l:line .= empty(b.windows) ? ' ' : ((join(b.windows, '|') =~ l:winid) ? s:conf.symbols.WIn : s:conf.symbols.WOut)
         let l:line .= b.changed ? '+' : ' '
         let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
-
-        while strwidth(l:line) < &columns
-            let l:line .= ' '
-        endwhile
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
 
@@ -344,10 +341,7 @@ function! s:createTabList()
         let l:line .= s:tab.isTabModified(k) ? '+' : ' '
         let l:line .= ' ' . '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
                         \ . popc#ui#Num2RankStr(s:tab.num(k))
-
-        while strwidth(l:line) < &columns
-            let l:line .= ' '
-        endwhile
+        let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
 
