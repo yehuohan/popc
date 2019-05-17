@@ -479,28 +479,6 @@ endfunction
 
 " SETCION: utils {{{1
 
-" FUNCTION: popc#ui#FindRoot() {{{
-function! popc#ui#FindRoot()
-    if empty(s:conf.useRoots)
-        return ''
-    endif
-
-    let l:dir = fnamemodify('.', ':p:h')
-    let l:dirLast = ''
-    while l:dir !=# l:dirLast
-        let l:dirLast = l:dir
-        for m in s:conf.useRoots
-            let l:root = l:dir . '/' . m
-            if filereadable(l:root) || isdirectory(l:root)
-                return fnameescape(l:dir)
-            endif
-        endfor
-        let l:dir = fnamemodify(l:dir, ':p:h:h')
-    endwhile
-    return ''
-endfunction
-" }}}
-
 " FUNCTION: popc#ui#Num2RankStr(num) {{{
 function! popc#ui#Num2RankStr(num)
     if s:conf.useUnicode

@@ -111,6 +111,28 @@ function! popc#layer#com#SortByPath(a, b)
 endfunction
 " }}}
 
+" FUNCTION: popc#layer#com#FindRoot() {{{
+function! popc#layer#com#FindRoot()
+    if empty(s:conf.useRoots)
+        return ''
+    endif
+
+    let l:dir = fnamemodify('.', ':p:h')
+    let l:dirLast = ''
+    while l:dir !=# l:dirLast
+        let l:dirLast = l:dir
+        for m in s:conf.useRoots
+            let l:root = l:dir . '/' . m
+            if filereadable(l:root) || isdirectory(l:root)
+                return fnameescape(l:dir)
+            endif
+        endfor
+        let l:dir = fnamemodify(l:dir, ':p:h:h')
+    endwhile
+    return ''
+endfunction
+" }}}
+
 " FUNCTION: s:getParentDir(l, s) {{{
 " @l: long dir
 " @s: short dir

@@ -194,7 +194,7 @@ function! popc#layer#buf#Init()
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
-        autocmd BufNew    * let s:rootBuf=popc#ui#FindRoot()
+        autocmd BufNew    * let s:rootBuf=popc#layer#com#FindRoot()
         autocmd User PopcUiIndexChanged call s:indexChanged(s:lyr.info.lastIndex)
     augroup END
 
@@ -386,8 +386,8 @@ function! s:indexChanged(index)
 endfunction
 " }}}
 
-" FUNCTION: s:getParentDir(tidx) {{{
-function! s:getParentDir(tidx)
+" FUNCTION: s:getTabParentDir(tidx) {{{
+function! s:getTabParentDir(tidx)
     let l:dirs = []
     for bnr in s:tab.idx[a:tidx]
         if bufexists(str2nr(bnr))
@@ -413,7 +413,7 @@ function! s:pop(state)
         let l:root = s:rootBuf
     endif
     if empty(l:root)
-        let l:root = s:getParentDir(tabpagenr() - 1)
+        let l:root = s:getTabParentDir(tabpagenr() - 1)
     endif
     call s:lyr.setInfo('rootDir', l:root)
     call popc#ui#Create(s:lyr.name)
