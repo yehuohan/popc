@@ -1,7 +1,7 @@
 
 " Popc: Popc manager for vim.
 " Maintainer: yehuohan, <yehuohan@qq.com>, <yehuohan@gmail.com>
-" Version: 3.0.32
+" Version: 3.0.37
 "
 " MIT License
 "
@@ -54,5 +54,5 @@ if !empty(s:errors)
 endif
 
 call popc#popc#Init()
-let g:popc_version = 'Popc 3.0.32'
+let g:popc_version = 'Popc 3.0.37'
 let g:popc_loaded = 1
