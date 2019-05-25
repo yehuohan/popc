@@ -124,6 +124,7 @@ function! s:setBuffer()
     setlocal foldcolumn=1
     setlocal nospell
     setlocal nolist
+    setlocal scrolloff=0
     setlocal colorcolumn=
     setlocal filetype=Popc
     if &timeout
