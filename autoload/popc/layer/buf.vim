@@ -293,9 +293,6 @@ endfunction
 " FUNCTION: s:createTabBuffer(tidx) {{{
 function! s:createTabBuffer(tidx)
     call s:tab.checkBuffer(a:tidx)
-    let l:text = ''
-    let l:cbnr = s:tab.bnr[a:tidx]
-    let l:cidx = s:tab.idx[a:tidx]
 
     " BUG: it's unknown why it's necessary to 'lcd' again in Popc buffer when
     " close a buffer.
@@ -304,12 +301,16 @@ function! s:createTabBuffer(tidx)
     endif
 
     " join lines
-    let l:winid = win_getid(popc#ui#GetRecover().winnr, a:tidx + 1)
-    for k in range(len(l:cidx))
-        let l:bnr = l:cidx[k]
+    let l:text = ''
+    let l:winid = win_getid(
+                \ ((a:tidx == tabpagenr() - 1) ? popc#ui#GetRecover().winnr : tabpagewinnr(a:tidx + 1)),
+                \ a:tidx + 1)
+    for k in range(s:tab.num(a:tidx))
+        let l:bnr = s:tab.idx[a:tidx][k]
         let b = getbufinfo(str2nr(l:bnr))[0]
 
         let l:line  = '  '
+        " symbol for tab
         if s:lyr.info.state ==# s:STATE.Alltab
             if a:tidx == tabpagenr() - 1
                 let l:line .= (k > 0) ? '|' : s:conf.symbols.CTab
@@ -319,7 +320,24 @@ function! s:createTabBuffer(tidx)
         else
             let l:line .= ' '
         endif
-        let l:line .= empty(b.windows) ? ' ' : ((join(b.windows, '|') =~ l:winid) ? s:conf.symbols.WIn : s:conf.symbols.WOut)
+        " symbol for buffer
+        if empty(b.windows)
+            let l:line .= ' '
+        else
+            let l:sym = ' '
+            for l:id in b.windows
+                if win_id2tabwin(l:id)[0] == a:tidx + 1
+                    " Note that a buffer may appear in more than one window.
+                    let l:sym = s:conf.symbols.WOut
+                    if l:id == l:winid
+                        let l:sym = s:conf.symbols.WIn
+                        break
+                    endif
+                endif
+            endfor
+            let l:line .= l:sym
+        endif
+        " symbol for changed
         let l:line .= b.changed ? '+' : ' '
         let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
         let l:line .= repeat(' ', &columns - strwidth(l:line))
