@@ -4,7 +4,7 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'jsonPath'       : expand($HOME),
+    \ 'jsonPath'       : expand($VIM),
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'useTabline'     : 1,
