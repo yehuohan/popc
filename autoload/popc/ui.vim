@@ -87,7 +87,9 @@ function! popc#ui#Destroy()
     bwipeout
     " before the line below, all command is executed in Popc-buffer
     " after the line below, all command is executed in recover-buffer
-    silent execute 'noautocmd ' . s:recover.winnr . 'wincmd w'
+    if s:recover.winnr <= winnr('$')
+        silent execute 'noautocmd ' . s:recover.winnr . 'wincmd w'
+    endif
 
     let s:flag = 0
 endfunction
