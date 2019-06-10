@@ -194,6 +194,8 @@ function! popc#layer#wks#Close(key)
         return
     endif
     call popc#layer#buf#Empty()
+    call s:lyr.setInfo('wksName', '')
+    call s:lyr.setInfo('rootDir', '')
 endfunction
 " }}}
 
