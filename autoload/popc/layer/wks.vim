@@ -16,6 +16,26 @@ let s:view = {
     \ 'files': [],
     \ 'windows': [],
     \ }
+" {{{ s:ws and s:view format
+"{
+"   'tabnr' : 1,                        " current tabnr of workspace
+"   'views' : [                         " all tabs
+"       {
+"           'name': '',                 " tab's name start with PopcLayerBuf_TabName
+"           'files': [],                " tab's all files with absolute path
+"           'windows': [                " all tab's window
+"               {
+"                   'bname': '',        " bufname of the buffer in the window
+"                   'wid': '',
+"                   'hei': '',
+"               },
+"               ...
+"           ]
+"       },
+"       ...
+"   ]
+"}
+" }}}
 let s:mapsData = [
     \ ['popc#layer#wks#Pop'    , ['w'],                  'Pop workspace layer'],
     \ ['popc#layer#wks#Load'   , ['CR','Space','t','T'], 'Load workspace (CR-Open, Space-Stay, tT-Tab)'],
@@ -170,13 +190,15 @@ function! s:loadWorkspace(name, path, ...)
     " get ws
     let l:base = (a:0 >= 1) ? a:1 : 0
     let l:ws = json_decode(join(readfile(l:file)))
+    " load ws
+    silent execute string(l:base) . 'tabnext'
     for k in range(len(l:ws.views))
         if tabpagenr('$') < (l:base + k + 1)
             tabedit
         endif
         call s:dispView(l:base + k + 1, l:ws.views[k])
     endfor
-    silent execute string(l:ws.tabnr) . 'tabnext'
+    silent execute string(l:base + l:ws.tabnr) . 'tabnext'
     " set widget's title
     if &title
         silent execute 'set titlestring=' . a:name
