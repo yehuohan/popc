@@ -188,10 +188,13 @@ function! s:loadWorkspace(name, path, ...)
         return 0
     endif
     " get ws
-    let l:base = (a:0 >= 1) ? a:1 : 0
     let l:ws = json_decode(join(readfile(l:file)))
     " load ws
-    silent execute string(l:base) . 'tabnext'
+    let l:base = 0
+    if a:0 >= 1
+        let l:base = a:1
+        silent execute string(l:base) . 'tabnext'
+    endif
     for k in range(len(l:ws.views))
         if tabpagenr('$') < (l:base + k + 1)
             tabedit
