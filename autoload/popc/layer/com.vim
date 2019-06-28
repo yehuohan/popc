@@ -117,7 +117,7 @@ function! popc#layer#com#FindRoot()
         return ''
     endif
 
-    let l:dir = fnamemodify('.', ':p:h')
+    let l:dir = fnamemodify(expand('%'), ':p:h')
     let l:dirLast = ''
     while l:dir !=# l:dirLast
         let l:dirLast = l:dir
