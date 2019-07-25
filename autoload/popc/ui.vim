@@ -483,6 +483,7 @@ endfunction
 " SETCION: utils {{{1
 
 " FUNCTION: popc#ui#Num2RankStr(num) {{{
+" @param num: the num in integer format
 function! popc#ui#Num2RankStr(num)
     if s:conf.useUnicode
         let l:str = ''
@@ -498,6 +499,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#ui#Input(promot, ...) {{{
+" global input funtion interface for ui of popc.
 function! popc#ui#Input(promot, ...)
     let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:promot, '\M\n', '\n   ', 'g')
     redraw
@@ -508,6 +510,8 @@ endfunction
 " }}}
 
 " FUNCTION: popc#ui#Confirm(prompt) {{{
+" global confirm funtion interface for ui of popc.
+" input 'y' for 'Yes', and anythin else for 'No'.
 function! popc#ui#Confirm(prompt)
     let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
     redraw
@@ -516,6 +520,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#ui#Msg(msg) {{{
+" global message function interface for ui of popc.
 function! popc#ui#Msg(msg)
     redraw
     echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
