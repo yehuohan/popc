@@ -391,6 +391,8 @@ endfunction
 " SECTION: api functions {{{1
 
 " FUNCTION: popc#layer#wks#GetCurrentWks() {{{
+" return current workspace name and root path.
+" be attention that workspace name and root path can be empty.
 function! popc#layer#wks#GetCurrentWks()
     return [s:lyr.info.wksName, s:lyr.info.rootDir]
 endfunction

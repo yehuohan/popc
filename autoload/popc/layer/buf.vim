@@ -694,6 +694,8 @@ endfunction
 " SECTION: api functions {{{1
 
 " FUNCTION: popc#layer#buf#GetBufs(tabnr) abort {{{
+" @param tabnr: get all buffers information of tabnr.
+" this function is used for tabline setting.
 function! popc#layer#buf#GetBufs(tabnr) abort
     let l:tidx = a:tabnr - 1
     let l:list = []
@@ -723,6 +725,8 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#GetTabs() abort {{{
+" return all tabs information.
+" this function is used for tabline setting.
 function! popc#layer#buf#GetTabs() abort
     let l:list = []
     for k in range(s:tab.num())
@@ -740,6 +744,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#Empty() {{{
+" close all buffers and tabs. using this funtion carefully.
 function! popc#layer#buf#Empty()
     call popc#ui#Destroy()
 
@@ -767,6 +772,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#GetView(tabnr) {{{
+" @param tabnr: get bufnr list of tabnr, used in workspace layer.
 function! popc#layer#buf#GetView(tabnr)
     let l:tidx = a:tabnr - 1
     if s:tab.isTabEmpty(l:tidx)
@@ -777,6 +783,8 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#GetFiles(type) {{{
+" @param type: 'sigtab' for files of current tab, 'alltab' for all files
+"              of all tabs.
 function! popc#layer#buf#GetFiles(type)
     " get files
     let l:files = []
