@@ -152,7 +152,10 @@ function! s:dispView(tnr, view)
         if k > 0
             silent execute (k % 2) ? 'vsplit' : 'split'
         endif
-        silent execute 'buffer ' . string(bufnr(a:view.windows[k].bname))
+        let l:bnr = bufnr(a:view.windows[k].bname)
+        if l:bnr != -1
+            silent execute 'buffer ' . string(l:bnr)
+        endif
     endfor
 endfunction
 " }}}
