@@ -175,7 +175,9 @@ function! s:dispBuffer()
 
     " put buffer
     setlocal modifiable
-    call setline(1, split(b:text, "\n"))
+    silent normal! ggdG
+    silent put! = b:text
+    silent normal! GkJgg
     setlocal nomodifiable
     call popc#ui#MoveBar('num', s:lyr.info.lastIndex + 1)
 endfunction
