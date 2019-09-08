@@ -232,7 +232,9 @@ function! popc#ui#MoveBar(dir, ...)
     " save layer index
     if s:lyr.mode == s:MODE.Normal
         call s:lyr.setInfo('lastIndex', popc#ui#GetIndex())
-        doautocmd User PopcUiIndexChanged
+        if s:lyr.info.userCmd
+            doautocmd User PopcUiIndexChanged
+        endif
     endif
 endfunction
 " }}}

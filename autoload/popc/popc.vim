@@ -10,9 +10,10 @@ let s:layer = {
     \ 'maps' : {},
     \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
     \ 'info' : {
-        \ 'rootDir'       : '',
-        \ 'lastIndex'     : 0,
-        \ 'centerText'    : '',
+        \ 'rootDir'    : '',
+        \ 'lastIndex'  : 0,
+        \ 'centerText' : '',
+        \ 'userCmd'    : 0,
         \ }
     \ }
 let s:MODE = {

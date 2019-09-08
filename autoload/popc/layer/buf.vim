@@ -188,6 +188,7 @@ function! popc#layer#buf#Init()
     let s:lyr = s:popc.addLayer('Buffer')
     call s:lyr.setInfo('state', s:STATE.Sigtab)
     call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
+    call s:lyr.setInfo('userCmd', 1)
 
     augroup PopcLayerBufInit
         autocmd!
