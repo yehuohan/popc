@@ -175,7 +175,7 @@ function! s:dispBuffer()
 
     " put buffer
     setlocal modifiable
-    silent normal! ggdG
+    silent normal! gg"_dG
     silent put! = b:text
     silent normal! GkJgg
     setlocal nomodifiable
