@@ -72,6 +72,8 @@ basic configs:
     subSeparator  = {'left' : '', 'right' : ''}
     statusLine    = 'popc#ui#StatusLine()'
     tabLine       = 'popc#ui#TabLine()'
+    tabLineLeft   = 'buffer'
+    tabLineRight  = 'tab'
     maxHeight     = 0
     useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
     useRoots      = ['.root', '.git', '.svn']

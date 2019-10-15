@@ -420,11 +420,17 @@ function! popc#ui#TabLine() abort
     endif
 
     " buffers {{{
-    let l:list = popc#layer#buf#GetBufs(tabpagenr())
+    if s:conf.tabLineLeft ==# 'tab'
+        let l:list = popc#layer#buf#GetTabs()
+        let l:ch = 'T'
+    else
+        let l:list = popc#layer#buf#GetBufs(tabpagenr())
+        let l:ch = 'B'
+    endif
     let l:len = len(l:list)
     " lable -> separator -> title
     let l:id = (l:len > 0) ? string(l:list[0].selected*2 + l:list[0].modified) : '4'
-    let l:bufs = '%#PopcTlLabel#B%#PopcTlSepL' . l:id . '#' . l:spl
+    let l:bufs = '%#PopcTlLabel#' . l:ch . '%#PopcTlSepL' . l:id . '#' . l:spl
     for k in range(l:len)
         let i = l:list[k]
         " title
@@ -449,7 +455,13 @@ function! popc#ui#TabLine() abort
     "}}}
 
     " tabs {{{
-    let l:list = popc#layer#buf#GetTabs()
+    if s:conf.tabLineRight ==# 'buffer'
+        let l:list = popc#layer#buf#GetBufs(tabpagenr())
+        let l:ch = 'B'
+    else
+        let l:list = popc#layer#buf#GetTabs()
+        let l:ch = 'T'
+    endif
     let l:len = len(l:list)
     let l:tabs = ''
     for k in range(l:len)
@@ -474,7 +486,7 @@ function! popc#ui#TabLine() abort
     " title -> separator -> lable
     let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
     let l:tabs .= '%#PopcTlSepL' . l:id . '#' . l:spr
-    let l:tabs .= '%#PopcTlLabel#T'
+    let l:tabs .= '%#PopcTlLabel#' . l:ch
     "}}}
 
     return l:bufs . l:tabs

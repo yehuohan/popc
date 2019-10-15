@@ -14,6 +14,8 @@ let s:conf = {
     \ 'subSeparator'   : {'left' : '', 'right': ''},
     \ 'statusLine'     : 'popc#ui#StatusLine()',
     \ 'tabLine'        : 'popc#ui#TabLine()',
+    \ 'tabLineLeft'    : 'buffer',
+    \ 'tabLineRight'   : 'tab',
     \ 'maxHeight'      : 0,
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
     \ 'useRoots'       : ['.root', '.git', '.svn'],
@@ -132,8 +134,8 @@ endfunction
 function! s:initConfig()
     " set confiuration's value and list
     for k in ['useUnicode', 'useTabline', 'useStatusline', 'usePowerFont',
-            \ 'statusLine', 'tabLine', 'maxHeight', 'jsonPath',
-            \ 'useRoots']
+            \ 'statusLine', 'tabLine', 'tabLineLeft', 'tabLineRight',
+            \ 'maxHeight', 'jsonPath', 'useRoots']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
         endif
