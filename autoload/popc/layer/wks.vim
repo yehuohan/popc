@@ -352,11 +352,22 @@ function! popc#layer#wks#SetName(key)
         call popc#ui#Msg('No new name for workspace.')
         return
     endif
+    for item in s:wks
+        if l:name ==# item.name
+            call popc#ui#Msg('Workspace ''' . l:name . ''' is already existed.')
+            return
+        endif
+    endfor
+
+    " rename wks.<name> file
+    let l:wksdir = popc#init#GetJson('dir') . '/wks.'
+    call rename(l:wksdir . s:wks[popc#ui#GetIndex()].name, l:wksdir . l:name)
 
     let s:wks[popc#ui#GetIndex()].name = l:name
     if &title
         silent execute 'set titlestring=' . l:name
     endif
+    call s:lyr.setInfo('wksName', l:name)
 
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w')
