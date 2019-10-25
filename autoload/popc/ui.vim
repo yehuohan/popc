@@ -419,77 +419,101 @@ function! popc#ui#TabLine() abort
         let l:sspr = '|'
     endif
 
-    " buffers {{{
-    if s:conf.tabLineLeft ==# 'tab'
-        let l:list = popc#layer#buf#GetTabs()
-        let l:ch = 'T'
+    " left {{{
+    if empty(s:conf.tabLineLayout.left)
+        let l:lhs = '%#PopcTlBlank#%='
     else
-        let l:list = popc#layer#buf#GetBufs(tabpagenr())
-        let l:ch = 'B'
-    endif
-    let l:len = len(l:list)
-    " lable -> separator -> title
-    let l:id = (l:len > 0) ? string(l:list[0].selected*2 + l:list[0].modified) : '4'
-    let l:bufs = '%#PopcTlLabel#' . l:ch . '%#PopcTlSepL' . l:id . '#' . l:spl
-    for k in range(l:len)
-        let i = l:list[k]
-        " title
-        let l:id = string(i.selected*2 + i.modified)
-        let l:hi = '%#PopcTl' . l:id . '#'
-        if (k+1 < l:len)
-            " title -> separator -> title
-            let ii = l:list[k+1]
-            let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
-            let l:hisep = '%#PopcTlSep' . l:id . '#'
-            let l:sep = (i.selected || ii.selected) ? l:spl : l:sspl
+        if s:conf.tabLineLayout.left ==# 'tab'
+            let l:list = popc#layer#buf#GetTabs()
+            let l:ch = 'T'
         else
-            " title -> separator -> blank
+            let l:list = popc#layer#buf#GetBufs(tabpagenr())
+            let l:ch = 'B'
+        endif
+        let l:len = len(l:list)
+        " lable -> separator -> title
+        let l:id = (l:len > 0) ? string(l:list[0].selected*2 + l:list[0].modified) : '4'
+        let l:lhs = '%#PopcTlLabel#' . l:ch . '%#PopcTlSepL' . l:id . '#' . l:spl
+        for k in range(l:len)
+            let i = l:list[k]
+            " title
             let l:id = string(i.selected*2 + i.modified)
-            let l:hisep = '%#PopcTlSepB' . l:id . '#'
-            let l:sep = l:spl
-        endif
-        let l:bufs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
-        let l:bufs .= l:hisep . l:sep
-    endfor
-    let l:bufs .= '%#PopcTlBlank#%='
-    "}}}
-
-    " tabs {{{
-    if s:conf.tabLineRight ==# 'buffer'
-        let l:list = popc#layer#buf#GetBufs(tabpagenr())
-        let l:ch = 'B'
-    else
-        let l:list = popc#layer#buf#GetTabs()
-        let l:ch = 'T'
+            let l:hi = '%#PopcTl' . l:id . '#'
+            if (k+1 < l:len)
+                " title -> separator -> title
+                let ii = l:list[k+1]
+                let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
+                let l:hisep = '%#PopcTlSep' . l:id . '#'
+                let l:sep = (i.selected || ii.selected) ? l:spl : l:sspl
+            else
+                " title -> separator -> blank
+                let l:id = string(i.selected*2 + i.modified)
+                let l:hisep = '%#PopcTlSepB' . l:id . '#'
+                let l:sep = l:spl
+            endif
+            let l:lhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
+            let l:lhs .= l:hisep . l:sep
+        endfor
+        let l:lhs .= '%#PopcTlBlank#%='
     endif
-    let l:len = len(l:list)
-    let l:tabs = ''
-    for k in range(l:len)
-        let i = l:list[k]
-        " title
-        let l:id = string(i.selected*2 + i.modified)
-        let l:hi = '%#PopcTl' . l:id . '#'
-        if k == 0
-            " blank -> separator -> title
-            let l:hisep = '%#PopcTlSepB' . l:id . '#'
-            let l:sep = l:spr
+    " }}}
+    " right {{{
+    if empty(s:conf.tabLineLayout.right)
+        let l:rhs = ''
+    else
+        if s:conf.tabLineLayout.right ==# 'buffer'
+            let l:list = popc#layer#buf#GetBufs(tabpagenr())
+            let l:ch = 'B'
         else
-            " title -> separator -> title
-            let ii = l:list[k-1]
-            let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
-            let l:hisep = '%#PopcTlSep' . l:id . '#'
-            let l:sep = (i.selected || ii.selected) ? l:spr : l:sspr
+            let l:list = popc#layer#buf#GetTabs()
+            let l:ch = 'T'
         endif
-        let l:tabs .= l:hisep . l:sep
-        let l:tabs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
-    endfor
-    " title -> separator -> lable
-    let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
-    let l:tabs .= '%#PopcTlSepL' . l:id . '#' . l:spr
-    let l:tabs .= '%#PopcTlLabel#' . l:ch
-    "}}}
+        let l:len = len(l:list)
+        let l:rhs = ''
+        for k in range(l:len)
+            let i = l:list[k]
+            " title
+            let l:id = string(i.selected*2 + i.modified)
+            let l:hi = '%#PopcTl' . l:id . '#'
+            if k == 0
+                " blank -> separator -> title
+                let l:hisep = '%#PopcTlSepB' . l:id . '#'
+                let l:sep = l:spr
+            else
+                " title -> separator -> title
+                let ii = l:list[k-1]
+                let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
+                let l:hisep = '%#PopcTlSep' . l:id . '#'
+                let l:sep = (i.selected || ii.selected) ? l:spr : l:sspr
+            endif
+            let l:rhs .= l:hisep . l:sep
+            let l:rhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
+        endfor
+        " title -> separator -> lable
+        let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
+        let l:rhs .= '%#PopcTlSepL' . l:id . '#' . l:spr
+        let l:rhs .= '%#PopcTlLabel#' . l:ch
+    endif
+    " }}}
 
-    return l:bufs . l:tabs
+    return l:lhs . l:rhs
+endfunction
+" }}}
+
+" FUNCTION: popc#ui#TabLineSetLayout(lhs, rhs) abort {{{
+function! popc#ui#TabLineSetLayout(lhs, rhs) abort
+    let s:conf.tabLineLayout.left = a:lhs
+    let s:conf.tabLineLayout.right = a:rhs
+    if empty(a:lhs) && empty(a:rhs)
+        let s:conf.useTabline = 0
+        set showtabline=0
+    else
+        let s:conf.useTabline = 1
+        set showtabline=2
+    endif
+    if s:conf.useTabline
+        silent execute 'set tabline=%!' . s:conf.tabLine
+    endif
 endfunction
 " }}}
 
