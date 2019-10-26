@@ -209,7 +209,9 @@ Use the following example maps to open buffer layer:
 In bookmark layer, press '?' to see all command help:
 >
     b                    | Pop bookmarks layer
-    CR,Space,s,S,v,V,t,T | Load bookmark (CR-Open, Space-Stay, sSvV-Split, tT-Tab)
+    CR,Space             | Load buffers (Space to stay in popc)
+    s,S,v,V,t,T          | Split or tab buffers (SVT to stay in popc)
+    g,G                  | Goto window contain the current buffer(G to stay in popc)
     a                    | Add file as bookmark
     d                    | Delete one bookmark
     g                    | Display sorted bookmaks

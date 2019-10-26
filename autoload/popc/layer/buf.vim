@@ -44,14 +44,16 @@ let s:STATE = {
     \ }
 let s:rootBuf = ''
 let s:mapsData = [
-    \ ['popc#layer#buf#Pop'          , ['h', 'a', 'l'],                        'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
-    \ ['popc#layer#buf#Load'         , ['CR','Space','s','S','v','V','t','T'], 'Load buffers (CR-Load, Space-Load and stay, svt-Split or tabedit, SVT-Split or tabedit and stay)'],
-    \ ['popc#layer#buf#Close'        , ['c', 'C'],                             'Close one buffer (C-Close tab''s all buffer)'],
-    \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                              'Switch to left/right(i/o) tab'],
-    \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                              'Move buffer to left/right(I/O) tab'],
-    \ ['popc#layer#buf#SetTabName'   , ['n'],                                  'Set current tab name'],
-    \ ['popc#layer#buf#Edit'         , ['e'],                                  'Edit a new file'],
-    \ ['popc#layer#buf#Help'         , ['?'],                                  'Show help of buffers layer'],
+    \ ['popc#layer#buf#Pop'          , ['h','a','l'],             'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
+    \ ['popc#layer#buf#Load'         , ['CR','Space'],            'Load buffers (Space to stay in popc)'],
+    \ ['popc#layer#buf#SplitTab'     , ['s','S','v','V','t','T'], 'Split or tab buffers (SVT to stay in popc)'],
+    \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
+    \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C-Close tab''s all buffer)'],
+    \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                 'Switch to left/right(i/o) tab'],
+    \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                 'Move buffer to left/right(I/O) tab'],
+    \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
+    \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
+    \ ['popc#layer#buf#Help'         , ['?'],                     'Show help of buffers layer'],
     \ ]
 
 
@@ -480,38 +482,81 @@ function! popc#layer#buf#Load(key)
     call popc#ui#Destroy()
     if s:lyr.info.state ==# s:STATE.Listab
         " load tab
-        if a:key ==# 'CR'
+        silent execute string(l:tidx + 1) . 'tabnext'
+    else
+        " load buffer
+        silent execute 'buffer ' . l:bnr
+    endif
+    if a:key ==# 'Space'
+        call s:pop(s:lyr.info.state)
+    endif
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#SplitTab(key) {{{
+function! popc#layer#buf#SplitTab(key)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+
+    call popc#ui#Destroy()
+    if s:lyr.info.state ==# s:STATE.Listab
+        call popc#ui#Msg("Can NOT split or tabedit in tab-list.")
+        call s:pop(s:lyr.info.state)
+    else
+        if a:key ==? 's'
+            silent execute 'split'
+        elseif a:key ==? 'v'
+            silent execute 'vsplit'
+        elseif a:key ==? 't'
+            set eventignore+=BufEnter
+            silent execute 'tabedit'
+            set eventignore-=BufEnter
+        endif
+        silent execute 'buffer ' . l:bnr
+        if a:key ==# 'T'
             silent execute string(l:tidx + 1) . 'tabnext'
-        elseif a:key ==# 'Space'
-            silent execute string(l:tidx + 1) . 'tabnext'
+        endif
+        if a:key =~# '[SVT]'
+            call s:pop(s:lyr.info.state)
+        endif
+    endif
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#Goto(key) {{{
+function! popc#layer#buf#Goto(key)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+
+    if s:lyr.info.state ==# s:STATE.Listab
+        call popc#ui#Destroy()
+        silent execute string(l:tidx + 1) . 'tabnext'
+        if a:key ==# 'G'
             call s:pop(s:lyr.info.state)
         endif
     else
-        " load buffer
-        if a:key ==# 'CR'
-            silent execute string(l:tidx + 1) . 'tabnext'
-            silent execute 'buffer ' . l:bnr
-        elseif a:key ==# 'Space'
-            silent execute 'buffer ' . l:bnr
-            call s:pop(s:lyr.info.state)
-        else
-            if a:key ==? 's'
-                silent execute 'split'
-            elseif a:key ==? 'v'
-                silent execute 'vsplit'
-            elseif a:key ==? 't'
-                set eventignore+=BufEnter
-                silent execute 'tabedit'
-                set eventignore-=BufEnter
+        let b = getbufinfo(str2nr(l:bnr))[0]
+        for l:id in b.windows
+            let [l:tabnr, l:winnr] = win_id2tabwin(l:id)
+            if l:tabnr == l:tidx + 1
+                call popc#ui#Destroy()
+                if l:tabnr == tabpagenr()
+                    silent execute string(l:tabnr) . 'tabnext'
+                endif
+                call win_gotoid(l:id)
+                if a:key ==# 'G'
+                    call s:pop(s:lyr.info.state)
+                endif
+                return
             endif
-            silent execute 'buffer ' . l:bnr
-            if a:key ==# 'T'
-                silent execute string(l:tidx + 1) . 'tabnext'
-            endif
-            if a:key =~# '[SVT]'
-                call s:pop(s:lyr.info.state)
-            endif
-        endif
+        endfor
+        call popc#ui#Msg("No window contain current buffer.")
     endif
 endfunction
 " }}}
