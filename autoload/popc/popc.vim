@@ -95,13 +95,10 @@ function! s:layer.getBufs() dict
         let l:line = '  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~'
         let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
-        let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns) . "\n"
-        let l:line = '  ~~~~~ Copyright (c) yehuohan <yehuohan@gmail.com, yehuohan@qq.com> ~~~~~'
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line
+        let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns)
 
         let l:txt = l:text
-        let l:cnt += 4
+        let l:cnt += 2
     endif
     return [l:cnt, l:txt]
 endfunction
