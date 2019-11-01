@@ -3,6 +3,7 @@
 
 " SECTION: variables {{{1
 
+let s:conf = popc#init#GetConfig()
 let s:popc = {}
 let s:layer = {
     \ 'name' : '',
@@ -95,10 +96,25 @@ function! s:layer.getBufs() dict
         let l:line = '  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~'
         let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
-        let l:text .= repeat(' ', &columns) . "\n" . l:txt . repeat(' ', &columns)
+        let l:text .= repeat(' ', &columns) . "\n" . l:txt
+        " append help for operation
+        let l:text .= repeat(' ', &columns) . "\n"
+        let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]',
+                            \ join(s:conf.operationMaps['moveCursorUp']     , ','),
+                            \ join(s:conf.operationMaps['moveCursorTop']    , ','),
+                            \ join(s:conf.operationMaps['moveCursorPgUp']   , ',')
+                            \ )
+        let l:text .= l:line . repeat(' ', &columns - strwidth(l:line)) . "\n"
+        let l:line = printf('  Down: [%s]    Bottom: [%s]    Page down: [%s]    Quit: [%s]',
+                            \ join(s:conf.operationMaps['moveCursorDown']   , ','),
+                            \ join(s:conf.operationMaps['moveCursorBottom'] , ','),
+                            \ join(s:conf.operationMaps['moveCursorPgDown'] , ','),
+                            \ join(s:conf.operationMaps['quit']             , ',')
+                            \ )
+        let l:text .= l:line . repeat(' ', &columns - strwidth(l:line)) . "\n"
 
         let l:txt = l:text
-        let l:cnt += 2
+        let l:cnt += 5
     endif
     return [l:cnt, l:txt]
 endfunction
