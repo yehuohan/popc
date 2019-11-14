@@ -82,12 +82,12 @@ configs about key maps:
     layerInit        = {},
     layerComMaps     = {},
     commonMaps       = {}
-    moveCursorDown   = ['j', 'C-j']
-    moveCursorUp     = ['k', 'C-k']
+    moveCursorDown   = ['j']
+    moveCursorUp     = ['k']
     moveCursorBottom = ['J']
     moveCursorTop    = ['K']
-    moveCursorPgDown = ['M-j']
-    moveCursorPgUp   = ['M-k']
+    moveCursorPgDown = ['C-j']
+    moveCursorPgUp   = ['C-k']
     quit             = ['q', 'Esc']
 <
 
@@ -128,6 +128,22 @@ information of tabs and buffers of each tab for tabline.
 
 Attention: the tabline of popc is used for buffer layer. So if `useTabLine` is
 set to 1, `useLayer.Buffer` will be set to 1 automatically.
+
+Set your own tabline layout with `popc#ui#TabLineSetLayout()`:
+
+>
+    function! PopcTablineToggleLayout(lyt)
+        if a:lyt == 0
+            call popc#ui#TabLineSetLayout('buffer', 'tab')
+        elseif a:lyt == 1
+            call popc#ui#TabLineSetLayout('tab', 'buffer')
+        elseif a:lyt == 2
+            call popc#ui#TabLineSetLayout('buffer', '')
+        elseif a:lyt == 3
+            call popc#ui#TabLineSetLayout('', 'tab')
+        endif
+    endfunction
+<
 
                                                                       |popc-toc|
 
