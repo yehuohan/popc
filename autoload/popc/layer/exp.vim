@@ -11,11 +11,17 @@ let s:exp = [
     \ 'Add layer init function: let g:Popc_layerInit={"Exp": "popc#layer#exp#Init"}',
     \ 'Add layer common maps if necessary: let g:Popc_layerComMaps = {"Exp" : ["popc#layer#exp#Pop", "p"]}',
     \ 'Use s:popc.addLayer to add layer.',
+    \ 'Use s:popc.removeLayer to remove layer.',
     \ 'Use s:lyr.addMaps to add maps for layer.',
+    \ 'Use s:lyr.setMode to change mode of layer.',
     \ 'Use s:lyr.setBufs to set layer content fo show.',
+    \ 'Use s:lyr.setInfo to set layer information data.',
     \ 'Use popc#ui#Create open layer.',
     \ 'Use popc#ui#Destroy close layer.',
-    \ 'Use popc#ui#GetIndex get current content index.',
+    \ 'Use popc#ui#GetIndex to get current content index.',
+    \ 'Use popc#ui#Input to get input.',
+    \ 'Use popc#ui#Confirm to show confirm interface.',
+    \ 'Use popc#ui#Msg to show message.',
     \ ]
 let s:mapsData = [
     \ ['popc#layer#exp#Pop'  , ['p'],          'Pop example layer'],
