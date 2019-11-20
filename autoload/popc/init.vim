@@ -4,7 +4,7 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'jsonPath'       : expand($VIM),
+    \ 'jsonPath'       : $VIM,
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'useTabline'     : 1,
@@ -17,7 +17,7 @@ let s:conf = {
     \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
     \ 'maxHeight'      : 0,
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
-    \ 'useRoots'       : ['.root', '.git', '.svn'],
+    \ 'useRoots'       : ['.popc', '.git', '.svn'],
     \ 'layerInit'      : {},
     \ 'layerComMaps'   : {},
     \ 'operationMaps'  : {
@@ -105,9 +105,6 @@ function! s:initJson()
         let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
     endif
-    if !isdirectory(s:json.dir)
-        call mkdir(s:json.dir, 'p')
-    endif
 endfunction
 " }}}
 
@@ -124,6 +121,9 @@ function! popc#init#GetJson(type)
         let s:json.json = json_decode(join(readfile(s:json.file)))
         return s:json.json
     elseif a:type == 'dir'
+        if !isdirectory(s:json.dir)
+            call mkdir(s:json.dir, 'p')
+        endif
         return s:json.dir
     endif
 endfunction

@@ -133,6 +133,21 @@ function! popc#layer#com#FindRoot()
 endfunction
 " }}}
 
+" FUNCTION: popc#layer#com#useSlashPath(path) {{{
+function! popc#layer#com#useSlashPath(path)
+    if exists('+shellslash')
+        let s:sslSave = &shellslash
+        set shellslash
+    endif
+    let l:path = expand(a:path)
+    if exists('s:sslSave')
+        let &shellslash = s:sslSave
+        unlet! s:sslSave
+    endif
+    return l:path
+endfunction
+" }}}
+
 " FUNCTION: s:getParentDir(l, s) {{{
 " @l: long dir
 " @s: short dir

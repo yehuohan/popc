@@ -817,14 +817,14 @@ function! popc#layer#buf#Empty()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#GetView(tabnr) {{{
-" @param tabnr: get bufnr list of tabnr, used in workspace layer.
-function! popc#layer#buf#GetView(tabnr)
-    let l:tidx = a:tabnr - 1
-    if s:tab.isTabEmpty(l:tidx)
-        return []
-    endif
-    return s:tab.idx[l:tidx]
+" FUNCTION: popc#layer#buf#GetWksFiles(tabnr) {{{
+" this function is used for workspace layer.
+function! popc#layer#buf#GetWksFiles(tabnr)
+    let l:files = []
+    for bnr in s:tab.idx[a:tabnr - 1]
+        call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+    endfor
+    return l:files
 endfunction
 " }}}
 

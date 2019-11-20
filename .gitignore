@@ -3,4 +3,5 @@
 # .gitignogre for popc
 
 *.swp
+.popc
 tags
