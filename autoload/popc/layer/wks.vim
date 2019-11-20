@@ -11,7 +11,7 @@ let s:mapsData = [
     \ ['popc#layer#wks#Pop'    , ['w'],                  'Pop workspace layer'],
     \ ['popc#layer#wks#Load'   , ['CR','Space','t','T'], 'Load workspace (CR-Open, Space-Stay, tT-Tab)'],
     \ ['popc#layer#wks#Add'    , ['a'],                  'Add new workspace'],
-    \ ['popc#layer#wks#Save'   , ['s'],                  'Save the workspace'],
+    \ ['popc#layer#wks#Save'   , ['s', 'S'],             'Save the workspace (S-Save in force)'],
     \ ['popc#layer#wks#Delete' , ['d'],                  'Delete the workspace'],
     \ ['popc#layer#wks#Close'  , ['C'],                  'Close current workspace'],
     \ ['popc#layer#wks#SetName', ['n'],                  'Set workspace''s name'],
@@ -297,15 +297,17 @@ function! popc#layer#wks#Save(key)
     let l:name = s:wks[l:index].name
     let l:path = s:wks[l:index].path
 
-    if empty(s:lyr.info.wksName)
-        if !popc#ui#Confirm('ATTENTION: Override the workspace ''' . l:name . ''' ?')
+    if a:key ==# 's'
+        if l:name !=# s:lyr.info.wksName || l:path !=# s:lyr.info.rootDir
+            call popc#ui#Msg('Can NOT override with the workspace: ' . s:lyr.info.wksName . ' [' . s:lyr.info.rootDir . ']')
+            return
+        elseif !popc#ui#Confirm('Save to workspace ''' . l:name . ''' ?')
             return
         endif
-    elseif l:name !=# s:lyr.info.wksName || l:path !=# s:lyr.info.rootDir
-        call popc#ui#Msg('This is NOT current workspace: ' . s:lyr.info.wksName . ' [' . s:lyr.info.rootDir . ']')
-        return
-    elseif !popc#ui#Confirm('Save to workspace ''' . l:name . ''' ?')
-        return
+    elseif a:key ==# 'S'
+        if !popc#ui#Confirm('ATTENTION: Override the workspace ''' . l:name . ''' in force?')
+            return
+        endif
     endif
 
     call s:saveWorkspace(l:name, l:path)
