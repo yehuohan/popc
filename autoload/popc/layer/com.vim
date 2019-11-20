@@ -152,8 +152,8 @@ endfunction
 " @l: long dir
 " @s: short dir
 function! s:getParentDir(l, s)
-    let l:ldir = substitute(a:l, '\\', '/', 'g')
-    let l:sdir = substitute(a:s, '\\', '/', 'g')
+    let l:ldir = popc#layer#com#useSlashPath(a:l)
+    let l:sdir = popc#layer#com#useSlashPath(a:s)
     let l:sdirLast = l:sdir
     while l:ldir . '/' !~# '^' . l:sdir . '/'
         let l:sdir = fnamemodify(l:sdir, ':h')
