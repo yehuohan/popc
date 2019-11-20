@@ -64,6 +64,7 @@ is below:
 basic configs:
 >
     jsonPath      = expand($HOME)
+    useGlobalPath = 1
     useUnicode    = 1
     useTabline    = 1
     useStatusline = 1

@@ -5,6 +5,7 @@
 
 let s:conf = {
     \ 'jsonPath'       : $VIM,
+    \ 'useGlobalPath'  : 0,
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'useTabline'     : 1,
@@ -105,6 +106,11 @@ function! s:initJson()
         let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
     endif
+    if s:conf.useGlobalPath
+        if !isdirectory(s:json.dir)
+            call mkdir(s:json.dir, 'p')
+        endif
+    endif
 endfunction
 " }}}
 
@@ -121,9 +127,6 @@ function! popc#init#GetJson(type)
         let s:json.json = json_decode(join(readfile(s:json.file)))
         return s:json.json
     elseif a:type == 'dir'
-        if !isdirectory(s:json.dir)
-            call mkdir(s:json.dir, 'p')
-        endif
         return s:json.dir
     endif
 endfunction
@@ -132,8 +135,9 @@ endfunction
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
     " set confiuration's value and list
-    for k in ['useUnicode', 'useTabline', 'useStatusline', 'usePowerFont',
-            \ 'statusLine', 'tabLine', 'maxHeight', 'jsonPath', 'useRoots']
+    for k in ['jsonPath', 'useGlobalPath', 'useUnicode',
+            \ 'useTabline', 'useStatusline', 'usePowerFont',
+            \ 'statusLine', 'tabLine', 'maxHeight', 'useRoots']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
         endif

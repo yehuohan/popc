@@ -165,11 +165,7 @@ endfunction
 
 " FUNCTION: s:saveWorkspace(name, root) {{{
 function! s:saveWorkspace(name, root)
-    let l:path = a:root . '.popc'
-    let l:filename = l:path . '/' . a:name . '.wks'
-    if !isdirectory(l:path)
-        call mkdir(l:path, 'p')
-    endif
+    let l:filename = s:getWorkspaceFile(a:name, a:root)
 
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
@@ -189,8 +185,7 @@ endfunction
 
 " FUNCTION: s:loadWorkspace(name, root) {{{
 function! s:loadWorkspace(name, root)
-    let l:path = a:root . '.popc'
-    let l:filename = l:path . '/' . a:name . '.wks'
+    let l:filename = s:getWorkspaceFile(a:name, a:root)
     if !filereadable(l:filename)
         return 0
     endif
@@ -208,6 +203,40 @@ function! s:loadWorkspace(name, root)
     silent execute 'source ' . l:filename
     call s:switchSettings('off')
     return 1
+endfunction
+" }}}
+
+" FUNCTION: s:checkWorkspaceFile(name, path) {{{
+function! s:checkWorkspaceFile(name, path)
+    if s:conf.useGlobalPath
+        for item in s:wks
+            if a:name ==# item.name
+                return 1
+            endif
+        endfor
+    else
+        for item in s:wks
+            if a:name ==# item.name && a:path ==# item.path
+                return 1
+            endif
+        endfor
+    endif
+    return 0
+endfunction
+" }}}
+
+" FUNCTION: s:getWorkspaceFile(name, root) {{{
+function! s:getWorkspaceFile(name, root)
+    if s:conf.useGlobalPath
+        let l:filename = popc#init#GetJson('dir') . '/' . a:name . '.wks'
+    else
+        let l:path = a:root . '.popc'
+        let l:filename = l:path . '/' . a:name . '.wks'
+        if !isdirectory(l:path)
+            call mkdir(l:path, 'p')
+        endif
+    endif
+    return l:filename
 endfunction
 " }}}
 
@@ -275,12 +304,10 @@ function! popc#layer#wks#Add(key)
     endif
     let l:path = s:useSlash(fnamemodify(l:path, ':p'), 1)
     " check workspace
-    for item in s:wks
-        if l:name ==# item.name && l:path ==# item.path
-            call popc#ui#Msg('Workspace ''' . l:name . ''' is already existed in ' . l:path)
-            return
-        endif
-    endfor
+    if s:checkWorkspaceFile(l:name, l:path)
+        call popc#ui#Msg('Workspace ''' . l:name . ''' is already existed.')
+        return
+    endif
     " save workspace
     call s:saveWorkspace(l:name, l:path)
     call add(s:wks, {'name' : l:name, 'path' : l:path})
@@ -331,9 +358,9 @@ function! popc#layer#wks#Delete(key)
         return
     endif
 
-    let l:file = l:path . '.popc/' . l:name . '.wks'
-    if filereadable(l:file)
-        call delete(l:file)
+    let l:filename = s:getWorkspaceFile(l:name, l:path)
+    if filereadable(l:filename)
+        call delete(l:filename)
     endif
     call remove(s:wks, l:index)
     call popc#init#SaveJson()
@@ -357,16 +384,16 @@ function! popc#layer#wks#SetName(key)
         call popc#ui#Msg('No new name for workspace.')
         return
     endif
-    for item in s:wks
-        if l:newName ==# item.name && l:path ==# item.path
-            call popc#ui#Msg('Workspace ''' . l:newName . ''' is already existed in ' . l:path)
-            return
-        endif
-    endfor
+    " check workspace
+    if s:checkWorkspaceFile(l:newName, l:path)
+        call popc#ui#Msg('Workspace ''' . l:newName . ''' is already existed.')
+        return
+    endif
 
     " rename <name>.wks file
-    let l:wksdir = l:path . '.popc/'
-    call rename(l:wksdir . l:name . '.wks', l:wksdir . l:newName . '.wks')
+    let l:oldFile = s:getWorkspaceFile(l:name, l:path)
+    let l:newFile = s:getWorkspaceFile(l:newName, l:path)
+    call rename(l:oldFile, l:newFile)
 
     let s:wks[popc#ui#GetIndex()].name = l:newName
     if &title
