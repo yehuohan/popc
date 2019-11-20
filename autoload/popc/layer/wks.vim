@@ -51,7 +51,7 @@ function! s:createBuffer()
     " get context
     for k in range(len(s:wks))
         let l:line =  '  '
-        let l:line .= (s:lyr.info.wksName ==# s:wks[k].name) ? s:conf.symbols.WIn : ' '
+        let l:line .= (s:lyr.info.wksName ==# s:wks[k].name && s:lyr.info.rootDir ==# s:wks[k].path) ? s:conf.symbols.WIn : ' '
         let l:line .= ' ' . s:wks[k].name
         let l:line .= ' ' . repeat(' ', l:max - strwidth(l:line)) . s:conf.symbols.Arr
         let l:line .= ' ' . s:wks[k].path
