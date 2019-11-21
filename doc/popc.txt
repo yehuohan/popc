@@ -202,13 +202,16 @@ Search text in buffers with LeaderF:
 <
 In buffer layer, press '?' to see all command help:
 >
-    h,a,l                | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
-    CR,Space,s,S,v,V,t,T | Load buffers (CR-Load, Space-Load and stay, svt-Split or tabedit, SVT-Split or tabedit and stay)
-    c,C                  | Close one buffer (C-Close tab's all buffer)
-    i,o                  | Switch to left/right(i/o) tab
-    I,O                  | Move buffer to left/right(I/O) tab
-    n                    | Set current tab name
-    ?                    | Show help of buffers layer
+    h,a,l       | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
+    CR,Space    | Load buffers (Space to stay in popc)
+    s,S,v,V,t,T | Split or tab buffers (SVT to stay in popc)
+    g,G         | Goto window contain the current buffer(G to stay in popc)
+    c,C         | Close one buffer (C-Close tab's all buffer)
+    i,o         | Switch to left/right(i/o) tab
+    I,O         | Move buffer to left/right(I/O) tab
+    n           | Set current tab name
+    e           | Edit a new file
+    ?           | Show help of buffers layer
 <
 
                                                                       |popc-toc|
@@ -225,9 +228,7 @@ Use the following example maps to open buffer layer:
 In bookmark layer, press '?' to see all command help:
 >
     b                    | Pop bookmarks layer
-    CR,Space             | Load buffers (Space to stay in popc)
-    s,S,v,V,t,T          | Split or tab buffers (SVT to stay in popc)
-    g,G                  | Goto window contain the current buffer(G to stay in popc)
+    CR,Space,s,S,v,V,t,T | Load bookmark (CR-Open, Space-Stay, sSvV-Split, tT-Tab)
     a                    | Add file as bookmark
     d                    | Delete one bookmark
     g                    | Display sorted bookmaks
@@ -260,10 +261,11 @@ In workspace layer, press '?' to see all command help:
     w            | Pop workspace layer
     CR,Space,t,T | Load workspace (CR-Open, Space-Stay, tT-Tab)
     a            | Add new workspace
-    s            | Save the workspace
+    s,S          | Save the workspace (S-Save in force)
     d            | Delete the workspace
     C            | Close current workspace
-    n            | Set workspace's name
+    n            | Set name of workspace
+    r            | Set root of workspace
     g            | Display sorted workspaces
     ?            | Show help of workspaces layer
 <
@@ -273,7 +275,7 @@ In workspace layer, press '?' to see all command help:
 --------------------------------------------------------------------------------
  3.4 Common maps for layer                                         *popc-common*
 
-There are common key-maps to switch from layer to another layer: 
+There are common key-maps to switch from layer to another layer:
 >
     h   | Goto buffers layer
     b   | Goto bookmarks layer
