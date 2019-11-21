@@ -143,9 +143,13 @@ function! s:makeSession(filename, root)
                 call add(l:lines, substitute('edit ' . l:file, l:root, '', 'g'))
             endfor
             let l:tabnr += 1
-        elseif l:cmd =~# '^tabrewind' || l:cmd =~# '^tabnext \d\+'
-            " back to base tabnr
+        elseif l:cmd =~# '^tabrewind'
+            " start from base tabnr
             call add(l:lines, 'exe "tabnext " . s:session_tabbase')
+        elseif l:cmd =~# '^tabnext \d\+'
+            " back to init tab
+            let l:inc = string(str2nr(split(l:cmd)[-1]) - 1)
+            call add(l:lines, 'exe "tabnext " . string(s:session_tabbase + ' . l:inc . ')')
         elseif l:cmd =~# 'win_findbuf(s:wipebuf)'
             " only remove no name buffer
             call add(l:lines, 'if exists(''s:wipebuf'') && empty(bufname(s:wipebuf))')
