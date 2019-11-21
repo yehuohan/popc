@@ -22,12 +22,12 @@ let s:conf = {
     \ 'layerInit'      : {},
     \ 'layerComMaps'   : {},
     \ 'operationMaps'  : {
-        \ 'moveCursorDown'   : ['j'],
-        \ 'moveCursorUp'     : ['k'],
+        \ 'moveCursorDown'   : ['j', 'C-j'],
+        \ 'moveCursorUp'     : ['k', 'C-k'],
         \ 'moveCursorBottom' : ['J'],
         \ 'moveCursorTop'    : ['K'],
-        \ 'moveCursorPgDown' : ['C-j'],
-        \ 'moveCursorPgUp'   : ['C-k'],
+        \ 'moveCursorPgDown' : ['M-j'],
+        \ 'moveCursorPgUp'   : ['M-k'],
         \ 'quit'             : ['q', 'Esc'],
         \ },
     \ }
