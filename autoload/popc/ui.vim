@@ -377,7 +377,7 @@ function! popc#ui#GetStatusLineSegments(seg) abort
     endif
 
     if a:seg =~? '[ar]'
-        let l:rank = '[' . string(s:lyr.bufs.cnt) . ']' . popc#ui#Num2RankStr(line('.'))
+        let l:rank = '[' . string(s:lyr.bufs.cnt) . ']' . popc#utils#Num2RankStr(line('.'))
         let l:right = l:rank . ' ' . s:conf.symbols.Rank . ' '. s:lyr.name
         call add(l:segs, l:right)
     endif
@@ -518,23 +518,7 @@ endfunction
 " }}}
 
 
-" SETCION: utils {{{1
-
-" FUNCTION: popc#ui#Num2RankStr(num) {{{
-" @param num: the num in integer format
-function! popc#ui#Num2RankStr(num)
-    if s:conf.useUnicode
-        let l:str = ''
-        let l:numStr = string(a:num)
-        for k in range(len(l:numStr))
-            let l:str .= s:conf.symbols.Nums[str2nr(l:numStr[k])]
-        endfor
-    else
-        let l:str = '#' . string(a:num)
-    endif
-    return l:str
-endfunction
-" }}}
+" SETCION: api functions{{{1
 
 " FUNCTION: popc#ui#Input(promot, ...) {{{
 " global input funtion interface for ui of popc.

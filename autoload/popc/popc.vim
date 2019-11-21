@@ -129,13 +129,53 @@ endfunction
 
 " SECTION: functions {{{1
 
+" FUNCTION: s:initLayers() {{{
+function! s:initLayers()
+    " common maps init
+    if s:conf.useLayer.Buffer
+        call popc#key#AddComMaps('popc#layer#buf#Pop', 'h')
+    endif
+    if s:conf.useLayer.Bookmark
+        call popc#key#AddComMaps('popc#layer#bms#Pop', 'b')
+    endif
+    if s:conf.useLayer.Workspace
+        call popc#key#AddComMaps('popc#layer#wks#Pop', 'w')
+    endif
+    for m in values(s:conf.layerComMaps)
+        " {'layerName': [funcName, key]}
+        call popc#key#AddComMaps(m[0], m[1])
+    endfor
+
+    " layer init
+    if s:conf.useLayer.Buffer
+        call popc#layer#buf#Init()
+    endif
+    if s:conf.useLayer.Bookmark
+        call popc#layer#bms#Init()
+    endif
+    if s:conf.useLayer.Workspace
+        call popc#layer#wks#Init()
+    endif
+    if s:conf.useLayer.File
+        call popc#layer#fls#Init()
+    endif
+    if s:conf.useLayer.Reg
+        call popc#layer#reg#Init()
+    endif
+    for l in values(s:conf.layerInit)
+        " {'layerName': initFuncName}
+        call function(l)()
+    endfor
+endfunction
+" }}}
+
 " FUNCTION: popc#popc#Init() {{{
 function! popc#popc#Init()
     call popc#init#Init()
     call popc#key#Init()
-    call popc#search#Init()
+    "call popc#search#Init()
     call popc#ui#Init()
-    call popc#layer#com#Init()
+    call s:initLayers()
 endfunction
 " }}}
 

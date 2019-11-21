@@ -75,7 +75,7 @@ endfunction
 
 " FUNCTION: s:useSlash(path) {{{
 function! s:useSlash(path, endslash)
-    let l:path = popc#layer#com#useSlashPath(a:path)
+    let l:path = popc#utils#useSlashPath(a:path)
     if a:endslash && l:path !~# '/$'
         let l:path .= '/'
     elseif !a:endslash && l:path =~# '/$'
@@ -306,7 +306,7 @@ function! popc#layer#wks#Add(key)
     " workspace root
     let l:path = popc#ui#Input(
                 \ 'Input workspace root: ',
-                \ empty(s:lyr.info.rootDir) ? popc#layer#com#FindRoot() : s:lyr.info.rootDir,
+                \ empty(s:lyr.info.rootDir) ? popc#utils#FindRoot() : s:lyr.info.rootDir,
                 \ 'dir')
     if empty(l:path)
         call popc#ui#Msg('No root for workspace.')
@@ -456,10 +456,10 @@ function! popc#layer#wks#Sort(key)
     endif
 
     if s:lyr.info.sort ==# 'name'
-        call sort(s:wks, function('popc#layer#com#SortByPath'))
+        call sort(s:wks, function('popc#utils#SortByPath'))
         call s:lyr.setInfo('sort', 'path')
     elseif s:lyr.info.sort ==# 'path'
-        call sort(s:wks, function('popc#layer#com#SortByName'))
+        call sort(s:wks, function('popc#utils#SortByName'))
         call s:lyr.setInfo('sort', 'name')
     endif
     call popc#init#SaveJson()
@@ -471,7 +471,7 @@ endfunction
 " FUNCTION: popc#layer#wks#Help(key) {{{
 function! popc#layer#wks#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
+    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#utils#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

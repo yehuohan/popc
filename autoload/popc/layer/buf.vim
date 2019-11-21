@@ -197,7 +197,7 @@ function! popc#layer#buf#Init()
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
-        autocmd BufNew    * let s:rootBuf=popc#layer#com#FindRoot()
+        autocmd BufNew    * let s:rootBuf=popc#utils#FindRoot()
         autocmd User PopcUiIndexChanged call s:indexChanged(s:lyr.info.lastIndex)
     augroup END
 
@@ -361,7 +361,7 @@ function! s:createTabList()
         let l:line .= (k == tabpagenr() - 1) ? s:conf.symbols.CTab : s:conf.symbols.Tab
         let l:line .= s:tab.isTabModified(k) ? '+' : ' '
         let l:line .= ' ' . '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
-                        \ . popc#ui#Num2RankStr(s:tab.num(k))
+                        \ . popc#utils#Num2RankStr(s:tab.num(k))
         let l:line .= repeat(' ', &columns - strwidth(l:line))
         let l:text .= l:line . "\n"
     endfor
@@ -415,7 +415,7 @@ function! s:getTabParentDir(tidx)
             call add(l:dirs, fnamemodify(getbufinfo(str2nr(bnr))[0].name, ':h'))
         endif
     endfor
-    return popc#layer#com#GetParentDir(l:dirs)
+    return popc#utils#GetParentDir(l:dirs)
 endfunction
 " }}}
 
@@ -731,7 +731,7 @@ endfunction
 " FUNCTION: popc#layer#buf#Help(key) {{{
 function! popc#layer#buf#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
+    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#utils#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
@@ -780,7 +780,7 @@ function! popc#layer#buf#GetTabs() abort
         call add(l:list, {
                     \ 'index' : string(k+1),
                     \ 'title' : '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
-                              \ . popc#ui#Num2RankStr(s:tab.num(k)),
+                              \ . popc#utils#Num2RankStr(s:tab.num(k)),
                     \ 'modified' : s:tab.isTabModified(k),
                     \ 'selected' : (k+1 == tabpagenr()) ? 1 : 0,
                     \ })

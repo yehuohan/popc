@@ -146,10 +146,10 @@ function! popc#layer#bms#Sort(key)
     endif
 
     if s:lyr.info.sort ==# 'name'
-        call sort(s:bms, function('popc#layer#com#SortByPath'))
+        call sort(s:bms, function('popc#utils#SortByPath'))
         call s:lyr.setInfo('sort', 'path')
     elseif s:lyr.info.sort ==# 'path'
-        call sort(s:bms, function('popc#layer#com#SortByName'))
+        call sort(s:bms, function('popc#utils#SortByName'))
         call s:lyr.setInfo('sort', 'name')
     endif
     call popc#init#SaveJson()
@@ -161,7 +161,7 @@ endfunction
 " FUNCTION: popc#layer#bms#Help(key) {{{
 function! popc#layer#bms#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#layer#com#createHelpBuffer(s:mapsData))
+    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#utils#createHelpBuffer(s:mapsData))
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

@@ -1,56 +1,31 @@
 
-" common script.
+" utils script.
 
 " SECTION: variables {{{1
 
 let s:conf = popc#init#GetConfig()
 
-
 " SECTION: api functions {{{1
 
-" FUNCTION: popc#layer#com#Init() {{{
-function! popc#layer#com#Init()
-    " common maps init
-    if s:conf.useLayer.Buffer
-        call popc#key#AddComMaps('popc#layer#buf#Pop', 'h')
+" FUNCTION: popc#utils#Num2RankStr(num) {{{
+" @param num: the num in integer format
+function! popc#utils#Num2RankStr(num)
+    if s:conf.useUnicode
+        let l:str = ''
+        let l:numStr = string(a:num)
+        for k in range(len(l:numStr))
+            let l:str .= s:conf.symbols.Nums[str2nr(l:numStr[k])]
+        endfor
+    else
+        let l:str = '#' . string(a:num)
     endif
-    if s:conf.useLayer.Bookmark
-        call popc#key#AddComMaps('popc#layer#bms#Pop', 'b')
-    endif
-    if s:conf.useLayer.Workspace
-        call popc#key#AddComMaps('popc#layer#wks#Pop', 'w')
-    endif
-    for m in values(s:conf.layerComMaps)
-        " {'layerName': [funcName, key]}
-        call popc#key#AddComMaps(m[0], m[1])
-    endfor
-
-    " layer init
-    if s:conf.useLayer.Buffer
-        call popc#layer#buf#Init()
-    endif
-    if s:conf.useLayer.Bookmark
-        call popc#layer#bms#Init()
-    endif
-    if s:conf.useLayer.Workspace
-        call popc#layer#wks#Init()
-    endif
-    if s:conf.useLayer.File
-        call popc#layer#fls#Init()
-    endif
-    if s:conf.useLayer.Reg
-        call popc#layer#reg#Init()
-    endif
-    for l in values(s:conf.layerInit)
-        " {'layerName': initFuncName}
-        call function(l)()
-    endfor
+    return l:str
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#createHelpBuffer() {{{
+" FUNCTION: popc#utils#createHelpBuffer() {{{
 " mapsData format [function-name, key-list, help-text]
-function! popc#layer#com#createHelpBuffer(mapsData)
+function! popc#utils#createHelpBuffer(mapsData)
     let l:text = ''
 
     " get max name width
@@ -74,9 +49,9 @@ function! popc#layer#com#createHelpBuffer(mapsData)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#SortByName(a, b) {{{
+" FUNCTION: popc#utils#SortByName(a, b) {{{
 " dict item format {'name': , 'path': }
-function! popc#layer#com#SortByName(a, b)
+function! popc#utils#SortByName(a, b)
     if a:a.name < a:b.name
         return -1
     elseif a:a.name > a:b.name
@@ -93,8 +68,8 @@ function! popc#layer#com#SortByName(a, b)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#SortByPath(a, b) {{{
-function! popc#layer#com#SortByPath(a, b)
+" FUNCTION: popc#utils#SortByPath(a, b) {{{
+function! popc#utils#SortByPath(a, b)
     if a:a.path < a:b.path
         return -1
     elseif a:a.path > a:b.path
@@ -111,8 +86,8 @@ function! popc#layer#com#SortByPath(a, b)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#FindRoot() {{{
-function! popc#layer#com#FindRoot()
+" FUNCTION: popc#utils#FindRoot() {{{
+function! popc#utils#FindRoot()
     if empty(s:conf.useRoots)
         return ''
     endif
@@ -133,8 +108,8 @@ function! popc#layer#com#FindRoot()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#useSlashPath(path) {{{
-function! popc#layer#com#useSlashPath(path)
+" FUNCTION: popc#utils#useSlashPath(path) {{{
+function! popc#utils#useSlashPath(path)
     if exists('+shellslash')
         let s:sslSave = &shellslash
         set shellslash
@@ -152,8 +127,8 @@ endfunction
 " @l: long dir
 " @s: short dir
 function! s:getParentDir(l, s)
-    let l:ldir = popc#layer#com#useSlashPath(a:l)
-    let l:sdir = popc#layer#com#useSlashPath(a:s)
+    let l:ldir = popc#utils#useSlashPath(a:l)
+    let l:sdir = popc#utils#useSlashPath(a:s)
     let l:sdirLast = l:sdir
     while l:ldir . '/' !~# '^' . l:sdir . '/'
         let l:sdir = fnamemodify(l:sdir, ':h')
@@ -167,8 +142,8 @@ function! s:getParentDir(l, s)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#com#GetParentDir(dirs) {{{
-function! popc#layer#com#GetParentDir(dirs)
+" FUNCTION: popc#utils#GetParentDir(dirs) {{{
+function! popc#utils#GetParentDir(dirs)
     if empty(a:dirs)
         return ''
     endif
