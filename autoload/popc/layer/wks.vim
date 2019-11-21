@@ -14,7 +14,8 @@ let s:mapsData = [
     \ ['popc#layer#wks#Save'   , ['s', 'S'],             'Save the workspace (S-Save in force)'],
     \ ['popc#layer#wks#Delete' , ['d'],                  'Delete the workspace'],
     \ ['popc#layer#wks#Close'  , ['C'],                  'Close current workspace'],
-    \ ['popc#layer#wks#SetName', ['n'],                  'Set workspace''s name'],
+    \ ['popc#layer#wks#SetName', ['n'],                  'Set name of workspace'],
+    \ ['popc#layer#wks#SetRoot', ['r'],                  'Set root of workspace'],
     \ ['popc#layer#wks#Sort'   , ['g'],                  'Display sorted workspaces'],
     \ ['popc#layer#wks#Help'   , ['?'],                  'Show help of workspaces layer'],
     \]
@@ -169,7 +170,7 @@ endfunction
 
 " FUNCTION: s:saveWorkspace(name, root) {{{
 function! s:saveWorkspace(name, root)
-    let l:filename = s:getWorkspaceFile(a:name, a:root)
+    let l:filename = s:getWksFileName(a:name, a:root)
 
     " set root and name of layer
     call s:lyr.setInfo('wksName', a:name)
@@ -189,7 +190,7 @@ endfunction
 
 " FUNCTION: s:loadWorkspace(name, root) {{{
 function! s:loadWorkspace(name, root)
-    let l:filename = s:getWorkspaceFile(a:name, a:root)
+    let l:filename = s:getWksFileName(a:name, a:root)
     if !filereadable(l:filename)
         return 0
     endif
@@ -210,37 +211,42 @@ function! s:loadWorkspace(name, root)
 endfunction
 " }}}
 
-" FUNCTION: s:checkWorkspaceFile(name, path) {{{
-function! s:checkWorkspaceFile(name, path)
+" FUNCTION: s:checkWksFile(name, path) {{{
+function! s:checkWksFile(name, path)
     if s:conf.useGlobalPath
         for item in s:wks
             if a:name ==# item.name
-                return 1
+                return 0
             endif
         endfor
     else
         for item in s:wks
             if a:name ==# item.name && a:path ==# item.path
-                return 1
+                return 0
             endif
         endfor
     endif
-    return 0
+    return 1
 endfunction
 " }}}
 
-" FUNCTION: s:getWorkspaceFile(name, root) {{{
-function! s:getWorkspaceFile(name, root)
+" FUNCTION: s:getWksFilePath(root) {{{
+function! s:getWksFilePath(root)
     if s:conf.useGlobalPath
-        let l:filename = popc#init#GetJson('dir') . '/' . a:name . '.wks'
+        let l:path = popc#init#GetJson('dir')
     else
         let l:path = a:root . '.popc'
-        let l:filename = l:path . '/' . a:name . '.wks'
         if !isdirectory(l:path)
             call mkdir(l:path, 'p')
         endif
     endif
-    return l:filename
+    return l:path
+endfunction
+" }}}
+
+" FUNCTION: s:getWksFileName(name, root) {{{
+function! s:getWksFileName(name, root)
+    return (s:getWksFilePath(a:root) . '/' . a:name . '.wks')
 endfunction
 " }}}
 
@@ -284,7 +290,7 @@ function! popc#layer#wks#Load(key)
         call popc#ui#Msg('Load workspace ''' . l:name . ''' successful.')
     else
         call popc#layer#wks#Pop('w')
-        call popc#ui#Msg('Nothing in workspace ''' . l:name . ''' which should be removed.')
+        call popc#ui#Msg('The workspace ''' . l:name . ''' is NOT valid which should be removed.')
     endif
 endfunction
 " }}}
@@ -308,7 +314,7 @@ function! popc#layer#wks#Add(key)
     endif
     let l:path = s:useSlash(fnamemodify(l:path, ':p'), 1)
     " check workspace
-    if s:checkWorkspaceFile(l:name, l:path)
+    if !s:checkWksFile(l:name, l:path)
         call popc#ui#Msg('Workspace ''' . l:name . ''' is already existed.')
         return
     endif
@@ -361,11 +367,12 @@ function! popc#layer#wks#Delete(key)
     if !popc#ui#Confirm('Delete workspace ''' . l:name . ''' ?')
         return
     endif
-
-    let l:filename = s:getWorkspaceFile(l:name, l:path)
+    " delete wks file
+    let l:filename = s:getWksFileName(l:name, l:path)
     if filereadable(l:filename)
         call delete(l:filename)
     endif
+    " save
     call remove(s:wks, l:index)
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w')
@@ -382,32 +389,63 @@ function! popc#layer#wks#SetName(key)
     let l:index = popc#ui#GetIndex()
     let l:name = s:wks[l:index].name
     let l:path = s:wks[l:index].path
-
+    " workspace name
     let l:newName = popc#ui#Input('Input new workspace name: ')
     if empty(l:newName)
         call popc#ui#Msg('No new name for workspace.')
         return
     endif
     " check workspace
-    if s:checkWorkspaceFile(l:newName, l:path)
+    if !s:checkWksFile(l:newName, l:path)
         call popc#ui#Msg('Workspace ''' . l:newName . ''' is already existed.')
         return
     endif
-
     " rename <name>.wks file
-    let l:oldFile = s:getWorkspaceFile(l:name, l:path)
-    let l:newFile = s:getWorkspaceFile(l:newName, l:path)
+    let l:oldFile = s:getWksFileName(l:name, l:path)
+    let l:newFile = s:getWksFileName(l:newName, l:path)
     call rename(l:oldFile, l:newFile)
-
-    let s:wks[popc#ui#GetIndex()].name = l:newName
+    " save
+    let s:wks[l:index].name = l:newName
     if &title
         silent execute 'set titlestring=' . l:newName
     endif
     call s:lyr.setInfo('wksName', l:newName)
-
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w')
     call popc#ui#Msg('Rename workspace to ''' . l:newName . ''' successful.')
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#wks#SetRoot(key) {{{
+" not only change root of workspace but also move the wks file.
+function! popc#layer#wks#SetRoot(key)
+    if empty(s:wks)
+        return
+    endif
+
+    let l:index = popc#ui#GetIndex()
+    let l:name = s:wks[l:index].name
+    let l:path = s:wks[l:index].path
+    " workspace root
+    let l:newPath = popc#ui#Input('Input new workspace root: ', l:path, 'dir')
+    if empty(l:newPath)
+        call popc#ui#Msg('No new root for workspace.')
+        return
+    endif
+    let l:newPath = s:useSlash(fnamemodify(l:newPath, ':p'), 1)
+    let s:wks[l:index].path = l:newPath
+    call s:lyr.setInfo('rootDir', l:newPath)
+    " move wks file
+    let l:oldFile = s:getWksFileName(l:name, l:path)
+    let l:newFile = s:getWksFileName(l:name, l:newPath)
+    if l:oldFile !=# l:newFile && filereadable(l:oldFile)
+        call rename(l:oldFile, l:newFile)
+        call delete(l:oldFile)
+    endif
+    " save
+    call popc#init#SaveJson()
+    call popc#layer#wks#Pop('w')
+    call popc#ui#Msg('Set root of workspace to ''' . l:newPath . ''' successful.')
 endfunction
 " }}}
 
