@@ -33,7 +33,7 @@ let s:conf = {
     \ }
 let s:defaultSymbols = {
     \ 'unicode' : {
-        \ 'Popc'   : '⌘',
+        \ 'Popc'   : '❖',
         \ 'Buf'    : '•',
         \ 'Wks'    : '፨',
         \ 'Bm'     : '♥',
