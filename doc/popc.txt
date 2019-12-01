@@ -61,10 +61,17 @@ You should meet the requirements below:
 There some options start with `g:Popc_` used to config popc. The default value
 is below:
 
-basic configs:
 >
-    jsonPath      = expand($HOME)
+    jsonPath      = expand($VIM)
+    symbols       = {}
     useGlobalPath = 1
+    highlight     = {
+        'text'        : 'PmenuSbar',
+        'selected'    : 'PmenuSel',
+        'modifiedTxt' : '',
+        'modifiedSel' : 'DiffAdd',
+        'label'       : 'IncSearch',
+        'blankTxt'    : 'Normal'}
     useUnicode    = 1
     useTabline    = 1
     useStatusline = 1
@@ -77,18 +84,49 @@ basic configs:
     maxHeight     = 0
     useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
     useRoots      = ['.root', '.git', '.svn']
+    layerInit     = {}
+    layerComMaps  = {}
+    operationMaps = {
+        moveCursorDown   : ['j', 'C-j'],
+        moveCursorUp     : ['k', 'C-k'],
+        moveCursorBottom : ['J'],
+        moveCursorTop    : ['K'],
+        moveCursorPgDown : ['M-j'],
+        moveCursorPgUp   : ['M-k'],
+        quit             : ['q', 'Esc']}
 <
-configs about key maps:
+default symbols:
 >
-    layerInit        = {},
-    layerComMaps     = {},
-    moveCursorDown   = ['j', 'C-j']
-    moveCursorUp     = ['k', 'C-k']
-    moveCursorBottom = ['J']
-    moveCursorTop    = ['K']
-    moveCursorPgDown = ['M-j']
-    moveCursorPgUp   = ['M-k']
-    quit             = ['q', 'Esc']
+    let s:defaultSymbols = {
+        \ 'unicode' : {
+            \ 'Popc'   : '❖',
+            \ 'Buf'    : '•',
+            \ 'Wks'    : '፨',
+            \ 'Bm'     : '♥',
+            \ 'Tab'    : '▫',
+            \ 'CTab'   : '▪',
+            \ 'WIn'    : '★',
+            \ 'WOut'   : '☆',
+            \ 'Rank'   : '≡',
+            \ 'Arr'    : '→',
+            \ 'Dots'   : '…',
+            \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
+            \ },
+        \ 'ascii' : {
+            \ 'Popc'   : '#',
+            \ 'Buf'    : '*',
+            \ 'Wks'    : '&',
+            \ 'Bm'     : '$',
+            \ 'Tab'    : '~',
+            \ 'CTab'   : '%',
+            \ 'WIn'    : '*',
+            \ 'WOut'   : '-',
+            \ 'Rank'   : '=',
+            \ 'Arr'    : '->',
+            \ 'Dots'   : '...',
+            \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+            \ },
+        \ }
 <
 
                                                                       |popc-toc|
@@ -150,19 +188,20 @@ Set your own tabline layout with `popc#ui#TabLineSetLayout()`:
 --------------------------------------------------------------------------------
  2.5 Highlight                                                  *popc-highlight*
 
-Customize highlight via `popc#ui#InitHi()`:
+Customize highlight via `g:Popc_highlight` or function `popc#ui#InitHi()`:
 >
     let g:hi = {
         \ 'text'        : 'PmenuSbar',
         \ 'selected'    : 'PmenuSel',
         \ 'label'       : 'IncSearch',
-        \ 'modifiedSel' : 'DiffChange',
+        \ 'modifiedTxt' : '',
+        \ 'modifiedSel' : 'DiffAdd',
         \ 'blankTxt'    : 'Normal',
         \ }
     call popc#ui#InitHi(g:hi)
 <
-g:hi is a dictionary to save highlight name, and g:hi.text and g:hi.selected is
-necessary at least.
+`g:hi` is a dictionary to save highlight name, and `g:hi.text` and
+`g:hi.selected` is necessary at least.
 
                                                                       |popc-toc|
 

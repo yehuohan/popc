@@ -8,6 +8,14 @@ let s:conf = {
     \ 'useGlobalPath'  : 0,
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
+    \ 'highlight'      : {
+        \ 'text'        : 'PmenuSbar',
+        \ 'selected'    : 'PmenuSel',
+        \ 'modifiedTxt' : '',
+        \ 'modifiedSel' : 'DiffAdd',
+        \ 'label'       : 'IncSearch',
+        \ 'blankTxt'    : 'Normal',
+        \ },
     \ 'useTabline'     : 1,
     \ 'useStatusline'  : 1,
     \ 'usePowerFont'   : 0,
@@ -146,7 +154,7 @@ function! s:initConfig()
     " set confiuration's dictionary and list
     let s:conf.symbols = deepcopy(s:conf.useUnicode ? s:defaultSymbols.unicode : s:defaultSymbols.ascii)
     unlet s:defaultSymbols
-    for k in ['symbols', 'separator', 'subSeparator', 'tabLineLayout',
+    for k in ['symbols', 'highlight', 'separator', 'subSeparator', 'tabLineLayout',
             \ 'useLayer', 'layerInit', 'layerComMaps', 'operationMaps']
         if exists('g:Popc_' . k)
             call extend(s:conf[k], g:{'Popc_' . k}, 'force')

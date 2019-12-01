@@ -7,12 +7,12 @@ let [s:popc, s:MODE] = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:hi = {
-    \ 'text'        : 'PmenuSbar',
-    \ 'selected'    : 'PmenuSel',
-    \ 'label'       : 'IncSearch',
+    \ 'text'        : '',
+    \ 'selected'    : '',
     \ 'modifiedTxt' : '',
-    \ 'modifiedSel' : 'DiffChange',
-    \ 'blankTxt'    : 'Normal',
+    \ 'modifiedSel' : '',
+    \ 'label'       : '',
+    \ 'blankTxt'    : '',
     \ }
 let s:recover = {
     \ 'winnr' : 0,
@@ -24,12 +24,9 @@ let s:recover = {
 
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
-    highlight default link PopcText PmenuSbar
-    highlight default link PopcSel  PmenuSel
-
     " set highlight
     if s:conf.useTabline || s:conf.useStatusline
-        call popc#ui#InitHi(s:hi)
+        call popc#ui#InitHi(s:conf.highlight)
         augroup PopcUiInit
             autocmd!
             autocmd ColorScheme * call popc#ui#InitHi(s:hi)
@@ -289,11 +286,11 @@ endfunction
 function! popc#ui#InitHi(hi)
     let s:hi.text        = a:hi.text
     let s:hi.selected    = a:hi.selected
-    let s:hi.label       = has_key(a:hi, 'label')       ? a:hi.label       : a:hi.selected
-    let s:hi.blankTxt    = has_key(a:hi, 'blankTxt')    ? a:hi.blankTxt    : a:hi.text
-    let s:hi.modifiedSel = has_key(a:hi, 'modifiedSel') ? a:hi.modifiedSel : a:hi.selected
-    let s:hi.modifiedTxt = s:createHiSep(s:hi.modifiedSel, s:hi.text, 'PopcModifiedTxt')
-
+    let s:hi.label       = !empty(a:hi.label)       ? a:hi.label       : a:hi.selected
+    let s:hi.blankTxt    = !empty(a:hi.blankTxt)    ? a:hi.blankTxt    : a:hi.text
+    let s:hi.modifiedSel = !empty(a:hi.modifiedSel) ? a:hi.modifiedSel : a:hi.selected
+    let s:hi.modifiedTxt = !empty(a:hi.modifiedTxt) ? a:hi.modifiedTxt :
+                           \ s:createHiSep(s:hi.modifiedSel, s:hi.text, 'PopcModifiedTxt')
     " menu
     execute printf('highlight default link PopcText     %s', s:hi.text)
     execute printf('highlight default link PopcSel      %s', s:hi.selected)
