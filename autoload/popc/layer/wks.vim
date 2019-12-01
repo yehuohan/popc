@@ -73,7 +73,7 @@ function! popc#layer#wks#Pop(key)
 endfunction
 " }}}
 
-" FUNCTION: s:useSlash(path) {{{
+" FUNCTION: s:useSlash(path, endslash) {{{
 function! s:useSlash(path, endslash)
     let l:path = popc#utils#useSlashPath(a:path)
     if a:endslash && l:path !~# '/$'
