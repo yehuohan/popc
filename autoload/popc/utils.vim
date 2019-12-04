@@ -152,12 +152,12 @@ function! popc#utils#GetParentDir(dirs)
     endif
 
     " find the max and min length of dir
-    let l:maxSize = strlen(a:dirs[0])
-    let l:minSize = strlen(a:dirs[0])
+    let l:maxSize = strchars(a:dirs[0])
+    let l:minSize = strchars(a:dirs[0])
     let l:min = 0
     let l:max = 0
     for k in range(len(a:dirs))
-        let l:dsize = strlen(a:dirs[k])
+        let l:dsize = strchars(a:dirs[k])
         if l:dsize < l:minSize
             let l:min = k
             let l:minSize = l:dsize

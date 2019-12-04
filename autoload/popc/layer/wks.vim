@@ -79,7 +79,7 @@ function! s:useSlash(path, endslash)
     if a:endslash && l:path !~# '/$'
         let l:path .= '/'
     elseif !a:endslash && l:path =~# '/$'
-        let l:path = strpart(l:path, 0, strlen(l:path) - 1)
+        let l:path = strcharpart(l:path, 0, strchars(l:path) - 1)
     endif
     return l:path
 endfunction
