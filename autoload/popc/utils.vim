@@ -88,7 +88,7 @@ endfunction
 
 " FUNCTION: popc#utils#FindRoot() {{{
 function! popc#utils#FindRoot()
-    if empty(s:conf.useRoots)
+    if empty(s:conf.useLayerRoots)
         return ''
     endif
 
@@ -96,7 +96,7 @@ function! popc#utils#FindRoot()
     let l:dirLast = ''
     while l:dir !=# l:dirLast
         let l:dirLast = l:dir
-        for m in s:conf.useRoots
+        for m in s:conf.useLayerRoots
             let l:root = l:dir . '/' . m
             if filereadable(l:root) || isdirectory(l:root)
                 return fnameescape(l:dir)

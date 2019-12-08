@@ -64,7 +64,6 @@ is below:
 >
     jsonPath      = expand($VIM)
     symbols       = {}
-    useGlobalPath = 1
     highlight     = {
         'text'        : 'PmenuSbar',
         'selected'    : 'PmenuSel',
@@ -83,7 +82,8 @@ is below:
     tabLineLayout = {'left' : 'buffer', 'right': 'tab'}
     maxHeight     = 0
     useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
-    useRoots      = ['.root', '.git', '.svn']
+    useLayerRoots = ['.root', '.git', '.svn']
+    useLayerPath  = 0
     layerInit     = {}
     layerComMaps  = {}
     operationMaps = {

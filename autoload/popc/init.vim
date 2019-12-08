@@ -5,7 +5,6 @@
 
 let s:conf = {
     \ 'jsonPath'       : $VIM,
-    \ 'useGlobalPath'  : 0,
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'highlight'      : {
@@ -26,7 +25,8 @@ let s:conf = {
     \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
     \ 'maxHeight'      : 0,
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
-    \ 'useRoots'       : ['.popc', '.git', '.svn'],
+    \ 'useLayerRoots'  : ['.popc', '.git', '.svn'],
+    \ 'useLayerPath'   : 0,
     \ 'layerInit'      : {},
     \ 'layerComMaps'   : {},
     \ 'operationMaps'  : {
@@ -114,7 +114,7 @@ function! s:initJson()
         let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
     endif
-    if s:conf.useGlobalPath
+    if !s:conf.useLayerPath
         if !isdirectory(s:json.dir)
             call mkdir(s:json.dir, 'p')
         endif
@@ -143,9 +143,10 @@ endfunction
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
     " set confiuration's value and list
-    for k in ['jsonPath', 'useGlobalPath', 'useUnicode',
+    for k in ['jsonPath', 'useUnicode',
             \ 'useTabline', 'useStatusline', 'usePowerFont',
-            \ 'statusLine', 'tabLine', 'maxHeight', 'useRoots']
+            \ 'statusLine', 'tabLine', 'maxHeight',
+            \ 'useLayerRoots', 'useLayerPath']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
         endif

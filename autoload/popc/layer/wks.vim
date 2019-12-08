@@ -213,15 +213,15 @@ endfunction
 
 " FUNCTION: s:checkWksFile(name, path) {{{
 function! s:checkWksFile(name, path)
-    if s:conf.useGlobalPath
+    if s:conf.useLayerPath
         for item in s:wks
-            if a:name ==# item.name
+            if a:name ==# item.name && a:path ==# item.path
                 return 0
             endif
         endfor
     else
         for item in s:wks
-            if a:name ==# item.name && a:path ==# item.path
+            if a:name ==# item.name
                 return 0
             endif
         endfor
@@ -232,13 +232,13 @@ endfunction
 
 " FUNCTION: s:getWksFilePath(root) {{{
 function! s:getWksFilePath(root)
-    if s:conf.useGlobalPath
-        let l:path = popc#init#GetJson('dir')
-    else
+    if s:conf.useLayerPath
         let l:path = a:root . '.popc'
         if !isdirectory(l:path)
             call mkdir(l:path, 'p')
         endif
+    else
+        let l:path = popc#init#GetJson('dir')
     endif
     return l:path
 endfunction
