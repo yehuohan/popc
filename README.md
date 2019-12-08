@@ -25,6 +25,10 @@ Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 <img alt="Workspace" src="https://github.com/yehuohan/popc/blob/master/README/wks.png"  width=75% height=75% />
 </div>
 
+## Search
+
+Use [LeaderF](https://github.com/Yggdroot/LeaderF) to search file or context in buffer, workspace or bookmark files.
+
 More usage help in [popc.txt](https://github.com/yehuohan/popc/blob/master/doc/popc.txt).
 
 
@@ -34,7 +38,7 @@ All you need to do is implement one *layer* struct and add to *s:popc*. The [Exa
 
 Plugins using popc:
  - [popset](https://github.com/yehuohan/popset)
-  
+
 
 ## Thinks
 

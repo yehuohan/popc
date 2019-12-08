@@ -228,7 +228,7 @@ very convenient with tabline.
     nnoremap <M-u> :PopcBufferSwitchLeft<CR>
     nnoremap <M-p> :PopcBufferSwitchRight<CR>
 <
-Search text in buffers with LeaderF:
+Search context in buffers with LeaderF(or fzf if you want):
 >
     " a:type = 'sigtab' search text in buffers of current tab
     " a:type = 'alltab' search text in buffers of all tab
@@ -238,6 +238,12 @@ Search text in buffers with LeaderF:
             execute ':Leaderf rg -e ' a:pat . ' ' . join(l:files, ' ')
         endif
     endfunction
+    " search context in buffers with fuzzy
+    nnoremap <leader>bc :call PopcBufSearch('""', 'sigtab')<CR>
+    nnoremap <leader>bC :call PopcBufSearch('""', 'alltab')<CR>
+    " search context string from input
+    :call PopcBufSearch(<string-to-search>, 'sigtab')
+    :call PopcBufSearch(<string-to-search>, 'alltab')
 <
 In buffer layer, press '?' to see all command help:
 >
@@ -258,11 +264,22 @@ In buffer layer, press '?' to see all command help:
 --------------------------------------------------------------------------------
  3.2 Bookmark layer                                              *popc-bookmark*
 
-Bookmar layer is used to manager all bookmark file.
+Bookmark layer is used to manager all bookmark file. All bookmark data is saved
+in `<jsonPath>/.popc.json`.
 
 Use the following example maps to open buffer layer:
 >
     nnoremap <leader><leader>b :PopcBookmark<CR>
+<
+Search file or context in bookmarked files with LeaderF(or fzf if you want):
+>
+    function! PopcBmsSearch(pat)
+        let l:files = popc#layer#bms#GetBmsFiles()
+        if !empty(l:files)
+            execute ':Leaderf rg -e ' a:pat . ' ' . join(l:files, ' ')
+        endif
+    endfunction
+    nnoremap <leader>bs :call PopcBmsSearch()<CR>
 <
 In bookmark layer, press '?' to see all command help:
 >
@@ -279,21 +296,31 @@ In bookmark layer, press '?' to see all command help:
 --------------------------------------------------------------------------------
  3.3 Workspace layer                                            *popc-workspace*
 
-Workspace layer is used to manager all working session.
+Workspace layer is used to manager all working session. All workspace data is
+saved in `<jsonPath>/.popc.json`. Workspace session file is stored in
+`<jsonPath>/.popc/` if `useLayerPath` is 0, or `<WorkspaceRoot>/.popc/` if
+`useLayerPath` is 1.
 
 Use the following example maps to open buffer layer:
 >
     nnoremap <leader><leader>w :PopcWorkspace<CR>
 <
-Search file in workspace with LeaderF:
+Search file or context in workspace with LeaderF(or fzf if you want):
 >
-    nnoremap <leader><leader>fw :call PopcWksSearch()<CR>
-    function! PopcWksSearch()
-        let l:wksRoot = popc#layer#wks#GetCurrentWks()[1]
-        if !empty(l:wksRoot)
-            execute ':LeaderfFile ' . l:wksRoot
+    function! PopcWksSearchFile()
+        let l:wks_root = popc#layer#wks#GetCurrentWks()[1]
+        if !empty(l:wks_root)
+            execute ':LeaderfFile ' . l:wks_root
         endif
     endfunction
+    function! PopcWksSearchContext()
+        let l:wks_root = popc#layer#wks#GetCurrentWks()[1]
+        if !empty(l:wks_root)
+            execute ':Leaderf rg -e "" ' . l:wks_root
+        endif
+    endfunction
+    nnoremap <leader>wf :call PopcWksSearchFile()<CR>
+    nnoremap <leader>wc :call PopcWksSearchContext()<CR>
 <
 In workspace layer, press '?' to see all command help:
 >
