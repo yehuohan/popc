@@ -165,3 +165,16 @@ function! popc#layer#bms#Help(key)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
+
+
+" SECTION: api functions {{{1
+" FUNCTION: popc#layer#bms#GetBmsFiles() {{{
+function! popc#layer#bms#GetBmsFiles()
+    let l:files = []
+    let s:bms = popc#init#GetJson('json').bookmarks
+    for item in s:bms
+        call add(l:files, item.path . '/' . item.name)
+    endfor
+    return l:files
+endfunction
+" }}}
