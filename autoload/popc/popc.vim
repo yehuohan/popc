@@ -10,6 +10,7 @@ let s:layer = {
     \ 'mode' : 0,
     \ 'maps' : {},
     \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
+    \ 'fltr' : {'chars': '', 'lines': [], 'index': []},
     \ 'info' : {
         \ 'rootDir'    : '',
         \ 'lastIndex'  : 0,
@@ -17,9 +18,19 @@ let s:layer = {
         \ 'userCmd'    : 0,
         \ }
     \ }
+" {{{ s:layer format
+"{
+"   'name' : ''                 " layer name
+"   'mode' : 0                  " layer mode(s:MODE)
+"   'maps' : {}                 " all key-mappings of layer
+"   'bufs' : {}                 " buffer text to pop
+"   'fltr' : []                 " filter-data used by layer
+"   'info' : {}                 " info-data used by layer
+"}
+" }}}
 let s:MODE = {
     \ 'Normal' : 0,
-    \ 'Search' : 1,
+    \ 'Filter' : 1,
     \ 'Help'   : 2,
     \ }
 
@@ -101,7 +112,17 @@ function! s:layer.getBufs() dict
         let l:txt = l:text
         let l:cnt += 2
     endif
+
     return [l:cnt, l:txt]
+endfunction
+" }}}
+
+" FUNCTION: s:layer.setFltr() dict {{{
+function! s:layer.setFltr() dict
+    let self.fltr.chars = ''
+    let [l:cnt, l:txt] = self.getBufs()
+    let self.fltr.lines = split(l:txt, "\n")
+    let self.fltr.index = range(l:cnt)
 endfunction
 " }}}
 
@@ -147,6 +168,7 @@ function! s:initLayers()
     if s:conf.useLayer.Reg
         call popc#layer#reg#Init()
     endif
+    "call popc#layer#exp#Init()
     for l in values(s:conf.layerInit)
         " {'layerName': initFuncName}
         call function(l)()

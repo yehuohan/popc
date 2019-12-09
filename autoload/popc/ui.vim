@@ -44,6 +44,12 @@ function! popc#ui#Create(layer)
     if exists('s:flag') && s:flag
         if s:lyr.name ==# a:layer
             call s:dispBuffer()     " just only re-display buffer
+            if s:lyr.mode == s:MODE.Filter
+                call s:filter(a:layer)
+            else
+                " TODO: try NOT call setFltr each time.
+                call s:lyr.setFltr()
+            endif
             return
         else
             call popc#ui#Destroy()
@@ -61,11 +67,11 @@ function! popc#ui#Create(layer)
 
     call s:setBuffer()
     call s:dispBuffer()
-    if s:lyr.mode == s:MODE.Search
-        set guicursor-=n:block-PopcSel-blinkon0
-        call popc#search#Search(a:layer)
-        set guicursor+=n:block-PopcSel-blinkon0
-        call popc#ui#Destroy()
+    if s:lyr.mode == s:MODE.Filter
+        call s:filter(a:layer)
+    else
+        " TODO: try NOT call setFltr each time.
+        call s:lyr.setFltr()
     endif
 endfunction
 " }}}
@@ -178,6 +184,8 @@ function! s:dispBuffer()
     setlocal nomodifiable
     if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Help
         call popc#ui#MoveBar('num', s:lyr.info.lastIndex + 1)
+    elseif s:lyr.mode == s:MODE.Filter
+        call popc#ui#MoveBar('num', b:size)
     endif
 endfunction
 " }}}
@@ -240,7 +248,11 @@ endfunction
 
 " FUNCTION: popc#ui#GetIndex() {{{
 function! popc#ui#GetIndex()
-    return line('.') - 1
+    if s:lyr.mode == s:MODE.Filter
+        return s:lyr.fltr.index[line('.') - 1]
+    else
+        return line('.') - 1
+    endif
 endfunction
 " }}}
 
@@ -260,6 +272,66 @@ function! popc#ui#GetRecover()
 endfunction
 " }}}
 
+
+" SETCION: simple filter {{{1
+
+" FUNCTION: s:filter(layer) {{{
+function! s:filter(layer) abort
+    set guicursor-=n:block-PopcSel-blinkon0
+
+    call s:filterUpdate()
+    while 1
+        redraw
+        echo ' > ' . s:lyr.fltr.chars
+
+        let ret = getchar()
+        let ch = (type(ret) == v:t_number ? nr2char(ret) : ret)
+
+        if ch ==# "\<Esc>" || ch ==# "\<CR>"
+            break
+        elseif ch ==# "\<C-j>" || ch ==# "\<Down>"
+            call popc#ui#MoveBar('down')
+        elseif ch ==# "\<C-k>" || ch ==# "\<Up>"
+            call popc#ui#MoveBar('up')
+        elseif ch ==# "\<M-j>"
+            call popc#ui#MoveBar('pgdown')
+        elseif ch ==# "\<M-k>"
+            call popc#ui#MoveBar('pgup')
+        elseif ch ==# "\<BS>" || ch ==# "\<C-h>"
+            let s:lyr.fltr.chars = s:lyr.fltr.chars[0:-2]
+            call s:filterUpdate()
+        elseif ch =~# '\p'
+            let s:lyr.fltr.chars .= ch
+            call s:filterUpdate()
+        endif
+    endwhile
+
+    set guicursor+=n:block-PopcSel-blinkon0
+endfunction
+" }}}
+
+" FUNCTION: s:filterUpdate() {{{
+function! s:filterUpdate() abort
+    let l:cnt = 0
+    let l:txt = ''
+    let l:pat = ''
+
+    for k in range(strchars(s:lyr.fltr.chars))
+        let l:pat .= s:lyr.fltr.chars[k]
+        let l:pat .= '.*'
+    endfor
+    for k in range(len(s:lyr.fltr.lines))
+        if s:lyr.fltr.lines[k] =~? l:pat
+            let s:lyr.fltr.index[l:cnt] = k
+            let l:cnt += 1
+            let l:txt .= s:lyr.fltr.lines[k] . "\n"
+        endif
+    endfor
+
+    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
+    call s:dispBuffer()
+endfunction
+" }}}
 
 " SETCION: statusline and tabline {{{1
 
@@ -357,7 +429,7 @@ function! popc#ui#InitHi(hi)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#GetStatusLineSegments() abort {{{
+" FUNCTION: popc#ui#GetStatusLineSegments(seg) abort {{{
 function! popc#ui#GetStatusLineSegments(seg) abort
     let l:segs = []
 
@@ -367,7 +439,7 @@ function! popc#ui#GetStatusLineSegments(seg) abort
     endif
 
     if a:seg =~? '[ac]'
-        if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Search
+        if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Filter
             let l:center = s:lyr.info.centerText
         elseif s:lyr.mode == s:MODE.Help
             let l:center = 'Help for ''' . s:lyr.name . ''' layer'

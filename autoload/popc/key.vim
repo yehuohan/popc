@@ -85,10 +85,8 @@ endfunction
 
 " FUNCTION: popc#key#SetMaps(layer) {{{
 function! popc#key#SetMaps(layer)
-    if a:layer.mode == s:MODE.Normal
+    if a:layer.mode == s:MODE.Normal || a:layer.mode == s:MODE.Filter
         let s:maps = a:layer.maps
-    elseif a:layer.mode == s:MODE.Search
-        let s:maps = {}
     elseif a:layer.mode == s:MODE.Help
         let s:maps = s:mapsHelp
     endif
