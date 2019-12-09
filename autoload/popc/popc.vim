@@ -162,12 +162,6 @@ function! s:initLayers()
     if s:conf.useLayer.Workspace
         call popc#layer#wks#Init()
     endif
-    if s:conf.useLayer.File
-        call popc#layer#fls#Init()
-    endif
-    if s:conf.useLayer.Reg
-        call popc#layer#reg#Init()
-    endif
     "call popc#layer#exp#Init()
     for l in values(s:conf.layerInit)
         " {'layerName': initFuncName}

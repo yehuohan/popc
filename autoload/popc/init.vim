@@ -24,7 +24,7 @@ let s:conf = {
     \ 'tabLine'        : 'popc#ui#TabLine()',
     \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
     \ 'maxHeight'      : 0,
-    \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1, 'File': 0, 'Reg': 0},
+    \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
     \ 'useLayerRoots'  : ['.popc', '.git', '.svn'],
     \ 'useLayerPath'   : 0,
     \ 'layerInit'      : {},
