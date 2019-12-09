@@ -13,6 +13,7 @@ let s:mapsData = [
     \ ['popc#layer#bms#Add'   , ['a'],                                  'Add file as bookmark'],
     \ ['popc#layer#bms#Delete', ['d'],                                  'Delete one bookmark'],
     \ ['popc#layer#bms#Sort'  , ['g'],                                  'Display sorted bookmaks'],
+    \ ['popc#layer#bms#Filter', ['/'],                                  'Filter bookmarks'],
     \ ['popc#layer#bms#Help'  , ['?'],                                  'Show help of bookmarks layer'],
     \ ]
 
@@ -155,6 +156,17 @@ function! popc#layer#bms#Sort(key)
     call popc#init#SaveJson()
     call popc#layer#bms#Pop('b')
     call popc#ui#Msg('Bookmarks sorted by: ''' . s:lyr.info.sort  . '''.')
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#bms#Filter(key) {{{
+function! popc#layer#bms#Filter(key)
+    if empty(s:bms)
+        return
+    endif
+
+    call s:lyr.setMode(s:MODE.Filter)
+    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 

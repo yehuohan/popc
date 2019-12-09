@@ -53,6 +53,7 @@ let s:mapsData = [
     \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                 'Move buffer to left/right(I/O) tab'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
     \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
+    \ ['popc#layer#buf#Filter'       , ['/'],                     'Filter buffers'],
     \ ['popc#layer#buf#Help'         , ['?'],                     'Show help of buffers layer'],
     \ ]
 
@@ -724,6 +725,17 @@ function! popc#layer#buf#Edit(key)
     silent execute 'edit ' . l:file
     call popc#ui#Toggle(1)
     call s:pop(s:lyr.info.state)
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#Filter(key) {{{
+function! popc#layer#buf#Filter(key)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
+    call s:lyr.setMode(s:MODE.Filter)
+    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 

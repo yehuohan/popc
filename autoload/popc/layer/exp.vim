@@ -24,9 +24,10 @@ let s:exp = [
     \ 'Use popc#ui#Msg to show message.',
     \ ]
 let s:mapsData = [
-    \ ['popc#layer#exp#Pop'  , ['p'],          'Pop example layer'],
-    \ ['popc#layer#exp#Get'  , ['CR','Space'], 'Get example layer content'],
-    \ ['popc#layer#exp#Help' , ['?'],          'Show help of example layer'],
+    \ ['popc#layer#exp#Pop'   , ['p'],          'Pop example layer'],
+    \ ['popc#layer#exp#Get'   , ['CR','Space'], 'Get example layer content'],
+    \ ['popc#layer#exp#Filter', ['/'],          'Filter example content'],
+    \ ['popc#layer#exp#Help'  , ['?'],          'Show help of example layer'],
     \]
 
 
@@ -80,6 +81,13 @@ function! popc#layer#exp#Get(key)
         call s:createBuffer()
         call popc#ui#Create(s:lyr.name)
     endif
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#exp#Filter(key) {{{
+function! popc#layer#exp#Filter(key)
+    call s:lyr.setMode(s:MODE.Filter)
+    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 

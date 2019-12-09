@@ -17,6 +17,7 @@ let s:mapsData = [
     \ ['popc#layer#wks#SetName', ['n'],                  'Set name of workspace'],
     \ ['popc#layer#wks#SetRoot', ['r'],                  'Set root of workspace'],
     \ ['popc#layer#wks#Sort'   , ['g'],                  'Display sorted workspaces'],
+    \ ['popc#layer#wks#Filter' , ['/'],                  'Filter workspaces'],
     \ ['popc#layer#wks#Help'   , ['?'],                  'Show help of workspaces layer'],
     \]
 
@@ -465,6 +466,17 @@ function! popc#layer#wks#Sort(key)
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w')
     call popc#ui#Msg('Workspaces sorted by: ''' . s:lyr.info.sort  . '''.')
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#wks#Filter(key) {{{
+function! popc#layer#wks#Filter(key)
+    if empty(s:wks)
+        return
+    endif
+
+    call s:lyr.setMode(s:MODE.Filter)
+    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 
