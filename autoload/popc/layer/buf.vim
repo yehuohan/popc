@@ -712,9 +712,8 @@ function! popc#layer#buf#Edit(key)
         return
     endif
     let l:file = fnamemodify(l:name, ':h')
-    " BUG: file string can't be indexed by -1
-    if l:file[len(l:file) - 1] != '/'
-        let l:file .= has('win32') ? '\' : '/'
+    if l:file[len(l:file) - 1] != '/' && l:file[len(l:file) - 1] != '\'
+        let l:file = expand(l:file . '/')
     endif
     let l:file = popc#ui#Input('Edit new file: ', l:file, 'file')
     if empty(l:file)
