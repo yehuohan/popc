@@ -161,7 +161,8 @@ endfunction
 " FUNCTION: popc#layer#bms#Help(key) {{{
 function! popc#layer#bms#Help(key)
     call s:lyr.setMode(s:MODE.Help)
-    call s:lyr.setBufs(v:t_string, len(s:mapsData), popc#utils#createHelpBuffer(s:mapsData))
+    let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
+    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

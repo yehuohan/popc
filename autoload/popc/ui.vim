@@ -176,7 +176,9 @@ function! s:dispBuffer()
     silent put! = b:text
     silent normal! GkJgg
     setlocal nomodifiable
-    call popc#ui#MoveBar('num', s:lyr.info.lastIndex + 1)
+    if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Help
+        call popc#ui#MoveBar('num', s:lyr.info.lastIndex + 1)
+    endif
 endfunction
 " }}}
 

@@ -27,6 +27,7 @@ endfunction
 " mapsData format [function-name, key-list, help-text]
 function! popc#utils#createHelpBuffer(mapsData)
     let l:text = ''
+    let l:cnt = len(a:mapsData)
 
     " get max name width
     let l:max = 0
@@ -45,7 +46,24 @@ function! popc#utils#createHelpBuffer(mapsData)
         let l:text .= l:line . "\n"
     endfor
 
-    return l:text
+    " append help for operation
+    let l:text .= repeat(' ', &columns) . "\n"
+    let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]',
+                        \ join(s:conf.operationMaps['moveCursorUp']     , ','),
+                        \ join(s:conf.operationMaps['moveCursorTop']    , ','),
+                        \ join(s:conf.operationMaps['moveCursorPgUp']   , ',')
+                        \ )
+    let l:text .= l:line . repeat(' ', &columns - strwidth(l:line)) . "\n"
+    let l:line = printf('  Down: [%s]    Bottom: [%s]    Page down: [%s]    Quit: [%s]',
+                        \ join(s:conf.operationMaps['moveCursorDown']   , ','),
+                        \ join(s:conf.operationMaps['moveCursorBottom'] , ','),
+                        \ join(s:conf.operationMaps['moveCursorPgDown'] , ','),
+                        \ join(s:conf.operationMaps['quit']             , ',')
+                        \ )
+    let l:text .= l:line . repeat(' ', &columns - strwidth(l:line)) . "\n"
+    let l:cnt += 3
+
+    return [l:cnt, l:text]
 endfunction
 " }}}
 
