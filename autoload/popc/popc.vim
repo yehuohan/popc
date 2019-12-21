@@ -12,6 +12,7 @@ let s:layer = {
     \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
     \ 'fltr' : {'chars': '', 'lines': [], 'index': []},
     \ 'info' : {
+        \ 'useCm'      : 0,
         \ 'rootDir'    : '',
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
@@ -43,8 +44,7 @@ function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
     let self[a:layer].mode = s:MODE.Normal
-    let l:bindCom = (a:0 > 0) ? a:1 : 1
-    call popc#key#InitMaps(a:layer, self[a:layer].maps, l:bindCom)
+    call self[a:layer].setInfo('useCm', (a:0 > 0) ? a:1 : 1)
     return self[a:layer]
 endfunctio
 " }}}
@@ -139,17 +139,17 @@ endfunction
 function! s:initLayers()
     " common maps init
     if s:conf.useLayer.Buffer
-        call popc#key#AddComMaps('popc#layer#buf#Pop', 'h')
+        call popc#ui#AddComMap('popc#layer#buf#Pop', 'h')
     endif
     if s:conf.useLayer.Bookmark
-        call popc#key#AddComMaps('popc#layer#bms#Pop', 'b')
+        call popc#ui#AddComMap('popc#layer#bms#Pop', 'b')
     endif
     if s:conf.useLayer.Workspace
-        call popc#key#AddComMaps('popc#layer#wks#Pop', 'w')
+        call popc#ui#AddComMap('popc#layer#wks#Pop', 'w')
     endif
     for m in values(s:conf.layerComMaps)
         " {'layerName': [funcName, key]}
-        call popc#key#AddComMaps(m[0], m[1])
+        call popc#ui#AddComMap(m[0], m[1])
     endfor
 
     " layer init
@@ -173,7 +173,6 @@ endfunction
 " FUNCTION: popc#popc#Init() {{{
 function! popc#popc#Init()
     call popc#init#Init()
-    call popc#key#Init()
     call popc#ui#Init()
     call s:initLayers()
 endfunction
@@ -188,11 +187,11 @@ endfunction
 " FUNCTION: popc#popc#Popc(layername) {{{
 function! popc#popc#Popc(layername)
     if a:layername ==# 'Buffer'
-        call popc#layer#buf#Pop('h')
+        call popc#layer#buf#Pop('h', 0)
     elseif a:layername ==# 'Bookmark'
-        call popc#layer#bms#Pop('b')
+        call popc#layer#bms#Pop('b', 0)
     elseif a:layername ==# 'Workspace'
-        call popc#layer#wks#Pop('w')
+        call popc#layer#wks#Pop('w', 0)
     endif
 endfunction
 " }}}

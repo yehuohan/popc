@@ -18,7 +18,6 @@ let s:exp = [
     \ 'Use s:lyr.setInfo to set layer information data.',
     \ 'Use popc#ui#Create open layer.',
     \ 'Use popc#ui#Destroy close layer.',
-    \ 'Use popc#ui#GetIndex to get current content index.',
     \ 'Use popc#ui#Input to get input.',
     \ 'Use popc#ui#Confirm to show confirm interface.',
     \ 'Use popc#ui#Msg to show message.',
@@ -58,33 +57,31 @@ function! s:createBuffer()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#exp#Pop(key) {{{
-function! popc#layer#exp#Pop(key)
+" FUNCTION: popc#layer#exp#Pop(key, index) {{{
+function! popc#layer#exp#Pop(key, index)
     call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#exp#Get(key) {{{
-function! popc#layer#exp#Get(key)
-    let l:index = popc#ui#GetIndex()
-
+" FUNCTION: popc#layer#exp#Get(key, index) {{{
+function! popc#layer#exp#Get(key, index)
     if a:key ==# 'CR'
-        echo s:exp[l:index]
-        let s:exp[l:index] .= ' [This line was got]'
+        echo s:exp[a:index]
+        let s:exp[a:index] .= ' [This line was got]'
         call popc#ui#Destroy()
     elseif a:key ==# 'Space'
-        echo s:exp[l:index]
-        let s:exp[l:index] .= ' [This line was got]'
+        echo s:exp[a:index]
+        let s:exp[a:index] .= ' [This line was got]'
         call s:createBuffer()
         call popc#ui#Create(s:lyr.name)
     endif
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#exp#Help(key) {{{
-function! popc#layer#exp#Help(key)
+" FUNCTION: popc#layer#exp#Help(key, index) {{{
+function! popc#layer#exp#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
     let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
     call s:lyr.setBufs(v:t_string, l:cnt, l:txt)

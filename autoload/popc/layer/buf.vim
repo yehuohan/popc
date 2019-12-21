@@ -441,8 +441,8 @@ function! s:pop(state)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Pop(key) {{{
-function! popc#layer#buf#Pop(key)
+" FUNCTION: popc#layer#buf#Pop(key, index) {{{
+function! popc#layer#buf#Pop(key, index)
     if (a:key ==# 'h')
         \ || (a:key ==# 'a' && s:lyr.info.state ==# s:STATE.Alltab)
         \ || (a:key ==# 'l' && s:lyr.info.state ==# s:STATE.Listab)
@@ -450,7 +450,7 @@ function! popc#layer#buf#Pop(key)
     elseif a:key ==# 'a'
         " calculate buffer index from Sigle or Listab
         if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Listab)
-            let [l:tidx, l:bidx] = s:getIndexs(popc#ui#GetIndex())[0:1]
+            let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
             for k in range(s:tab.num())
                 if k < l:tidx
                     let l:bidx += s:tab.num(k)
@@ -462,7 +462,7 @@ function! popc#layer#buf#Pop(key)
     elseif a:key ==# 'l'
         " calculate tab index from Sigle or Alltab
         if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
-            call s:lyr.setInfo('lastIndex', s:getIndexs(popc#ui#GetIndex())[0])
+            call s:lyr.setInfo('lastIndex', s:getIndexs(a:index)[0])
         endif
         let l:state = s:STATE.Listab
     endif
@@ -471,13 +471,13 @@ function! popc#layer#buf#Pop(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Load(key) {{{
-function! popc#layer#buf#Load(key)
+" FUNCTION: popc#layer#buf#Load(key, index) {{{
+function! popc#layer#buf#Load(key, index)
     if s:tab.isTabEmpty()
         return
     endif
 
-    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(a:index)
 
     call popc#ui#Destroy()
     if s:lyr.info.state ==# s:STATE.Listab
@@ -493,13 +493,13 @@ function! popc#layer#buf#Load(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SplitTab(key) {{{
-function! popc#layer#buf#SplitTab(key)
+" FUNCTION: popc#layer#buf#SplitTab(key, index) {{{
+function! popc#layer#buf#SplitTab(key, index)
     if s:tab.isTabEmpty()
         return
     endif
 
-    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(a:index)
 
     call popc#ui#Destroy()
     if s:lyr.info.state ==# s:STATE.Listab
@@ -526,13 +526,13 @@ function! popc#layer#buf#SplitTab(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Goto(key) {{{
-function! popc#layer#buf#Goto(key)
+" FUNCTION: popc#layer#buf#Goto(key, index) {{{
+function! popc#layer#buf#Goto(key, index)
     if s:tab.isTabEmpty()
         return
     endif
 
-    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(a:index)
 
     if s:lyr.info.state ==# s:STATE.Listab
         call popc#ui#Destroy()
@@ -597,13 +597,13 @@ function! s:closeBuffer(tidx, bidx)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Close(key) {{{
-function! popc#layer#buf#Close(key)
+" FUNCTION: popc#layer#buf#Close(key, index) {{{
+function! popc#layer#buf#Close(key, index)
     if s:tab.isTabEmpty()
         return
     endif
 
-    let [l:tidx, l:bidx] = s:getIndexs(popc#ui#GetIndex())[0:1]
+    let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
 
     if a:key ==# 'C' || s:lyr.info.state ==# s:STATE.Listab
         for k in range(s:tab.num(l:tidx) - 1, 0, -1)
@@ -616,8 +616,8 @@ function! popc#layer#buf#Close(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SwitchTab(key) {{{
-function! popc#layer#buf#SwitchTab(key)
+" FUNCTION: popc#layer#buf#SwitchTab(key, index) {{{
+function! popc#layer#buf#SwitchTab(key, index)
     call popc#ui#Destroy()
     if a:key == 'i'
         silent normal! gT
@@ -655,13 +655,13 @@ function! popc#layer#buf#SwitchBuffer(type)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#MoveBuffer(key) {{{
-function! popc#layer#buf#MoveBuffer(key)
+" FUNCTION: popc#layer#buf#MoveBuffer(key, index) {{{
+function! popc#layer#buf#MoveBuffer(key, index)
     if s:tab.isTabEmpty() || (s:tab.num() <= 1)
         return
     endif
 
-    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(popc#ui#GetIndex())
+    let [l:tidx, l:bidx, l:bnr] = s:getIndexs(a:index)
     call popc#ui#Destroy()
 
     " goto origin tab
@@ -691,22 +691,22 @@ function! popc#layer#buf#MoveBuffer(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SetTabName(key) {{{
-function! popc#layer#buf#SetTabName(key)
-    let l:tidx = s:getIndexs(popc#ui#GetIndex())[0]
+" FUNCTION: popc#layer#buf#SetTabName(key, index) {{{
+function! popc#layer#buf#SetTabName(key, index)
+    let l:tidx = s:getIndexs(a:index)[0]
     let l:name = popc#ui#Input('Input tab name: ', gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
     call settabvar(l:tidx + 1, 'PopcLayerBuf_TabName', l:name)
     call s:pop(s:lyr.info.state)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Edit(key) {{{
-function! popc#layer#buf#Edit(key)
+" FUNCTION: popc#layer#buf#Edit(key, index) {{{
+function! popc#layer#buf#Edit(key, index)
     if s:tab.isTabEmpty()
         return
     endif
 
-    let l:bnr = s:getIndexs(popc#ui#GetIndex())[2]
+    let l:bnr = s:getIndexs(a:index)[2]
     let l:name = getbufinfo(str2nr(l:bnr))[0].name
     if empty(l:name)
         return
@@ -727,8 +727,8 @@ function! popc#layer#buf#Edit(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#Help(key) {{{
-function! popc#layer#buf#Help(key)
+" FUNCTION: popc#layer#buf#Help(key, index) {{{
+function! popc#layer#buf#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
     let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
     call s:lyr.setBufs(v:t_string, l:cnt, l:txt)

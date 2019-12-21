@@ -6,6 +6,27 @@
 let [s:popc, s:MODE] = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
+let s:ui = {
+    \ 'recover' : {
+        \ 'winnr' : 0,
+        \ 'file'  : '',
+        \ 'timeoutlen' : 0,
+        \},
+    \ 'maps' : {
+        \ 'operation' : {},
+        \ 'common'    : {},
+        \ },
+    \ 'funcs' : {
+        \ 'create'  : '',
+        \ 'destroy' : '',
+        \ 'display' : '',
+        \ 'toggle'  : '',
+        \ 'operate' : '',
+        \ 'input'   : '',
+        \ 'confirm' : '',
+        \ 'message' : '',
+        \ }
+    \ }
 let s:hi = {
     \ 'text'        : '',
     \ 'selected'    : '',
@@ -14,16 +35,41 @@ let s:hi = {
     \ 'label'       : '',
     \ 'blankTxt'    : '',
     \ }
-let s:recover = {
-    \ 'winnr' : 0,
-    \ 'file'  : '',
-    \ 'timeoutlen' : 0,
-    \ }
 
-" SETCION: functions {{{1
+
+" SETCION: ui functions {{{1
 
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
+    " set funcs
+    if 0
+    else
+        call extend(s:ui.funcs, popc#ui#default#Init(), 'force')
+    endif
+
+    " set operation
+    for k in s:conf.operationMaps.moveCursorDown
+        let s:ui.maps.operation[k] = 'down'
+    endfor
+    for k in s:conf.operationMaps.moveCursorUp
+        let s:ui.maps.operation[k] = 'up'
+    endfor
+    for k in s:conf.operationMaps.moveCursorTop
+        let s:ui.maps.operation[k] = 'top'
+    endfor
+    for k in s:conf.operationMaps.moveCursorBottom
+        let s:ui.maps.operation[k] = 'bottom'
+    endfor
+    for k in s:conf.operationMaps.moveCursorPgDown
+        let s:ui.maps.operation[k] = 'pgdown'
+    endfor
+    for k in s:conf.operationMaps.moveCursorPgUp
+        let s:ui.maps.operation[k] = 'pgup'
+    endfor
+    for k in s:conf.operationMaps.quit
+        let s:ui.maps.operation[k] = 'quit'
+    endfor
+
     " set highlight
     if s:conf.useTabline || s:conf.useStatusline
         call popc#ui#InitHi(s:conf.highlight)
@@ -41,297 +87,92 @@ endfunction
 
 " FUNCTION: popc#ui#Create(layer) {{{
 function! popc#ui#Create(layer)
-    if exists('s:flag') && s:flag
-        if s:lyr.name ==# a:layer
-            call s:dispBuffer()     " just only re-display buffer
-            if s:lyr.mode == s:MODE.Filter
-                call s:filter(a:layer)
-            else
-                " TODO: try NOT call setFltr each time.
-                call s:lyr.setFltr()
-            endif
-            return
-        else
-            call popc#ui#Destroy()
-        endif
-    endif
-    let s:flag = 1
     let s:lyr = s:popc[a:layer]
-
-    call s:saveRecover()
-
-    silent execute 'noautocmd botright pedit popc'
-    " before the line below, all command is executed in recover-buffer
-    " after the line below, all command is executed in Popc-buffer
-    silent execute 'noautocmd wincmd P'
-
-    call s:setBuffer()
-    call s:dispBuffer()
-    if s:lyr.mode == s:MODE.Filter
-        call s:filter(a:layer)
-    else
-        " TODO: try NOT call setFltr each time.
-        call s:lyr.setFltr()
-    endif
+    call s:ui.funcs.create(a:layer)
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#Destroy() {{{
 function! popc#ui#Destroy()
-    if !(exists('s:flag') && s:flag)
-        return
-    endif
+    call s:ui.funcs.destroy()
+endfunction
+" }}}
 
-    " recover window
-    if &timeoutlen
-        silent execute 'set timeoutlen=' . s:recover.timeoutlen
-    endif
-    set guicursor-=n:block-PopcSel-blinkon0
-    bwipeout
-    " before the line below, all command is executed in Popc-buffer
-    " after the line below, all command is executed in recover-buffer
-    if s:recover.winnr <= winnr('$')
-        silent execute 'noautocmd ' . s:recover.winnr . 'wincmd w'
-    endif
-
-    let s:flag = 0
+" FUNCTION: popc#ui#Display() {{{
+function! popc#ui#Display()
+    call s:ui.funcs.display()
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#Toggle(state) {{{
+" @param state: 0 for toggle out Popc temporarily to execute command in recover window
+"               1 fot toggle back to Popc
 function! popc#ui#Toggle(state)
-    " 0 for toggle out Popc temporarily to execute command in recover window
-    " 1 fot toggle back to Popc
-    if exists('s:flag') && s:flag
-        " use noautocmd to avoid BufLeave of preview window
-        silent execute a:state ?
-                    \ ('noautocmd wincmd P') :
-                    \ ('noautocmd ' . s:recover.winnr . 'wincmd w')
-    endif
+    call s:ui.funcs.toggle(a:state)
 endfunction
 " }}}
 
-" FUNCTION: s:setBuffer() {{{
-function! s:setBuffer()
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=delete
-    setlocal nobuflisted
-    setlocal nomodifiable
-    setlocal nowrap
-    setlocal nonumber
-    if exists('+relativenumber')
-        setlocal norelativenumber
-    endif
-    setlocal nocursorcolumn
-    setlocal nocursorline
-    setlocal nofoldenable
-    setlocal foldcolumn=1
-    setlocal nospell
-    setlocal nolist
-    setlocal scrolloff=0
-    setlocal colorcolumn=
-    setlocal filetype=Popc
-    if &timeout
-        set timeoutlen=10
-    endif
-
-    " set root path
-    if !empty(s:lyr.info.rootDir)
-        silent execute 'lcd ' . s:lyr.info.rootDir
-    endif
-
-    " set auto-command
-    augroup PopcUiSetBuffer
-        autocmd!
-        autocmd BufLeave <buffer> call popc#ui#Destroy()
-    augroup END
-
-    " set up syntax highlighting
-    if has('syntax')
-        syntax clear
-        syntax match PopcText /  .*/
-        syntax match PopcSel /> .*/hs=s+1
-    endif
-    set guicursor+=n:block-PopcSel-blinkon0
-
-    " set statusline
-    if s:conf.useStatusline
-        silent execute 'let &l:statusline=' . s:conf.statusLine
-        silent execute 'setlocal statusline=%!' . s:conf.statusLine
-    endif
-
-    " create maps
-    call popc#key#CreateKeymaps()
+" FUNCTION: popc#ui#Input(prompt, ...) {{{
+" global input funtion interface for ui of popc.
+function! popc#ui#Input(prompt, ...)
+    let l:args = [a:prompt, ]
+    call extend(l:args, a:000)
+    return call(s:ui.funcs.input, l:args)
 endfunction
 " }}}
 
-" FUNCTION: s:dispBuffer() {{{
-function! s:dispBuffer()
-    " set buffer text and maps
-    let [b:size, b:text] = s:lyr.getBufs()
-    call popc#key#SetMaps(s:lyr)
-
-    " resize buffer
-    let l:max = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 3)
-    silent execute 'resize' ((b:size > l:max) ? l:max : b:size)
-
-    " put buffer
-    setlocal modifiable
-    silent normal! gg"_dG
-    silent put! = b:text
-    silent normal! GkJgg
-    setlocal nomodifiable
-    if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Help
-        call popc#ui#MoveBar('num', s:lyr.info.lastIndex + 1)
-    elseif s:lyr.mode == s:MODE.Filter
-        call popc#ui#MoveBar('num', b:size)
-    endif
+" FUNCTION: popc#ui#Confirm(prompt) {{{
+" global confirm funtion interface for ui of popc.
+" input 'y' for 'Yes', and anythin else for 'No'.
+function! popc#ui#Confirm(prompt)
+    return s:ui.funcs.confirm(a:prompt)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#MoveBar(dir, ...) {{{
-function! popc#ui#MoveBar(dir, ...)
-    setlocal modifiable
-    let l:oldLine = line('.')
-    if b:size < 1
-        return
-    endif
+" FUNCTION: popc#ui#Msg(msg) {{{
+" global message function interface for ui of popc.
+function! popc#ui#Msg(msg)
+    call s:ui.funcs.message(a:msg)
+endfunction
+" }}}
 
-    if a:dir ==# 'down'
-        let l:pos = line('.') + 1
-    elseif a:dir ==# 'up'
-        let l:pos = line('.') - 1
-    elseif a:dir ==# 'top'
-        let l:pos = 1
-    elseif a:dir ==# 'bottom'
-        let l:pos = line('$')
-    elseif a:dir ==# 'pgup'
-        let l:pos = line('.') - winheight(0)
-        if l:pos < 1
-            let l:pos = 1
-        endif
-    elseif a:dir ==# 'pgdown'
-        let l:pos = line('.') + winheight(0)
-        if l:pos > line('$')
-            let l:pos = line('$')
-        endif
-    elseif a:dir ==# 'num'
-        let l:pos = (a:0 >= 1) ? a:1 : 0
-    endif
-
-    if l:pos < 1
-        call cursor(b:size - l:pos, 1)
-    elseif l:pos > b:size
-        call cursor(l:pos - b:size, 1)
+" FUNCTION: popc#ui#Trigger(key, index) {{{
+function! popc#ui#Trigger(key, index)
+    " key response priority： operation > common > layer > default
+    if has_key(s:ui.maps.operation, a:key)
+        call s:ui.funcs.operate(s:ui.maps.operation[a:key])
+    elseif has_key(s:ui.maps.common, a:key)
+        call s:ui.maps.common[a:key](a:index)
+    elseif has_key(s:lyr.maps, a:key) && (s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Filter)
+        call s:lyr.maps[a:key](a:index)
     else
-        call cursor(l:pos, 1)
-    endif
-
-    " mark index line with '>'
-    let l:newLine = line('.')
-    if l:oldLine != l:newLine
-        call setline(l:oldLine, ' ' . strpart(getline(l:oldLine), 1))
-    endif
-    call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
-    setlocal nomodifiable
-
-    " save layer index
-    if s:lyr.mode == s:MODE.Normal
-        call s:lyr.setInfo('lastIndex', popc#ui#GetIndex())
-        if s:lyr.info.userCmd
-            doautocmd User PopcUiIndexChanged
-        endif
+        call s:ui.funcs.message('Key ''' . a:key . ''' doesn''t work in layer ''' . s:lyr.name . '''.')
     endif
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#GetIndex() {{{
-function! popc#ui#GetIndex()
-    if s:lyr.mode == s:MODE.Filter
-        return s:lyr.fltr.index[line('.') - 1]
-    else
-        return line('.') - 1
-    endif
+" FUNCTION: popc#ui#AddComMap(funcName, key) {{{
+function! popc#ui#AddComMap(funcName, key)
+    let s:ui.maps.common[a:key] = function(a:funcName, [a:key])
 endfunction
 " }}}
 
-" FUNCTION: s:saveRecover() {{{
-function! s:saveRecover()
-    let s:recover.winnr = winnr()
-    let s:recover.file = expand('%:p')
+" FUNCTION: popc#ui#saveRecover() {{{
+function! popc#ui#saveRecover()
+    let s:ui.recover.winnr = winnr()
+    let s:ui.recover.file = expand('%:p')
     if &timeout
-        let s:recover.timeoutlen = &timeoutlen
+        let s:ui.recover.timeoutlen = &timeoutlen
     endif
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#GetRecover() {{{
 function! popc#ui#GetRecover()
-    return s:recover
+    return s:ui.recover
 endfunction
 " }}}
 
-
-" SETCION: simple filter {{{1
-
-" FUNCTION: s:filter(layer) {{{
-function! s:filter(layer) abort
-    set guicursor-=n:block-PopcSel-blinkon0
-
-    call s:filterUpdate()
-    while 1
-        redraw
-        echo ' > ' . s:lyr.fltr.chars
-
-        let ret = getchar()
-        let ch = (type(ret) == v:t_number ? nr2char(ret) : ret)
-
-        if ch ==# "\<Esc>" || ch ==# "\<CR>"
-            break
-        elseif ch ==# "\<C-j>" || ch ==# "\<Down>"
-            call popc#ui#MoveBar('down')
-        elseif ch ==# "\<C-k>" || ch ==# "\<Up>"
-            call popc#ui#MoveBar('up')
-        elseif ch ==# "\<M-j>"
-            call popc#ui#MoveBar('pgdown')
-        elseif ch ==# "\<M-k>"
-            call popc#ui#MoveBar('pgup')
-        elseif ch ==# "\<BS>" || ch ==# "\<C-h>"
-            let s:lyr.fltr.chars = s:lyr.fltr.chars[0:-2]
-            call s:filterUpdate()
-        elseif ch =~# '\p'
-            let s:lyr.fltr.chars .= ch
-            call s:filterUpdate()
-        endif
-    endwhile
-
-    set guicursor+=n:block-PopcSel-blinkon0
-endfunction
-" }}}
-
-" FUNCTION: s:filterUpdate() {{{
-function! s:filterUpdate() abort
-    let l:cnt = 0
-    let l:txt = ''
-    let l:pat = ''
-
-    for k in range(strchars(s:lyr.fltr.chars))
-        let l:pat .= s:lyr.fltr.chars[k]
-        let l:pat .= '.*'
-    endfor
-    for k in range(len(s:lyr.fltr.lines))
-        if s:lyr.fltr.lines[k] =~? l:pat
-            let s:lyr.fltr.index[l:cnt] = k
-            let l:cnt += 1
-            let l:txt .= s:lyr.fltr.lines[k] . "\n"
-        endif
-    endfor
-
-    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
-    call s:dispBuffer()
-endfunction
-" }}}
 
 " SETCION: statusline and tabline {{{1
 
@@ -585,37 +426,5 @@ function! popc#ui#TabLineSetLayout(lhs, rhs) abort
     if s:conf.useTabline
         silent execute 'set tabline=%!' . s:conf.tabLine
     endif
-endfunction
-" }}}
-
-
-" SETCION: api functions{{{1
-
-" FUNCTION: popc#ui#Input(promot, ...) {{{
-" global input funtion interface for ui of popc.
-function! popc#ui#Input(promot, ...)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:promot, '\M\n', '\n   ', 'g')
-    redraw
-    return a:0 == 0 ? input(l:msg) :
-         \ a:0 == 1 ? input(l:msg, a:1) :
-         \            input(l:msg, a:1, a:2)
-endfunction
-" }}}
-
-" FUNCTION: popc#ui#Confirm(prompt) {{{
-" global confirm funtion interface for ui of popc.
-" input 'y' for 'Yes', and anythin else for 'No'.
-function! popc#ui#Confirm(prompt)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
-    redraw
-    return input(l:msg) ==# 'y'
-endfunction
-" }}}
-
-" FUNCTION: popc#ui#Msg(msg) {{{
-" global message function interface for ui of popc.
-function! popc#ui#Msg(msg)
-    redraw
-    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
 endfunction
 " }}}

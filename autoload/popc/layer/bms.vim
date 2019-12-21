@@ -55,8 +55,8 @@ function! s:createBuffer()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Pop(key) {{{
-function! popc#layer#bms#Pop(key)
+" FUNCTION: popc#layer#bms#Pop(key, index) {{{
+function! popc#layer#bms#Pop(key, index)
     let s:bms = popc#init#GetJson('json').bookmarks
     call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
@@ -64,26 +64,25 @@ function! popc#layer#bms#Pop(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Load(type) {{{
-function! popc#layer#bms#Load(key)
+" FUNCTION: popc#layer#bms#Load(type, index) {{{
+function! popc#layer#bms#Load(key, index)
     if empty(s:bms)
         return
     endif
 
-    let l:index = popc#ui#GetIndex()
     call popc#ui#Destroy()
     if a:key ==# 'CR'
-        silent execute 'edit ' . s:bms[l:index].path . '/' . s:bms[l:index].name
+        silent execute 'edit ' . s:bms[a:index].path . '/' . s:bms[a:index].name
     elseif a:key ==# 'Space'
-        silent execute 'edit ' . s:bms[l:index].path . '/' . s:bms[l:index].name
+        silent execute 'edit ' . s:bms[a:index].path . '/' . s:bms[a:index].name
         call popc#ui#Create(s:lyr.name)
     else
         if a:key ==? 's'
-            silent execute 'split ' . s:bms[l:index].path . '/' . s:bms[l:index].name
+            silent execute 'split ' . s:bms[a:index].path . '/' . s:bms[a:index].name
         elseif a:key ==? 'v'
-            silent execute 'vsplit ' . s:bms[l:index].path . '/' . s:bms[l:index].name
+            silent execute 'vsplit ' . s:bms[a:index].path . '/' . s:bms[a:index].name
         elseif a:key ==? 't'
-            silent execute 'tabedit ' . s:bms[l:index].path . '/' . s:bms[l:index].name
+            silent execute 'tabedit ' . s:bms[a:index].path . '/' . s:bms[a:index].name
         endif
         if a:key =~# '[SVT]'
             call popc#ui#Create(s:lyr.name)
@@ -92,8 +91,8 @@ function! popc#layer#bms#Load(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Add(key) {{{
-function! popc#layer#bms#Add(key)
+" FUNCTION: popc#layer#bms#Add(key, index) {{{
+function! popc#layer#bms#Add(key, index)
     let l:rc = popc#ui#GetRecover()
     let l:name = fnamemodify(l:rc.file, ':p:t')
     let l:path = fnamemodify(l:rc.file, ':p:h')
@@ -114,33 +113,32 @@ function! popc#layer#bms#Add(key)
 
     call add(s:bms, {'name' : l:name, 'path' : l:path})
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b')
+    call popc#layer#bms#Pop('b', 0)
     call popc#ui#Msg('Add bookmark ''' . l:name . ''' successful.')
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Delete(key) {{{
-function! popc#layer#bms#Delete(key)
+" FUNCTION: popc#layer#bms#Delete(key, index) {{{
+function! popc#layer#bms#Delete(key, index)
     if empty(s:bms)
         return
     endif
 
-    let l:index = popc#ui#GetIndex()
-    let l:name = s:bms[l:index].name
+    let l:name = s:bms[a:index].name
 
     if !popc#ui#Confirm('Delete bookmark ''' . l:name . ''' ?')
         return
     endif
 
-    call remove(s:bms, l:index)
+    call remove(s:bms, a:index)
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b')
+    call popc#layer#bms#Pop('b', 0)
     call popc#ui#Msg('Delete bookmark ''' . l:name . ''' successful.')
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Sort(key) {{{
-function! popc#layer#bms#Sort(key)
+" FUNCTION: popc#layer#bms#Sort(key, index) {{{
+function! popc#layer#bms#Sort(key, index)
     if empty(s:bms)
         return
     endif
@@ -153,13 +151,13 @@ function! popc#layer#bms#Sort(key)
         call s:lyr.setInfo('sort', 'name')
     endif
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b')
+    call popc#layer#bms#Pop('b', 0)
     call popc#ui#Msg('Bookmarks sorted by: ''' . s:lyr.info.sort  . '''.')
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Help(key) {{{
-function! popc#layer#bms#Help(key)
+" FUNCTION: popc#layer#bms#Help(key, index) {{{
+function! popc#layer#bms#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
     let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
     call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
