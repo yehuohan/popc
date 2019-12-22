@@ -7,11 +7,6 @@ let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:ui = {
-    \ 'recover' : {
-        \ 'winnr' : 0,
-        \ 'file'  : '',
-        \ 'timeoutlen' : 0,
-        \},
     \ 'maps' : {
         \ 'operation' : {},
         \ 'common'    : {},
@@ -21,6 +16,7 @@ let s:ui = {
         \ 'destroy' : '',
         \ 'toggle'  : '',
         \ 'operate' : '',
+        \ 'getval'  : '',
         \ 'input'   : '',
         \ 'confirm' : '',
         \ 'message' : '',
@@ -118,6 +114,12 @@ function! popc#ui#Toggle(state)
 endfunction
 " }}}
 
+" FUNCTION: popc#ui#GetVal(key) {{{
+function! popc#ui#GetVal(key)
+    return s:ui.funcs.getval(a:key)
+endfunction
+" }}}
+
 " FUNCTION: popc#ui#Input(prompt, ...) {{{
 " global input funtion interface for ui of popc.
 function! popc#ui#Input(prompt, ...)
@@ -160,22 +162,6 @@ endfunction
 " FUNCTION: popc#ui#AddComMap(funcName, key) {{{
 function! popc#ui#AddComMap(funcName, key)
     let s:ui.maps.common[a:key] = function(a:funcName, [a:key])
-endfunction
-" }}}
-
-" FUNCTION: popc#ui#SaveRecover() {{{
-function! popc#ui#SaveRecover()
-    let s:ui.recover.winnr = winnr()
-    let s:ui.recover.file = expand('%:p')
-    if &timeout
-        let s:ui.recover.timeoutlen = &timeoutlen
-    endif
-endfunction
-" }}}
-
-" FUNCTION: popc#ui#GetRecover() {{{
-function! popc#ui#GetRecover()
-    return s:ui.recover
 endfunction
 " }}}
 

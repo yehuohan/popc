@@ -302,7 +302,7 @@ function! s:createTabBuffer(tidx)
     " join lines
     let l:text = []
     let l:winid = win_getid(
-                \ ((a:tidx == tabpagenr() - 1) ? popc#ui#GetRecover().winnr : tabpagewinnr(a:tidx + 1)),
+                \ ((a:tidx == tabpagenr() - 1) ? popc#ui#GetVal('winnr') : tabpagewinnr(a:tidx + 1)),
                 \ a:tidx + 1)
     for k in range(s:tab.num(a:tidx))
         let l:bnr = s:tab.idx[a:tidx][k]
@@ -736,7 +736,7 @@ function! popc#layer#buf#GetBufs(tabnr) abort
     call s:tab.checkBuffer(l:tidx)
 
     if getbufvar(bufnr('%'), '&filetype') == 'Popc'
-        let l:curIdx = index(s:tab.idx[l:tidx], string(winbufnr(popc#ui#GetRecover().winnr)))
+        let l:curIdx = index(s:tab.idx[l:tidx], string(winbufnr(popc#ui#GetVal('winnr'))))
     else
         let l:curIdx = index(s:tab.idx[l:tidx], string(bufnr('%')))
     endif

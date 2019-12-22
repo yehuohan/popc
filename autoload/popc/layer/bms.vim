@@ -90,9 +90,9 @@ endfunction
 
 " FUNCTION: popc#layer#bms#Add(key, index) {{{
 function! popc#layer#bms#Add(key, index)
-    let l:rc = popc#ui#GetRecover()
-    let l:name = fnamemodify(l:rc.file, ':p:t')
-    let l:path = fnamemodify(l:rc.file, ':p:h')
+    let l:file = popc#ui#GetVal('file')
+    let l:name = fnamemodify(l:file, ':p:t')
+    let l:path = fnamemodify(l:file, ':p:h')
 
     if empty(l:name) || empty(l:path)
         call popc#ui#Msg('Nothing can add to bookmarks.')
@@ -104,7 +104,7 @@ function! popc#layer#bms#Add(key, index)
             return
         endif
     endfor
-    if !popc#ui#Confirm('Add to bookmarks: ' . l:rc.file . " ?")
+    if !popc#ui#Confirm('Add to bookmarks: ' . l:file . " ?")
         return
     endif
 

@@ -5,6 +5,11 @@
 let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
+let s:recover = {
+    \ 'winnr' : 0,
+    \ 'file' : '',
+    \ 'timeoutlen' : 0,
+    \ }
 
 
 " SETCION: functions {{{1
@@ -17,6 +22,7 @@ function! popc#ui#default#Init()
         \ 'destroy' : funcref('s:destroy'),
         \ 'toggle'  : funcref('s:toggle'),
         \ 'operate' : funcref('s:operate'),
+        \ 'getval'  : {key -> s:recover[key]},
         \ 'input'   : funcref('s:input'),
         \ 'confirm' : funcref('s:confirm'),
         \ 'message' : funcref('s:msg'),
@@ -65,8 +71,7 @@ function! s:create(layer)
         return
     endif
     let s:flag = 1
-
-    call popc#ui#SaveRecover()
+    call s:saveRecover()
 
     silent execute 'noautocmd botright pedit popc'
     " before the line below, all command is executed in recover-buffer
@@ -78,6 +83,16 @@ function! s:create(layer)
 endfunction
 " }}}
 
+" FUNCTION: s:saveRecover() {{{
+function! s:saveRecover()
+    let s:recover.winnr = winnr()
+    let s:recover.file = expand('%:p')
+    if &timeout
+        let s:recover.timeoutlen = &timeoutlen
+    endif
+endfunction
+" }}}
+
 " FUNCTION: s:destroy() {{{
 function! s:destroy()
     if !(exists('s:flag') && s:flag)
@@ -85,16 +100,15 @@ function! s:destroy()
     endif
 
     " recover window
-    let l:recover = popc#ui#GetRecover()
     if &timeoutlen
-        silent execute 'set timeoutlen=' . l:recover.timeoutlen
+        silent execute 'set timeoutlen=' . s:recover.timeoutlen
     endif
     set guicursor-=n:block-PopcSel-blinkon0
     bwipeout
     " before the line below, all command is executed in Popc-buffer
     " after the line below, all command is executed in recover-buffer
-    if l:recover.winnr <= winnr('$')
-        silent execute 'noautocmd ' . l:recover.winnr . 'wincmd w'
+    if s:recover.winnr <= winnr('$')
+        silent execute 'noautocmd ' . s:recover.winnr . 'wincmd w'
     endif
 
     let s:flag = 0
@@ -104,11 +118,10 @@ endfunction
 " FUNCTION: s:toggle(state) {{{
 function! s:toggle(state)
     if exists('s:flag') && s:flag
-        let l:recover = popc#ui#GetRecover()
         " use noautocmd to avoid BufLeave of preview window
         silent execute a:state ?
                     \ ('noautocmd wincmd P') :
-                    \ ('noautocmd ' . l:recover.winnr . 'wincmd w')
+                    \ ('noautocmd ' . s:recover.winnr . 'wincmd w')
     endif
 endfunction
 " }}}
