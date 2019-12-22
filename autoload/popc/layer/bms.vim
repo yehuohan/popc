@@ -3,7 +3,7 @@
 
 " SECTION: variables {{{1
 
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:bms = []          " bookmarks from .popc.json
@@ -13,7 +13,6 @@ let s:mapsData = [
     \ ['popc#layer#bms#Add'   , ['a'],                                  'Add file as bookmark'],
     \ ['popc#layer#bms#Delete', ['d'],                                  'Delete one bookmark'],
     \ ['popc#layer#bms#Sort'  , ['g'],                                  'Display sorted bookmaks'],
-    \ ['popc#layer#bms#Help'  , ['?'],                                  'Show help of bookmarks layer'],
     \ ]
 
 " SECTION: functions {{{1
@@ -25,7 +24,7 @@ function! popc#layer#bms#Init()
     call s:lyr.setInfo('centerText', s:conf.symbols.Bm)
 
     for md in s:mapsData
-        call s:lyr.addMaps(md[0], md[1])
+        call s:lyr.addMaps(md[0], md[1], md[2])
     endfor
 endfunction
 " }}}
@@ -57,7 +56,6 @@ endfunction
 " FUNCTION: popc#layer#bms#Pop(key, index) {{{
 function! popc#layer#bms#Pop(key, index)
     let s:bms = popc#init#GetJson('json').bookmarks
-    call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
 endfunction
@@ -152,15 +150,6 @@ function! popc#layer#bms#Sort(key, index)
     call popc#init#SaveJson()
     call popc#layer#bms#Pop('b', 0)
     call popc#ui#Msg('Bookmarks sorted by: ''' . s:lyr.info.sort  . '''.')
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#bms#Help(key, index) {{{
-function! popc#layer#bms#Help(key, index)
-    call s:lyr.setMode(s:MODE.Help)
-    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_list, l:txt)
-    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 

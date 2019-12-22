@@ -3,7 +3,7 @@
 
 " SECTION: variables {{{1
 
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:exp = [
@@ -13,7 +13,6 @@ let s:exp = [
     \ 'Use s:popc.addLayer to add layer.',
     \ 'Use s:popc.removeLayer to remove layer.',
     \ 'Use s:lyr.addMaps to add maps for layer.',
-    \ 'Use s:lyr.setMode to change mode of layer.',
     \ 'Use s:lyr.setBufs to set layer content fo show.',
     \ 'Use s:lyr.setInfo to set layer information data.',
     \ 'Use popc#ui#Create open layer.',
@@ -25,7 +24,6 @@ let s:exp = [
 let s:mapsData = [
     \ ['popc#layer#exp#Pop'  , ['p'],          'Pop example layer'],
     \ ['popc#layer#exp#Get'  , ['CR','Space'], 'Get example layer content'],
-    \ ['popc#layer#exp#Help' , ['?'],          'Show help of example layer'],
     \]
 
 
@@ -37,7 +35,7 @@ function! popc#layer#exp#Init()
     call s:lyr.setInfo('centerText', 'This Is Example Layer')
 
     for md in s:mapsData
-        call s:lyr.addMaps(md[0], md[1])
+        call s:lyr.addMaps(md[0], md[1], md[2])
     endfor
 endfunction
 " }}}
@@ -58,7 +56,6 @@ endfunction
 
 " FUNCTION: popc#layer#exp#Pop(key, index) {{{
 function! popc#layer#exp#Pop(key, index)
-    call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
 endfunction
@@ -76,14 +73,5 @@ function! popc#layer#exp#Get(key, index)
         call s:createBuffer()
         call popc#ui#Create(s:lyr.name)
     endif
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#exp#Help(key, index) {{{
-function! popc#layer#exp#Help(key, index)
-    call s:lyr.setMode(s:MODE.Help)
-    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_list, l:txt)
-    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

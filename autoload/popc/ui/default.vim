@@ -2,7 +2,7 @@
 " ui of windows interacting for popc.
 
 " SECTION: variables {{{1
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 
@@ -66,7 +66,7 @@ function! s:create(layer)
     endif
     let s:flag = 1
 
-    call popc#ui#saveRecover()
+    call popc#ui#SaveRecover()
 
     silent execute 'noautocmd botright pedit popc'
     " before the line below, all command is executed in recover-buffer
@@ -192,11 +192,7 @@ function! s:dispBuffer()
     silent put! = b:text
     silent normal! GkJgg
     setlocal nomodifiable
-    if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Help
-        call s:operate('num', s:lyr.info.lastIndex + 1)
-    elseif s:lyr.mode == s:MODE.Filter
-        call s:operate('num', b:size)
-    endif
+    call s:operate('num', s:lyr.info.lastIndex + 1)
 endfunction
 " }}}
 
@@ -228,9 +224,6 @@ function! s:operate(dir, ...)
         endif
     elseif a:dir ==# 'num'
         let l:pos = (a:0 >= 1) ? a:1 : 0
-    elseif a:dir ==# 'quit'
-        call s:destroy()
-        return
     endif
 
     if l:pos < 1
@@ -250,7 +243,7 @@ function! s:operate(dir, ...)
     setlocal nomodifiable
 
     " save layer index
-    if s:lyr.mode == s:MODE.Normal
+    if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
         if s:lyr.info.userCmd
             doautocmd User PopcUiIndexChanged
@@ -261,11 +254,7 @@ endfunction
 
 " FUNCTION: popc#ui#default#Trigger(key) {{{
 function! popc#ui#default#Trigger(key)
-    let l:index = line('.') - 1
-    if s:lyr.mode == s:MODE.Filter
-        let l:index = s:lyr.fltr.index[l:index]
-    endif
-    call popc#ui#Trigger(a:key, l:index)
+    call popc#ui#Trigger(a:key, line('.') - 1)
 endfunction
 " }}}
 
@@ -291,66 +280,5 @@ endfunction
 function! s:msg(msg)
     redraw
     echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
-endfunction
-" }}}
-
-
-" SETCION: simple filter {{{1
-
-" FUNCTION: s:filter(layer) {{{
-function! s:filter(layer) abort
-    set guicursor-=n:block-PopcSel-blinkon0
-
-    call s:filterUpdate()
-    while 1
-        redraw
-        echo ' > ' . s:lyr.fltr.chars
-
-        let ret = getchar()
-        let ch = (type(ret) == v:t_number ? nr2char(ret) : ret)
-
-        if ch ==# "\<Esc>" || ch ==# "\<CR>"
-            break
-        elseif ch ==# "\<C-j>" || ch ==# "\<Down>"
-            call s:operate('down')
-        elseif ch ==# "\<C-k>" || ch ==# "\<Up>"
-            call s:operate('up')
-        elseif ch ==# "\<M-j>"
-            call s:operate('pgdown')
-        elseif ch ==# "\<M-k>"
-            call s:operate('pgup')
-        elseif ch ==# "\<BS>" || ch ==# "\<C-h>"
-            let s:lyr.fltr.chars = s:lyr.fltr.chars[0:-2]
-            call s:filterUpdate()
-        elseif ch =~# '\p'
-            let s:lyr.fltr.chars .= ch
-            call s:filterUpdate()
-        endif
-    endwhile
-
-    set guicursor+=n:block-PopcSel-blinkon0
-endfunction
-" }}}
-
-" FUNCTION: s:filterUpdate() {{{
-function! s:filterUpdate() abort
-    let l:cnt = 0
-    let l:txt = []
-    let l:pat = ''
-
-    for k in range(strchars(s:lyr.fltr.chars))
-        let l:pat .= s:lyr.fltr.chars[k]
-        let l:pat .= '.*'
-    endfor
-    for k in range(len(s:lyr.fltr.lines))
-        if s:lyr.fltr.lines[k] =~? l:pat
-            let s:lyr.fltr.index[l:cnt] = k
-            let l:cnt += 1
-            call add(l:txt, s:lyr.fltr.lines[k])
-        endif
-    endfor
-
-    call s:lyr.setBufs(v:t_list, l:txt)
-    call s:dispBuffer()
 endfunction
 " }}}

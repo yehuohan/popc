@@ -36,6 +36,7 @@ let s:conf = {
         \ 'moveCursorTop'    : ['K'],
         \ 'moveCursorPgDown' : ['M-j'],
         \ 'moveCursorPgUp'   : ['M-k'],
+        \ 'help'             : ['?'],
         \ 'quit'             : ['q', 'Esc'],
         \ },
     \ }

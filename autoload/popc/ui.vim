@@ -3,7 +3,7 @@
 
 " SECTION: variables {{{1
 
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:ui = {
@@ -50,25 +50,28 @@ function! popc#ui#Init()
 
     " set operation
     for k in s:conf.operationMaps.moveCursorDown
-        let s:ui.maps.operation[k] = 'down'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['down'])
     endfor
     for k in s:conf.operationMaps.moveCursorUp
-        let s:ui.maps.operation[k] = 'up'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['up'])
     endfor
     for k in s:conf.operationMaps.moveCursorTop
-        let s:ui.maps.operation[k] = 'top'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['top'])
     endfor
     for k in s:conf.operationMaps.moveCursorBottom
-        let s:ui.maps.operation[k] = 'bottom'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['bottom'])
     endfor
     for k in s:conf.operationMaps.moveCursorPgDown
-        let s:ui.maps.operation[k] = 'pgdown'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['pgdown'])
     endfor
     for k in s:conf.operationMaps.moveCursorPgUp
-        let s:ui.maps.operation[k] = 'pgup'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['pgup'])
+    endfor
+    for k in s:conf.operationMaps.help
+        let s:ui.maps.operation[k] = funcref('s:createHelp')
     endfor
     for k in s:conf.operationMaps.quit
-        let s:ui.maps.operation[k] = 'quit'
+        let s:ui.maps.operation[k] = funcref('s:ui.funcs.destroy')
     endfor
 
     " set highlight
@@ -89,7 +92,15 @@ endfunction
 " FUNCTION: popc#ui#Create(layer) {{{
 function! popc#ui#Create(layer)
     let s:lyr = s:popc[a:layer]
+    let s:lyr.mode = 'normal'
     call s:ui.funcs.create(a:layer)
+endfunction
+" }}}
+
+" FUNCTION: s:createHelp() {{{
+function! s:createHelp()
+    let s:lyr.mode = 'help'
+    call s:ui.funcs.create(s:lyr.name)
 endfunction
 " }}}
 
@@ -135,10 +146,10 @@ endfunction
 function! popc#ui#Trigger(key, index)
     " key response priority： operation > common > layer > default
     if has_key(s:ui.maps.operation, a:key)
-        call s:ui.funcs.operate(s:ui.maps.operation[a:key])
+        call s:ui.maps.operation[a:key]()
     elseif s:lyr.info.useCm && has_key(s:ui.maps.common, a:key)
         call s:ui.maps.common[a:key](a:index)
-    elseif has_key(s:lyr.maps, a:key) && (s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Filter)
+    elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
         call s:lyr.maps[a:key](a:index)
     else
         call s:ui.funcs.message('Key ''' . a:key . ''' doesn''t work in layer ''' . s:lyr.name . '''.')
@@ -152,8 +163,8 @@ function! popc#ui#AddComMap(funcName, key)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#saveRecover() {{{
-function! popc#ui#saveRecover()
+" FUNCTION: popc#ui#SaveRecover() {{{
+function! popc#ui#SaveRecover()
     let s:ui.recover.winnr = winnr()
     let s:ui.recover.file = expand('%:p')
     if &timeout
@@ -275,11 +286,7 @@ function! popc#ui#GetStatusLineSegments(seg) abort
     endif
 
     if a:seg =~? '[ac]'
-        if s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Filter
-            let l:center = s:lyr.info.centerText
-        elseif s:lyr.mode == s:MODE.Help
-            let l:center = 'Help for ''' . s:lyr.name . ''' layer'
-        endif
+        let l:center = s:lyr.info.centerText
         call add(l:segs, l:center)
     endif
 

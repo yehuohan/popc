@@ -3,7 +3,7 @@
 
 " SECTION: variables {{{1
 
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:tab = {
@@ -53,7 +53,6 @@ let s:mapsData = [
     \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                 'Move buffer to left/right(I/O) tab'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
     \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
-    \ ['popc#layer#buf#Help'         , ['?'],                     'Show help of buffers layer'],
     \ ]
 
 
@@ -202,7 +201,7 @@ function! popc#layer#buf#Init()
     augroup END
 
     for md in s:mapsData
-        call s:lyr.addMaps(md[0], md[1])
+        call s:lyr.addMaps(md[0], md[1], md[2])
     endfor
 endfunction
 " }}}
@@ -416,7 +415,6 @@ endfunction
 
 " FUNCTION: s:pop(state) {{{
 function! s:pop(state)
-    call s:lyr.setMode(s:MODE.Normal)
     call s:lyr.setInfo('state', a:state)
     call s:lyr.setBufs(v:t_func, funcref('s:createBuffer'))
     " set lastIndex
@@ -719,15 +717,6 @@ function! popc#layer#buf#Edit(key, index)
     silent execute 'edit ' . l:file
     call popc#ui#Toggle(1)
     call s:pop(s:lyr.info.state)
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#buf#Help(key, index) {{{
-function! popc#layer#buf#Help(key, index)
-    call s:lyr.setMode(s:MODE.Help)
-    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_list, l:txt)
-    call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}
 

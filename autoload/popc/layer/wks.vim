@@ -3,7 +3,7 @@
 
 " SECTION: variables {{{1
 
-let [s:popc, s:MODE] = popc#popc#GetPopc()
+let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:wks = []          " workspaces from .popc.json
@@ -17,7 +17,6 @@ let s:mapsData = [
     \ ['popc#layer#wks#SetName', ['n'],                  'Set name of workspace'],
     \ ['popc#layer#wks#SetRoot', ['r'],                  'Set root of workspace'],
     \ ['popc#layer#wks#Sort'   , ['g'],                  'Display sorted workspaces'],
-    \ ['popc#layer#wks#Help'   , ['?'],                  'Show help of workspaces layer'],
     \]
 
 
@@ -32,7 +31,7 @@ function! popc#layer#wks#Init()
     call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
 
     for md in s:mapsData
-        call s:lyr.addMaps(md[0], md[1])
+        call s:lyr.addMaps(md[0], md[1], md[2])
     endfor
 endfunction
 " }}}
@@ -66,7 +65,6 @@ endfunction
 " FUNCTION: popc#layer#wks#Pop(ke, indexy) {{{
 function! popc#layer#wks#Pop(ke, indexy)
     let s:wks = popc#init#GetJson('json').workspaces
-    call s:lyr.setMode(s:MODE.Normal)
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
 endfunction
@@ -462,14 +460,6 @@ function! popc#layer#wks#Sort(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#wks#Help(key, index) {{{
-function! popc#layer#wks#Help(key, index)
-    call s:lyr.setMode(s:MODE.Help)
-    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_list, l:txt)
-    call popc#ui#Create(s:lyr.name)
-endfunction
-" }}}
 
 " SECTION: api functions {{{1
 

@@ -23,47 +23,6 @@ function! popc#utils#Num2RankStr(num)
 endfunction
 " }}}
 
-" FUNCTION: popc#utils#createHelpBuffer() {{{
-" mapsData format [function-name, key-list, help-text]
-function! popc#utils#createHelpBuffer(mapsData)
-    let l:text = []
-
-    " get max name width
-    let l:max = 0
-    for md in a:mapsData
-        let l:wid = strwidth(join(md[1], ','))
-        let l:max = (l:wid > l:max) ? l:wid : l:max
-    endfor
-    let l:max += 2
-
-    " get context
-    for md in a:mapsData
-        let l:line =  '  ' . join(md[1], ',')
-        let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' | '
-        let l:line .= md[2]
-        call add(l:text, l:line)
-    endfor
-
-    " append help for operation
-    call add(l:text, '')
-    let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]',
-                        \ join(s:conf.operationMaps['moveCursorUp']     , ','),
-                        \ join(s:conf.operationMaps['moveCursorTop']    , ','),
-                        \ join(s:conf.operationMaps['moveCursorPgUp']   , ',')
-                        \ )
-    call add(l:text, l:line)
-    let l:line = printf('  Down: [%s]    Bottom: [%s]    Page down: [%s]    Quit: [%s]',
-                        \ join(s:conf.operationMaps['moveCursorDown']   , ','),
-                        \ join(s:conf.operationMaps['moveCursorBottom'] , ','),
-                        \ join(s:conf.operationMaps['moveCursorPgDown'] , ','),
-                        \ join(s:conf.operationMaps['quit']             , ',')
-                        \ )
-    call add(l:text, l:line)
-
-    return l:text
-endfunction
-" }}}
-
 " FUNCTION: popc#utils#SortByName(a, b) {{{
 " dict item format {'name': , 'path': }
 function! popc#utils#SortByName(a, b)
