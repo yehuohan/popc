@@ -19,7 +19,6 @@ let s:ui = {
     \ 'funcs' : {
         \ 'create'  : '',
         \ 'destroy' : '',
-        \ 'display' : '',
         \ 'toggle'  : '',
         \ 'operate' : '',
         \ 'input'   : '',
@@ -42,7 +41,9 @@ let s:hi = {
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
     " set funcs
+    "if !has('nvim') && v:version >= 802
     if 0
+        call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
     else
         call extend(s:ui.funcs, popc#ui#default#Init(), 'force')
     endif
@@ -98,12 +99,6 @@ function! popc#ui#Destroy()
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#Display() {{{
-function! popc#ui#Display()
-    call s:ui.funcs.display()
-endfunction
-" }}}
-
 " FUNCTION: popc#ui#Toggle(state) {{{
 " @param state: 0 for toggle out Popc temporarily to execute command in recover window
 "               1 fot toggle back to Popc
@@ -141,7 +136,7 @@ function! popc#ui#Trigger(key, index)
     " key response priority： operation > common > layer > default
     if has_key(s:ui.maps.operation, a:key)
         call s:ui.funcs.operate(s:ui.maps.operation[a:key])
-    elseif has_key(s:ui.maps.common, a:key)
+    elseif s:lyr.info.useCm && has_key(s:ui.maps.common, a:key)
         call s:ui.maps.common[a:key](a:index)
     elseif has_key(s:lyr.maps, a:key) && (s:lyr.mode == s:MODE.Normal || s:lyr.mode == s:MODE.Filter)
         call s:lyr.maps[a:key](a:index)

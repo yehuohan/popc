@@ -15,7 +15,6 @@ function! popc#ui#default#Init()
     return {
         \ 'create'  : funcref('s:create'),
         \ 'destroy' : funcref('s:destroy'),
-        \ 'display' : funcref('s:dispBuffer'),
         \ 'toggle'  : funcref('s:toggle'),
         \ 'operate' : funcref('s:operate'),
         \ 'input'   : funcref('s:input'),
@@ -60,16 +59,12 @@ endfunction
 
 " FUNCTION: s:create(layer) {{{
 function! s:create(layer)
+    let s:lyr = s:popc[a:layer]
     if exists('s:flag') && s:flag
-        if s:lyr.name ==# a:layer
-            call s:dispBuffer()     " just only re-display buffer
-            return
-        else
-            call s:destroy()
-        endif
+        call s:dispBuffer()     " just only re-display buffer
+        return
     endif
     let s:flag = 1
-    let s:lyr = s:popc[a:layer]
 
     call popc#ui#saveRecover()
 
