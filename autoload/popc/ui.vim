@@ -289,7 +289,7 @@ function! popc#ui#GetStatusLineSegments(seg) abort
     endif
 
     if a:seg =~? '[ar]'
-        let l:rank = '[' . string(s:lyr.bufs.cnt) . ']' . popc#utils#Num2RankStr(line('.'))
+        let l:rank = '[' . string(len(s:lyr.bufs.txt)) . ']' . popc#utils#Num2RankStr(line('.'))
         let l:right = l:rank . ' ' . s:conf.symbols.Rank . ' '. s:lyr.name
         call add(l:segs, l:right)
     endif

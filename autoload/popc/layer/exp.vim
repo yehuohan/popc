@@ -44,16 +44,15 @@ endfunction
 
 " FUNCTION: s:createBuffer() {{{
 function! s:createBuffer()
-    let l:text = ''
+    let l:text = []
 
     for k in range(len(s:exp))
         let l:line = '  ' . string(k) . ' '
         let l:line .= s:exp[k]
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line . "\n"
+        call add(l:text, l:line)
     endfor
 
-    call s:lyr.setBufs(v:t_string, len(s:exp), l:text)
+    call s:lyr.setBufs(v:t_list, l:text)
 endfunction
 " }}}
 
@@ -83,8 +82,8 @@ endfunction
 " FUNCTION: popc#layer#exp#Help(key, index) {{{
 function! popc#layer#exp#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
-    let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
+    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
+    call s:lyr.setBufs(v:t_list, l:txt)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

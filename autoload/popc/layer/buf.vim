@@ -274,22 +274,19 @@ endfunction
 
 " FUNCTION: s:createBuffer() {{{
 function! s:createBuffer()
-    let l:text = ''
-    let l:textCnt = 0
+    let l:text = []
 
     " create buffer
     if s:lyr.info.state ==# s:STATE.Sigtab
-        let [l:textCnt, l:text] = s:createTabBuffer(tabpagenr() - 1)
+        call extend(l:text, s:createTabBuffer(tabpagenr() - 1))
     elseif s:lyr.info.state ==# s:STATE.Alltab
         for k in range(s:tab.num())
-            let [c, t] = s:createTabBuffer(k)
-            let l:textCnt += c
-            let l:text .= t
+            call extend(l:text, s:createTabBuffer(k))
         endfor
     elseif s:lyr.info.state ==# s:STATE.Listab
-        let [l:textCnt, l:text] = s:createTabList()
+        let l:text = s:createTabList()
     endif
-    return [l:textCnt, l:text]
+    return l:text
 endfunction
 " }}}
 
@@ -304,7 +301,7 @@ function! s:createTabBuffer(tidx)
     endif
 
     " join lines
-    let l:text = ''
+    let l:text = []
     let l:winid = win_getid(
                 \ ((a:tidx == tabpagenr() - 1) ? popc#ui#GetRecover().winnr : tabpagewinnr(a:tidx + 1)),
                 \ a:tidx + 1)
@@ -343,17 +340,16 @@ function! s:createTabBuffer(tidx)
         " symbol for changed
         let l:line .= b.changed ? '+' : ' '
         let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line . "\n"
+        call add(l:text, l:line)
     endfor
 
-    return [s:tab.num(a:tidx), l:text]
+    return l:text
 endfunction
 " }}}
 
 " FUNCTION: s:createTabList() {{{
 function! s:createTabList()
-    let l:text = ''
+    let l:text = []
 
     for k in range(s:tab.num())
         let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
@@ -362,11 +358,10 @@ function! s:createTabList()
         let l:line .= s:tab.isTabModified(k) ? '+' : ' '
         let l:line .= ' ' . '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
                         \ . popc#utils#Num2RankStr(s:tab.num(k))
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line . "\n"
+        call add(l:text, l:line)
     endfor
 
-    return [s:tab.num(), l:text]
+    return l:text
 endfunction
 " }}}
 
@@ -730,8 +725,8 @@ endfunction
 " FUNCTION: popc#layer#buf#Help(key, index) {{{
 function! popc#layer#buf#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
-    let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
+    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
+    call s:lyr.setBufs(v:t_list, l:txt)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

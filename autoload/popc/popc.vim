@@ -9,7 +9,7 @@ let s:layer = {
     \ 'name' : '',
     \ 'mode' : 0,
     \ 'maps' : {},
-    \ 'bufs' : {'typ': v:t_string, 'fnc': '', 'cnt': 0, 'txt': ''},
+    \ 'bufs' : {'typ': v:t_list, 'fnc': '', 'txt': []},
     \ 'fltr' : {'chars': '', 'lines': [], 'index': []},
     \ 'info' : {
         \ 'useCm'      : 0,
@@ -74,15 +74,14 @@ endfunction
 " }}}
 
 " FUNCTION: s:layer.setBufs(type, ...) dict {{{
-" @type: v:t_func or v:t_string
-" @param(a:000): funcref for v:t_func or cnt,txt for v:t_string
+" @type: v:t_func or v:t_list
+" @param(a:000): funcref for v:t_func or txt-list for v:t_list
 function! s:layer.setBufs(type, ...) dict
     let self.bufs.typ = a:type
     if self.bufs.typ == v:t_func
         let self.bufs.fnc = a:1
-    elseif self.bufs.typ == v:t_string
-        let self.bufs.cnt = a:1
-        let self.bufs.txt = a:2
+    elseif self.bufs.typ == v:t_list
+        let self.bufs.txt = a:1
     endif
 endfunction
 " }}}
@@ -90,39 +89,30 @@ endfunction
 " FUNCTION: s:layer.getBufs() dict {{{
 function! s:layer.getBufs() dict
     if self.bufs.typ == v:t_func
-        let [l:cnt, l:txt] = self.bufs.fnc()
-    elseif self.bufs.typ == v:t_string
-        let [l:cnt, l:txt] = [self.bufs.cnt, self.bufs.txt]
+        let l:txt = self.bufs.fnc()
+    elseif self.bufs.typ == v:t_list
+        let l:txt = self.bufs.txt
     endif
 
     " creat buffer text
     if empty(l:txt)
-        let l:txt = '  Nothing to pop.'
-        let l:txt .= repeat(' ', &columns - strwidth(l:txt))
-        let l:cnt = 1
+        call add(l:txt, '  Nothing to pop.')
     endif
     if self.mode == s:MODE.Help
         " append help information
-        let l:text = ''
-        let l:line = '  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~'
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line . "\n"
-        let l:text .= repeat(' ', &columns) . "\n" . l:txt
-
-        let l:txt = l:text
-        let l:cnt += 2
+        call insert(l:txt,  '  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~', 0)
+        call insert(l:txt,  '', 1)
     endif
 
-    return [l:cnt, l:txt]
+    return l:txt
 endfunction
 " }}}
 
 " FUNCTION: s:layer.setFltr() dict {{{
 function! s:layer.setFltr() dict
     let self.fltr.chars = ''
-    let [l:cnt, l:txt] = self.getBufs()
-    let self.fltr.lines = split(l:txt, "\n")
-    let self.fltr.index = range(l:cnt)
+    let self.fltr.lines = self.getBufs()
+    let self.fltr.index = let(self.fltr.lines)
 endfunction
 " }}}
 
@@ -162,11 +152,12 @@ function! s:initLayers()
     if s:conf.useLayer.Workspace
         call popc#layer#wks#Init()
     endif
-    "call popc#layer#exp#Init()
     for l in values(s:conf.layerInit)
         " {'layerName': initFuncName}
         call function(l)()
     endfor
+    "call popc#ui#AddComMap('popc#layer#exp#Pop', 'p')
+    "call popc#layer#exp#Init()
 endfunction
 " }}}
 

@@ -39,7 +39,7 @@ endfunction
 
 " FUNCTION: s:createBuffer() {{{
 function! s:createBuffer()
-    let l:text = ''
+    let l:text = []
 
     " get max name width
     let l:max = 0
@@ -56,11 +56,10 @@ function! s:createBuffer()
         let l:line .= ' ' . s:wks[k].name
         let l:line .= ' ' . repeat(' ', l:max - strwidth(l:line)) . s:conf.symbols.Arr
         let l:line .= ' ' . s:wks[k].path
-        let l:line .= repeat(' ', &columns - strwidth(l:line))
-        let l:text .= l:line . "\n"
+        call add(l:text, l:line)
     endfor
 
-    call s:lyr.setBufs(v:t_string, len(s:wks), l:text)
+    call s:lyr.setBufs(v:t_list, l:text)
 endfunction
 " }}}
 
@@ -466,8 +465,8 @@ endfunction
 " FUNCTION: popc#layer#wks#Help(key, index) {{{
 function! popc#layer#wks#Help(key, index)
     call s:lyr.setMode(s:MODE.Help)
-    let [l:cnt, l:txt] = popc#utils#createHelpBuffer(s:mapsData)
-    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
+    let l:txt = popc#utils#createHelpBuffer(s:mapsData)
+    call s:lyr.setBufs(v:t_list, l:txt)
     call popc#ui#Create(s:lyr.name)
 endfunction
 " }}}

@@ -2,7 +2,6 @@
 " ui of windows interacting for popc.
 
 " SECTION: variables {{{1
-
 let [s:popc, s:MODE] = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
@@ -181,7 +180,12 @@ endfunction
 " FUNCTION: s:dispBuffer() {{{
 function! s:dispBuffer()
     " set buffer text and maps
-    let [b:size, b:text] = s:lyr.getBufs()
+    let l:list = s:lyr.getBufs()
+    let b:size = len(l:list)
+    let b:text = ''
+    for k in range(b:size)
+        let b:text .= l:list[k] . repeat(' ', &columns - strwidth(l:list[k]) + 1) . "\n"
+    endfor
 
     " resize buffer
     let l:max = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 3)
@@ -336,7 +340,7 @@ endfunction
 " FUNCTION: s:filterUpdate() {{{
 function! s:filterUpdate() abort
     let l:cnt = 0
-    let l:txt = ''
+    let l:txt = []
     let l:pat = ''
 
     for k in range(strchars(s:lyr.fltr.chars))
@@ -347,11 +351,11 @@ function! s:filterUpdate() abort
         if s:lyr.fltr.lines[k] =~? l:pat
             let s:lyr.fltr.index[l:cnt] = k
             let l:cnt += 1
-            let l:txt .= s:lyr.fltr.lines[k] . "\n"
+            call add(l:txt, s:lyr.fltr.lines[k])
         endif
     endfor
 
-    call s:lyr.setBufs(v:t_string, l:cnt, l:txt)
+    call s:lyr.setBufs(v:t_list, l:txt)
     call s:dispBuffer()
 endfunction
 " }}}
