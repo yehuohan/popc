@@ -47,7 +47,7 @@ function! s:create(layer)
     call s:saveRecover()
     let s:id = popup_create('', #{
             \ zindex: 1000,
-            \ pos: 'center',
+            \ pos: 'topleft',
             \ maxwidth: &columns - 10,
             \ border: [],
             \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
@@ -94,15 +94,22 @@ function! s:dispPopup()
     let l:list = s:lyr.getBufs()
     let s:size = len(l:list)
     " set text
+    let l:width = 0
     let l:text = []
     for k in range(s:size)
         call add(l:text, l:list[k] . '     ')
+        if strwidth(l:text[k]) > l:width
+            let l:width = strwidth(l:text[k])
+        endif
     endfor
     call popup_settext(s:id, l:text)
     " set options
     let l:title = ' Popc.' . s:lyr.name . ' > ' . popc#ui#GetStatusLineSegments('c')[0] . ' '
     call popup_setoptions(s:id, #{
             \ title: l:title,
+            \ })
+    call popup_move(s:id, #{
+            \ col: float2nr((&columns - l:width) * (1.0 - 0.618)),
             \ })
     " init line
     if s:lyr.mode == 'normal'
