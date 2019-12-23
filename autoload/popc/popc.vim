@@ -82,10 +82,11 @@ function! s:layer.createHelp() dict
 
     " append help for operation
     call add(l:text, '')
-    let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]',
+    let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]    Help: [%s]',
                         \ join(s:conf.operationMaps['moveCursorUp']     , ','),
                         \ join(s:conf.operationMaps['moveCursorTop']    , ','),
-                        \ join(s:conf.operationMaps['moveCursorPgUp']   , ',')
+                        \ join(s:conf.operationMaps['moveCursorPgUp']   , ','),
+                        \ join(s:conf.operationMaps['help']             , ',')
                         \ )
     call add(l:text, l:line)
     let l:line = printf('  Down: [%s]    Bottom: [%s]    Page down: [%s]    Quit: [%s]',
