@@ -7,6 +7,49 @@ let s:conf = popc#init#GetConfig()
 
 " SECTION: api functions {{{1
 
+" FUNCTION: popc#utils#getKeys() {{{
+function! popc#utils#getKeys()
+    let lowercase = split('q w e r t y u i o p a s d f g h j k l z x c v b n m', ' ')
+    let uppercase = split('Q W E R T Y U I O P A S D F G H J K L Z X C V B N M', ' ')
+
+    let controls = []
+    for l in lowercase
+        call add(controls, 'C-' . l)
+    endfor
+    call add(controls, 'C-^')
+    call add(controls, 'C-]')
+
+    let alts = []
+    for l in lowercase
+        call add(alts, 'M-' . l)
+    endfor
+
+    let numbers  = split('1 2 3 4 5 6 7 8 9 0', ' ')
+    let specials1 = split(
+                 \ '` ~ ! @ # $ % ^ & * ( ) - = _ + ' .
+                 \ '[ ] { } ' .
+                 \ '; : '' " ' .
+                 \ ', < . > / ?', ' ')
+    let specials2 = split('Esc F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 ' .
+                 \ 'BS ' .
+                 \ 'Tab S-Tab BSlash Bar ' .
+                 \ 'CR ' .
+                 \ 'Space ' .
+                 \ 'Down Up Left Right Home End PageUp PageDown ' .
+                 \ 'MouseDown MouseUp LeftDrag LeftRelease 2-LeftMouse', ' ')
+
+    return {
+        \ 'lowercase' : lowercase,
+        \ 'uppercase' : uppercase,
+        \ 'controls'  : controls,
+        \ 'alts'      : alts,
+        \ 'numbers'   : numbers,
+        \ 'specials1'  : specials1,
+        \ 'specials2'  : specials2,
+        \ }
+endfunction
+" }}}
+
 " FUNCTION: popc#utils#Num2RankStr(num) {{{
 " @param num: the num in integer format
 function! popc#utils#Num2RankStr(num)

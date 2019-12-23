@@ -16,7 +16,12 @@ let s:recover = {
 
 " FUNCTION: popc#ui#default#Init() {{{
 function! popc#ui#default#Init()
-    call s:initKeys()
+    let s:keys = []
+    for v in values(popc#utils#getKeys())
+        for k in v
+            call add(s:keys, k)
+        endfor
+    endfor
     return {
         \ 'create'  : funcref('s:create'),
         \ 'destroy' : funcref('s:destroy'),
@@ -27,39 +32,6 @@ function! popc#ui#default#Init()
         \ 'confirm' : funcref('s:confirm'),
         \ 'message' : funcref('s:msg'),
         \ }
-endfunction
-" }}}
-
-" FUNCTION: s:initKeys() {{{
-function! s:initKeys()
-    let lowercase = 'q w e r t y u i o p a s d f g h j k l z x c v b n m'
-    let uppercase = toupper(lowercase)
-
-    let controlList = []
-    for l in split(lowercase, ' ')
-        call add(controlList, 'C-' . l)
-    endfor
-    call add(controlList, 'C-^')
-    call add(controlList, 'C-]')
-
-    let altList = []
-    for l in split(lowercase, ' ')
-        call add(altList, 'M-' . l)
-    endfor
-
-    let controls = join(controlList, ' ')
-    let alts = join(altList, ' ')
-
-    let numbers  = '1 2 3 4 5 6 7 8 9 0'
-    let specials = 'Esc F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 ' .
-                 \ '` ~ ! @ # $ % ^ & * ( ) - = _ + BS ' .
-                 \ 'Tab S-Tab [ ] { } BSlash Bar ' .
-                 \ '; : '' " CR ' .
-                 \ 'Space , < . > / ? ' .
-                 \ 'Down Up Left Right Home End PageUp PageDown ' .
-                 \ 'MouseDown MouseUp LeftDrag LeftRelease 2-LeftMouse '
-
-    let s:keys = split(join([lowercase, uppercase, controls, alts, numbers, specials], ' '), ' ')
 endfunction
 " }}}
 
