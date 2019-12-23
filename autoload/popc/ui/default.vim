@@ -177,7 +177,11 @@ function! s:dispBuffer()
     silent put! = b:text
     silent normal! GkJgg
     setlocal nomodifiable
-    call s:operate('num', s:lyr.info.lastIndex + 1)
+    if s:lyr.mode == 'normal'
+        call s:operate('num', s:lyr.info.lastIndex + 1)
+    else
+        call s:operate('num', 1)
+    endif
 endfunction
 " }}}
 
