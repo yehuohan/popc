@@ -28,9 +28,6 @@ function! popc#ui#default#Init()
         \ 'toggle'  : funcref('s:toggle'),
         \ 'operate' : funcref('s:operate'),
         \ 'getval'  : {key -> s:recover[key]},
-        \ 'input'   : funcref('s:input'),
-        \ 'confirm' : funcref('s:confirm'),
-        \ 'message' : funcref('s:msg'),
         \ }
 endfunction
 " }}}
@@ -244,30 +241,5 @@ endfunction
 " FUNCTION: popc#ui#default#Trigger(key) {{{
 function! popc#ui#default#Trigger(key)
     call popc#ui#Trigger(a:key, line('.') - 1)
-endfunction
-" }}}
-
-" FUNCTION: s:input(prompt, ...) {{{
-function! s:input(prompt, ...)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g')
-    redraw
-    return a:0 == 0 ? input(l:msg) :
-         \ a:0 == 1 ? input(l:msg, a:1) :
-         \            input(l:msg, a:1, a:2)
-endfunction
-" }}}
-
-" FUNCTION: s:confirm(prompt) {{{
-function! s:confirm(prompt)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
-    redraw
-    return input(l:msg) ==# 'y'
-endfunction
-" }}}
-
-" FUNCTION: s:msg(msg) {{{
-function! s:msg(msg)
-    redraw
-    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
 endfunction
 " }}}

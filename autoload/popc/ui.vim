@@ -17,9 +17,6 @@ let s:ui = {
         \ 'toggle'  : '',
         \ 'operate' : '',
         \ 'getval'  : '',
-        \ 'input'   : '',
-        \ 'confirm' : '',
-        \ 'message' : '',
         \ }
     \ }
 let s:hi = {
@@ -123,9 +120,11 @@ endfunction
 " FUNCTION: popc#ui#Input(prompt, ...) {{{
 " global input funtion interface for ui of popc.
 function! popc#ui#Input(prompt, ...)
-    let l:args = [a:prompt, ]
-    call extend(l:args, a:000)
-    return call(s:ui.funcs.input, l:args)
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g')
+    redraw
+    return a:0 == 0 ? input(l:msg) :
+         \ a:0 == 1 ? input(l:msg, a:1) :
+         \            input(l:msg, a:1, a:2)
 endfunction
 " }}}
 
@@ -133,14 +132,17 @@ endfunction
 " global confirm funtion interface for ui of popc.
 " input 'y' for 'Yes', and anythin else for 'No'.
 function! popc#ui#Confirm(prompt)
-    return s:ui.funcs.confirm(a:prompt)
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
+    redraw
+    return input(l:msg) ==# 'y'
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#Msg(msg) {{{
 " global message function interface for ui of popc.
 function! popc#ui#Msg(msg)
-    call s:ui.funcs.message(a:msg)
+    redraw
+    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
 endfunction
 " }}}
 
@@ -154,7 +156,7 @@ function! popc#ui#Trigger(key, index)
     elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
         call s:lyr.maps[a:key](a:index)
     else
-        call s:ui.funcs.message('Key ''' . a:key . ''' doesn''t work in layer ''' . s:lyr.name . '''.')
+        call popc#ui#Msg('Key ''' . a:key . ''' doesn''t work in layer ''' . s:lyr.name . '''.')
     endif
 endfunction
 " }}}
