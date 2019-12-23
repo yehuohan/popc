@@ -48,14 +48,15 @@ function! s:create(layer)
     let s:id = popup_create('', #{
             \ zindex: 1000,
             \ pos: 'center',
-            \ col: 30,
             \ maxwidth: &columns - 10,
-            \ minwidth: &columns - 30,
+            \ border: [],
+            \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
+            \ padding: [0, 0, 0, 0],
             \ cursorline: 1,
             \ mapping: 0,
             \ wrap: 0,
-            \ title: 'Popc',
             \ filter: funcref('s:keyHandler'),
+            \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
     call s:dispPopup()
 endfunction
@@ -92,7 +93,18 @@ endfunction
 function! s:dispPopup()
     let l:list = s:lyr.getBufs()
     let s:size = len(l:list)
-    call popup_settext(s:id, l:list)
+    " set text
+    let l:text = []
+    for k in range(s:size)
+        call add(l:text, l:list[k] . '     ')
+    endfor
+    call popup_settext(s:id, l:text)
+    " set options
+    let l:title = ' Popc.' . s:lyr.name . ' > ' . popc#ui#GetStatusLineSegments('c')[0] . ' '
+    call popup_setoptions(s:id, #{
+            \ title: l:title,
+            \ })
+    " init line
     if s:lyr.mode == 'normal'
         call s:operate('num', s:lyr.info.lastIndex + 1)
     else
