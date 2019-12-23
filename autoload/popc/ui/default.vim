@@ -16,11 +16,18 @@ let s:recover = {
 
 " FUNCTION: popc#ui#default#Init() {{{
 function! popc#ui#default#Init()
-    let s:keys = []
-    for v in values(popc#utils#getKeys())
-        for k in v
-            call add(s:keys, k)
-        endfor
+    let l:keys = popc#utils#getKeys()
+    let s:keys = {}
+    for k in l:keys.lowercase + l:keys.uppercase + l:keys.numbers + l:keys.specials1
+        let s:keys[(k == '"') ? '\"' : k] = k
+    endfor
+    for k in l:keys.controls + l:keys.alts + l:keys.specials2
+        if k == 'C-m' || k == 'C-i'
+            " <C-m> is same as <CR>
+            " <C-i> is same as <Tab>
+            continue
+        endif
+        let s:keys[k] = '<' . k . '>'
     endfor
     return {
         \ 'create'  : funcref('s:create'),
@@ -146,10 +153,8 @@ function! s:setBuffer()
     endif
 
     " create maps
-    for key in s:keys
-        let k = strlen(key) > 1 ? ('<' . key . '>') : key
-        let a = (key == '"') ? '\"' : key
-        silent execute 'nnoremap <silent><buffer> ' . k . ' :call popc#ui#default#Trigger("' . a . '")<CR>'
+    for [key, val] in items(s:keys)
+        silent execute 'nnoremap <silent><buffer> ' . val . ' :call popc#ui#default#Trigger("' . key . '")<CR>'
     endfor
 endfunction
 " }}}
