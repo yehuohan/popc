@@ -34,9 +34,10 @@ let s:hi = {
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
     " set funcs
-    "if !has('nvim') && v:version >= 802
-    if 0
+    if s:conf.useFloatingWin && !has('nvim') && v:version >= 802 " exists('+popupwin')
         call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
+    elseif s:conf.useFloatingWin && has('nvim') && 0
+        call extend(s:ui.funcs, popc#ui#floats#Init(), 'force')
     else
         call extend(s:ui.funcs, popc#ui#default#Init(), 'force')
     endif

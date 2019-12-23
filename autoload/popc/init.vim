@@ -5,6 +5,7 @@
 
 let s:conf = {
     \ 'jsonPath'       : $VIM,
+    \ 'useFloatingWin' : 0,
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'highlight'      : {
@@ -144,7 +145,7 @@ endfunction
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
     " set confiuration's value and list
-    for k in ['jsonPath', 'useUnicode',
+    for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
             \ 'useTabline', 'useStatusline', 'usePowerFont',
             \ 'statusLine', 'tabLine', 'maxHeight',
             \ 'useLayerRoots', 'useLayerPath']
