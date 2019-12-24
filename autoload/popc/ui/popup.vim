@@ -166,9 +166,6 @@ function! s:operate_internal(dir, ...)
         endif
     elseif a:dir ==# 'num'
         let l:pos = (a:0 >= 1) ? a:1 : 0
-    elseif a:dir ==# 'quit'
-        call s:destroy()
-        return
     endif
 
     if l:pos < 1
