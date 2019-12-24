@@ -127,6 +127,12 @@ function! s:operate(dir, ...)
     else
         call win_execute(s:id, 'noautocmd call s:operate_internal("' . a:dir . '")')
     endif
+    " do user command
+    if s:lyr.mode == 'normal'
+        if s:lyr.info.userCmd
+            doautocmd User PopcUiIndexChanged
+        endif
+    endif
 endfunction
 " }}}
 
@@ -180,9 +186,6 @@ function! s:operate_internal(dir, ...)
     " save layer index
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
-        if s:lyr.info.userCmd
-            doautocmd User PopcUiIndexChanged
-        endif
     endif
 endfunction
 " }}}
