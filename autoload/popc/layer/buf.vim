@@ -292,12 +292,7 @@ endfunction
 " FUNCTION: s:createTabBuffer(tidx) {{{
 function! s:createTabBuffer(tidx)
     call s:tab.checkBuffer(a:tidx)
-
-    " BUG: it's unknown why it's necessary to 'lcd' again in Popc buffer when
-    " close a buffer.
-    if getbufvar(bufnr('%'), '&filetype') == 'Popc'
-        execute 'lcd ' . getcwd()
-    endif
+    silent execute 'lcd ' . s:lyr.info.rootDir
 
     " join lines
     let l:text = []
@@ -339,6 +334,11 @@ function! s:createTabBuffer(tidx)
         " symbol for changed
         let l:line .= b.changed ? '+' : ' '
         let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
+        "let l:root = escape(expand(s:lyr.info.rootDir), '\:')
+        "if l:root =~# '[/\\]$'
+        "    let l:root = strcharpart(l:root, 0, strchars(l:root) - 1)
+        "endif
+        "let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':s?' . l:root . '??'))
         call add(l:text, l:line)
     endfor
 
