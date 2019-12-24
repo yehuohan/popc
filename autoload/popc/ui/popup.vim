@@ -58,6 +58,7 @@ function! s:create(layer)
             \ filter: funcref('s:keyHandler'),
             \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
+	call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
     call s:dispPopup()
 endfunction
 " }}}
