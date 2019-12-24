@@ -59,6 +59,7 @@ function! s:create(layer)
             \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
 	call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
+    set guicursor+=n:block--blinkon0
     call s:dispPopup()
 endfunction
 " }}}
@@ -86,6 +87,7 @@ function! s:destroy()
         return
     endif
     call popup_close(s:id)
+    set guicursor-=n:block--blinkon0
     let s:flag = 0
 endfunction
 " }}}
