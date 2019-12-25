@@ -53,12 +53,13 @@ function! s:create(layer)
             \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
             \ padding: [0, 0, 0, 0],
             \ cursorline: 1,
+            \ highlight: 'PopcTxt',
             \ mapping: 0,
             \ wrap: 0,
             \ filter: funcref('s:keyHandler'),
             \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
-	call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
+    call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
     set guicursor+=n:block--blinkon0
     call s:dispPopup()
 endfunction
@@ -126,9 +127,9 @@ endfunction
 " FUNCTION: s:operate(dir, ...) {{{
 function! s:operate(dir, ...)
     if a:0 > 0
-        call win_execute(s:id, 'noautocmd call s:operate_internal("' . a:dir . '", '. a:1 . ')')
+        call win_execute(s:id, printf('noautocmd call s:operate_internal("%s", %d)', a:dir, a:1))
     else
-        call win_execute(s:id, 'noautocmd call s:operate_internal("' . a:dir . '")')
+        call win_execute(s:id, printf('noautocmd call s:operate_internal("%s")', a:dir))
     endif
     " do user command
     if s:lyr.mode == 'normal'

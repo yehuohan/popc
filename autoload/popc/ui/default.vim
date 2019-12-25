@@ -141,7 +141,7 @@ function! s:setBuffer()
     " set up syntax highlighting
     if has('syntax')
         syntax clear
-        syntax match PopcText /  .*/
+        syntax match PopcTxt /  .*/
         syntax match PopcSel /> .*/hs=s+1
     endif
     set guicursor+=n:block-PopcSel-blinkon0

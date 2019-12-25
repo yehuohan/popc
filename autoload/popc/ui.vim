@@ -38,6 +38,7 @@ function! popc#ui#Init()
     " set funcs
     if s:conf.useFloatingWin && !has('nvim') && v:version >= 802 " exists('+popupwin')
         call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
+        highlight default link PopupSelected PopcSel
     elseif s:conf.useFloatingWin && has('nvim-0.4.3') && 0
         call extend(s:ui.funcs, popc#ui#float#Init(), 'force')
     else
@@ -206,7 +207,7 @@ function! popc#ui#InitHi(hi)
     let s:hi.modifiedTxt = !empty(a:hi.modifiedTxt) ? a:hi.modifiedTxt :
                            \ s:createHiSep(s:hi.modifiedSel, s:hi.text, 'PopcModifiedTxt')
     " menu
-    execute printf('highlight default link PopcText     %s', s:hi.text)
+    execute printf('highlight default link PopcTxt      %s', s:hi.text)
     execute printf('highlight default link PopcSel      %s', s:hi.selected)
 
     " statusline
