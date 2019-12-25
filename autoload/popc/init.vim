@@ -11,9 +11,11 @@ let s:conf = {
     \ 'highlight'      : {
         \ 'text'        : 'PmenuSbar',
         \ 'selected'    : 'PmenuSel',
+        \ 'lineTxt'     : 'PmenuSbar',
+        \ 'lineSel'     : 'PmenuSel',
         \ 'modifiedTxt' : '',
         \ 'modifiedSel' : 'DiffAdd',
-        \ 'label'       : 'IncSearch',
+        \ 'labelTxt'    : 'IncSearch',
         \ 'blankTxt'    : 'Normal',
         \ },
     \ 'useTabline'     : 1,

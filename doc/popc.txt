@@ -67,6 +67,8 @@ is below:
     highlight     = {
         'text'        : 'PmenuSbar',
         'selected'    : 'PmenuSel',
+        'lineTxt'     : 'PmenuSbar',
+        'lineSel'     : 'PmenuSel',
         'modifiedTxt' : '',
         'modifiedSel' : 'DiffAdd',
         'label'       : 'IncSearch',
@@ -193,9 +195,11 @@ Customize highlight via `g:Popc_highlight` or function `popc#ui#InitHi()`:
     let g:hi = {
         \ 'text'        : 'PmenuSbar',
         \ 'selected'    : 'PmenuSel',
-        \ 'label'       : 'IncSearch',
+        \ 'lineTxt'     : 'PmenuSbar',
+        \ 'lineSel'     : 'PmenuSel',
         \ 'modifiedTxt' : '',
         \ 'modifiedSel' : 'DiffAdd',
+        \ 'labelTxt'    : 'IncSearch',
         \ 'blankTxt'    : 'Normal',
         \ }
     call popc#ui#InitHi(g:hi)

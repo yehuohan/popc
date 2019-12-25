@@ -22,9 +22,11 @@ let s:ui = {
 let s:hi = {
     \ 'text'        : '',
     \ 'selected'    : '',
+    \ 'lineTxt'     : '',
+    \ 'lineSel'     : '',
     \ 'modifiedTxt' : '',
     \ 'modifiedSel' : '',
-    \ 'label'       : '',
+    \ 'labelTxt'    : '',
     \ 'blankTxt'    : '',
     \ }
 
@@ -36,8 +38,8 @@ function! popc#ui#Init()
     " set funcs
     if s:conf.useFloatingWin && !has('nvim') && v:version >= 802 " exists('+popupwin')
         call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
-    elseif s:conf.useFloatingWin && has('nvim') && 0
-        call extend(s:ui.funcs, popc#ui#floats#Init(), 'force')
+    elseif s:conf.useFloatingWin && has('nvim-0.4.3') && 0
+        call extend(s:ui.funcs, popc#ui#float#Init(), 'force')
     else
         call extend(s:ui.funcs, popc#ui#default#Init(), 'force')
     endif
@@ -196,7 +198,9 @@ endfunction
 function! popc#ui#InitHi(hi)
     let s:hi.text        = a:hi.text
     let s:hi.selected    = a:hi.selected
-    let s:hi.label       = !empty(a:hi.label)       ? a:hi.label       : a:hi.selected
+    let s:hi.lineTxt     = !empty(a:hi.lineTxt)     ? a:hi.lineTxt     : a:hi.text
+    let s:hi.lineSel     = !empty(a:hi.lineSel)     ? a:hi.lineSel     : a:hi.selected
+    let s:hi.labelTxt    = !empty(a:hi.labelTxt)    ? a:hi.labelTxt    : a:hi.selected
     let s:hi.blankTxt    = !empty(a:hi.blankTxt)    ? a:hi.blankTxt    : a:hi.text
     let s:hi.modifiedSel = !empty(a:hi.modifiedSel) ? a:hi.modifiedSel : a:hi.selected
     let s:hi.modifiedTxt = !empty(a:hi.modifiedTxt) ? a:hi.modifiedTxt :
@@ -206,14 +210,14 @@ function! popc#ui#InitHi(hi)
     execute printf('highlight default link PopcSel      %s', s:hi.selected)
 
     " statusline
-    execute printf('highlight default link PopcSlLabel  %s', s:hi.label)
-    execute printf('highlight default link PopcSl       %s', s:hi.text)
+    execute printf('highlight default link PopcSlLabel  %s', s:hi.labelTxt)
+    execute printf('highlight default link PopcSl       %s', s:hi.lineTxt)
     call s:createHiSep('PopcSlLabel', 'PopcSl', 'PopcSlSep')
 
     " tabline
-    execute printf('highlight default link PopcTlLabel  %s', s:hi.label)
-    execute printf('highlight default link PopcTl       %s', s:hi.text)
-    execute printf('highlight default link PopcTlSel    %s', s:hi.selected)
+    execute printf('highlight default link PopcTlLabel  %s', s:hi.labelTxt)
+    execute printf('highlight default link PopcTl       %s', s:hi.lineTxt)
+    execute printf('highlight default link PopcTlSel    %s', s:hi.lineSel)
     execute printf('highlight default link PopcTlM      %s', s:hi.modifiedTxt)
     execute printf('highlight default link PopcTlMSel   %s', s:hi.modifiedSel)
     execute printf('highlight default link PopcTlBlank  %s', s:hi.blankTxt)
