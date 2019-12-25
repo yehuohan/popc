@@ -6,6 +6,7 @@ let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:id = -1
+let s:id_title = -1
 let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
@@ -49,10 +50,10 @@ function! s:create(layer)
         let s:id = popup_create('', #{
                 \ zindex: 1000,
                 \ pos: 'topleft',
-                \ maxwidth: &columns - 10,
-                \ border: [],
-                \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
-                \ padding: [0, 0, 0, 0],
+                \ maxwidth: &columns - 20,
+                \ border: [0, 1, 0, 1],
+                \ borderchars: ['', ' ', '', ' '],
+                \ borderhighlight: [],
                 \ cursorline: 1,
                 \ highlight: 'PopcTxt',
                 \ mapping: 0,
@@ -60,8 +61,22 @@ function! s:create(layer)
                 \ filter: funcref('s:keyHandler'),
                 \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
+        let s:id_title = popup_create('Popc', #{
+                \ zindex: 1000,
+                \ pos: 'topleft',
+                \ maxwidth: &columns - 20,
+                \ mapping: 0,
+                \ wrap: 0,
+                \ })
+        let s:title = [#{text: '', props: []}]
+        call add(s:title[0].props, #{col: 1, length: 1, type: 'PopcSlLabel'})
+        call add(s:title[0].props, #{col: 1, length: 1, type: 'PopcSlSep'})
+        call add(s:title[0].props, #{col: 1, length: 1, type: 'PopcSl'})
+        call add(s:title[0].props, #{col: 1, length: 1, type: 'PopcSlSep'})
+        call add(s:title[0].props, #{col: 1, length: 1, type: 'PopcSlLabel'})
     else
         call popup_show(s:id)
+        call popup_show(s:id_title)
     endif
     call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
     set guicursor+=n:block--blinkon0
@@ -92,6 +107,7 @@ function! s:destroy()
         return
     endif
     call popup_hide(s:id)
+    call popup_hide(s:id_title)
     set guicursor-=n:block--blinkon0
     let s:flag = 0
 endfunction
@@ -101,30 +117,78 @@ endfunction
 function! s:dispPopup()
     let l:list = s:lyr.getBufs()
     let s:size = len(l:list)
-    " set text
-    let l:width = 0
+
+    " set text and title
     let l:text = []
-    for k in range(s:size)
-        call add(l:text, l:list[k] . '     ')
-        if strwidth(l:text[k]) > l:width
-            let l:width = strwidth(l:text[k])
+    let l:width = 0
+    for line in l:list
+        if strwidth(line) > l:width
+            let l:width = strwidth(line)
         endif
     endfor
+    let l:width += 2    " text end with 2 spaces
+    let [l:title, l:width] = s:createTitle(l:width)
+    for line in l:list
+        call add(l:text, line . repeat(' ', l:width - strwidth(line)))
+    endfor
+
+    " disp text
     call popup_settext(s:id, l:text)
-    " set options
-    let l:title = ' Popc.' . s:lyr.name . ' > ' . popc#ui#GetStatusLineSegments('c')[0] . ' '
-    call popup_setoptions(s:id, #{
-            \ title: l:title,
-            \ })
     call popup_move(s:id, #{
-            \ col: float2nr((&columns - l:width) * (1.0 - 0.618)),
+            \ maxheight: (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2),
             \ })
+
+    " disp title
+    let l:pos = popup_getpos(s:id)
+    if l:pos.scrollbar > 0
+        let l:title[2] .= ' '
+    endif
+    let l:col = 1
+    for k in range(5)
+        let s:title[0].props[k].col = l:col
+        let s:title[0].props[k].length = strlen(l:title[k])
+        let l:col += strlen(l:title[k])
+    endfor
+    let s:title[0].text = join(l:title, '')
+    call popup_settext(s:id_title, s:title)
+    call popup_move(s:id_title, #{
+            \ line: l:pos.line - 1,
+            \ })
+
     " init line
     if s:lyr.mode == 'normal'
         call s:operate('num', s:lyr.info.lastIndex + 1)
     else
         call s:operate('num', 1)
     endif
+endfunction
+" }}}
+
+" FUNCTION: s:createTitle(width) {{{
+" @width: max width of text
+" @return: title with new max width
+function! s:createTitle(width)
+    if s:conf.usePowerFont
+        let l:spl  = s:conf.separator.left
+        let l:spr  = s:conf.separator.right
+    else
+        let l:spl  = ' '
+        let l:spr  = ' '
+    endif
+
+    let l:title = []
+    call add(l:title, ' Popc ')
+    call add(l:title, l:spl)
+    call add(l:title, ' ' . s:lyr.info.centerText . ' ')
+    call add(l:title, l:spr)
+    call add(l:title, ' ' . s:lyr.name . ' ')
+    let l:wseg = 0
+    for seg in l:title
+        let l:wseg += strwidth(seg)
+    endfor
+    let l:width = max([a:width, l:wseg])
+    let l:title[2] .= repeat(' ', l:width - l:wseg + 2)     " + text border with 2 spaces
+    return [l:title, l:width]
 endfunction
 " }}}
 
@@ -135,6 +199,7 @@ function! s:operate(dir, ...)
     else
         call win_execute(s:id, printf('noautocmd call s:operate_internal("%s")', a:dir))
     endif
+
     " do user command
     if s:lyr.mode == 'normal'
         if s:lyr.info.userCmd

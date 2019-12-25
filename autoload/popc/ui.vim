@@ -35,10 +35,26 @@ let s:hi = {
 
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
+    " set highlight
+    if s:conf.useTabline || s:conf.useStatusline
+        call popc#ui#InitHi(s:conf.highlight)
+        augroup PopcUiInit
+            autocmd!
+            autocmd ColorScheme * call popc#ui#InitHi(s:hi)
+        augroup END
+    endif
+    if s:conf.useTabline
+        set showtabline=2
+        silent execute 'set tabline=%!' . s:conf.tabLine
+    endif
+
     " set funcs
     if s:conf.useFloatingWin && !has('nvim') && v:version >= 802 " exists('+popupwin')
         call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
         highlight default link PopupSelected PopcSel
+        call prop_type_add('PopcSlLabel', {'highlight': 'PopcSlLabel'})
+        call prop_type_add('PopcSlSep',   {'highlight': 'PopcSlSep'})
+        call prop_type_add('PopcSl',      {'highlight': 'PopcSl'})
     elseif s:conf.useFloatingWin && has('nvim-0.4.3') && 0
         call extend(s:ui.funcs, popc#ui#float#Init(), 'force')
     else
@@ -70,19 +86,6 @@ function! popc#ui#Init()
     for k in s:conf.operationMaps.quit
         let s:ui.maps.operation[k] = funcref('s:ui.funcs.destroy')
     endfor
-
-    " set highlight
-    if s:conf.useTabline || s:conf.useStatusline
-        call popc#ui#InitHi(s:conf.highlight)
-        augroup PopcUiInit
-            autocmd!
-            autocmd ColorScheme * call popc#ui#InitHi(s:hi)
-        augroup END
-    endif
-    if s:conf.useTabline
-        set showtabline=2
-        silent execute 'set tabline=%!' . s:conf.tabLine
-    endif
 endfunction
 " }}}
 
