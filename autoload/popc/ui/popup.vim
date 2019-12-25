@@ -45,20 +45,24 @@ function! s:create(layer)
     endif
     let s:flag = 1
     call s:saveRecover()
-    let s:id = popup_create('', #{
-            \ zindex: 1000,
-            \ pos: 'topleft',
-            \ maxwidth: &columns - 10,
-            \ border: [],
-            \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
-            \ padding: [0, 0, 0, 0],
-            \ cursorline: 1,
-            \ highlight: 'PopcTxt',
-            \ mapping: 0,
-            \ wrap: 0,
-            \ filter: funcref('s:keyHandler'),
-            \ callback: { id, result -> (result == -1) && s:destroy()}
+    if empty(getwininfo(s:id))
+        let s:id = popup_create('', #{
+                \ zindex: 1000,
+                \ pos: 'topleft',
+                \ maxwidth: &columns - 10,
+                \ border: [],
+                \ borderchars: [' ', '│', '─', '│', '┌', '┐', '┘', '└'],
+                \ padding: [0, 0, 0, 0],
+                \ cursorline: 1,
+                \ highlight: 'PopcTxt',
+                \ mapping: 0,
+                \ wrap: 0,
+                \ filter: funcref('s:keyHandler'),
+                \ callback: { id, result -> (result == -1) && s:destroy()}
             \ })
+    else
+        call popup_show(s:id)
+    endif
     call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
     set guicursor+=n:block--blinkon0
     call s:dispPopup()
@@ -87,7 +91,7 @@ function! s:destroy()
     if !(exists('s:flag') && s:flag)
         return
     endif
-    call popup_close(s:id)
+    call popup_hide(s:id)
     set guicursor-=n:block--blinkon0
     let s:flag = 0
 endfunction
