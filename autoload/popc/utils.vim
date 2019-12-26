@@ -36,7 +36,10 @@ function! popc#utils#getKeys()
                  \ 'CR ' .
                  \ 'Space ' .
                  \ 'Down Up Left Right Home End PageUp PageDown ' .
-                 \ 'MouseDown MouseUp LeftDrag LeftRelease 2-LeftMouse', ' ')
+                 \ 'LeftDrag LeftRelease LeftMouse 2-LeftMouse 3-LeftMouse 4-LeftMouse ' .
+                 \ 'RightDrag RightRelease RightMouse 2-RightMouse 3-RightMouse 4-RightMouse ' .
+                 \ 'MiddleDrag MiddleRelease MiddleMouse 2-MiddleMouse 3-MiddleMouse 4-MiddleMouse ' .
+                 \ 'ScrollWheelUp ScrollWheelDown ScrollWheelLeft ScrollWheelRight', ' ')
 
     return {
         \ 'lowercase' : lowercase,
