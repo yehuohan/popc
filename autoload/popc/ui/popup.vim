@@ -125,10 +125,10 @@ function! s:dispPopup()
 
     " set text and title
     let [l:title, l:width] = s:createTitle(l:width, l:maxwidth)
-    call map(l:list, 'v:val . repeat(" ", l:width - strwidth(v:val))')
+    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
 
     " disp text
-    call popup_settext(s:id, l:list)
+    call popup_settext(s:id, l:text)
     call popup_move(s:id, #{
             \ maxheight: l:maxheight,
             \ maxwidth: l:maxwidth,
