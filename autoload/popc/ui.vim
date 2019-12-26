@@ -55,7 +55,7 @@ function! popc#ui#Init()
         call prop_type_add('PopcSlLabel', {'highlight': 'PopcSlLabel'})
         call prop_type_add('PopcSlSep',   {'highlight': 'PopcSlSep'})
         call prop_type_add('PopcSl',      {'highlight': 'PopcSl'})
-    elseif s:conf.useFloatingWin && has('nvim-0.4.3')
+    elseif s:conf.useFloatingWin && has('nvim-0.4.2')
         call extend(s:ui.funcs, popc#ui#float#Init(), 'force')
     else
         call extend(s:ui.funcs, popc#ui#default#Init(), 'force')

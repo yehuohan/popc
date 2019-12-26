@@ -25,6 +25,14 @@ Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 <img alt="Workspace" src="https://github.com/yehuohan/popc/blob/master/README/wks.png"  width=75% height=75% />
 </div>
 
+ - floating
+
+Support floating window of neovim(0.4.3+) and popupwin of vim (version 802+) with `let g:Popc_useFloatingWin = 1`.
+
+<div align="center">
+<img alt="floating" src="https://github.com/yehuohan/popc/blob/master/README/floating.png"  width=75% height=75% />
+</div>
+
 ## Search
 
 Use [LeaderF](https://github.com/Yggdroot/LeaderF) to search file or context in buffer, workspace or bookmark files.

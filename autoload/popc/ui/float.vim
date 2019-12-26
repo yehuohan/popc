@@ -7,6 +7,8 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:hbuf = -1
 let s:hwin = -1
+let s:hbuf_title = -1
+let s:hwin_title = -1
 let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
@@ -19,7 +21,7 @@ let s:recover = {
 " FUNCTION: popc#ui#float#Init() {{{
 function! popc#ui#float#Init()
     " init keys
-    let l:keys = popc#utils#getKeys()
+    let l:keys = popc#utils#GetKeys()
     let s:keys = {}
     for k in l:keys.lowercase + l:keys.uppercase + l:keys.numbers + l:keys.specials1
         let s:keys[(k == '"') ? '\"' : k] = k
@@ -81,6 +83,7 @@ function! s:destroy()
     endif
 
     call nvim_win_close(s:hwin, v:false)
+    call nvim_win_close(s:hwin_title, v:false)
     let s:flag = 0
 endfunction
 " }}}
@@ -100,14 +103,30 @@ endfunction
 
 " FUNCTION: s:setFloat() {{{
 function! s:setFloat()
-    let s:hbuf = nvim_create_buf(v:false, v:true)
+    " title
+    let s:hbuf_title = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_option(s:hbuf_title, 'swapfile', v:false)
+    call nvim_buf_set_option(s:hbuf_title, 'buftype', 'nofile')
+    call nvim_buf_set_option(s:hbuf_title, 'bufhidden', 'delete')
+    call nvim_buf_set_option(s:hbuf_title, 'buflisted', v:false)
+    call nvim_buf_set_option(s:hbuf_title, 'filetype', 'Popc')
+    let s:hwin_title = nvim_open_win(s:hbuf_title, v:true, {
+            \ 'relative': 'editor',
+            \ 'width': 1,
+            \ 'height': 1,
+            \ 'col': 1,
+            \ 'row': 1,
+            \ 'style': 'minimal',
+            \ })
+    call nvim_win_set_option(s:hwin_title, 'wrap', v:false)
+    call nvim_win_set_option(s:hwin_title, 'foldenable', v:false)
 
-    " option
+    " buffer
+    let s:hbuf = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_option(s:hbuf, 'swapfile', v:false)
     call nvim_buf_set_option(s:hbuf, 'buftype', 'nofile')
     call nvim_buf_set_option(s:hbuf, 'bufhidden', 'delete')
     call nvim_buf_set_option(s:hbuf, 'buflisted', v:false)
-    call nvim_buf_set_option(s:hbuf, 'modifiable', v:false)
     call nvim_buf_set_option(s:hbuf, 'filetype', 'Popc')
     if &timeout
         set timeoutlen=10
@@ -143,29 +162,43 @@ endfunction
 
 " FUNCTION: s:dispFloat() {{{
 function! s:dispFloat()
-    let l:list = s:lyr.getBufs()
-    let s:size = len(l:list)
-    let l:maxheight = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2)
-    let l:maxwidth = &columns - 10
-    let l:height = (s:size <= l:maxheight) ? s:size : l:maxheight
-    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
-    let l:width = min([l:maxwidth, l:width])
+    let [l:title, l:text, s:size, l:width, l:height] = popc#ui#popup#createContext(
+                \ s:lyr,
+                \ &columns - 10,
+                \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2))
 
     " set text
-    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
-    call nvim_buf_set_option(s:hbuf, 'modifiable', v:true)
     if s:size > nvim_buf_line_count(s:hbuf)
         call nvim_buf_set_lines(s:hbuf, 0, s:size, v:false, l:text)
     else
         call nvim_buf_set_lines(s:hbuf, 0, nvim_buf_line_count(s:hbuf), v:false, l:text)
     endif
-    call nvim_buf_set_option(s:hbuf, 'modifiable', v:false)
     call nvim_win_set_config(s:hwin, {
             \ 'relative' : 'editor',
             \ 'width': l:width,
             \ 'height': l:height,
+            \ 'row': (&lines - l:height) / 2 + 1,
             \ 'col': (&columns - l:width) / 2,
+            \ })
+
+    " set title
+    call nvim_buf_set_lines(s:hbuf_title, 0, 1, v:false, [join(l:title, ''), ])
+    let l:len = map(copy(l:title), {k, v -> strlen(v)})
+    let l:col_s = [0, ] + l:len
+    let l:col_s = map(l:col_s, {k, v -> (k == 0) ? v : v + l:col_s[k - 1]})
+    let l:col_e = copy(l:len)
+    let l:col_e = map(l:col_e, {k, v -> (k == 0) ? v : v + l:col_e[k - 1]})
+    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlLabel', 0, l:col_s[0], l:col_e[0])
+    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlSep'  , 0, l:col_s[1], l:col_e[1])
+    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSl'     , 0, l:col_s[2], l:col_e[2])
+    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlSep'  , 0, l:col_s[3], l:col_e[3])
+    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlLabel', 0, l:col_s[4], l:col_e[4])
+    call nvim_win_set_config(s:hwin_title, {
+            \ 'relative' : 'editor',
+            \ 'width': l:width,
+            \ 'height': 1,
             \ 'row': (&lines - l:height) / 2,
+            \ 'col': (&columns - l:width) / 2,
             \ })
 
     " init line
@@ -216,12 +249,10 @@ function! s:operate(dir, ...)
 
     " mark index line with '>'
     let l:newLine = line('.')
-    call nvim_buf_set_option(s:hbuf, 'modifiable', v:true)
     if l:oldLine != l:newLine
         call setline(l:oldLine, ' ' . strpart(getline(l:oldLine), 1))
     endif
     call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
-    call nvim_buf_set_option(s:hbuf, 'modifiable', v:false)
 
     " save layer index
     if s:lyr.mode == 'normal'

@@ -18,7 +18,7 @@ let s:recover = {
 
 " FUNCTION: popc#ui#popup#Init() {{{
 function! popc#ui#popup#Init()
-    let l:keys = popc#utils#getKeys()
+    let l:keys = popc#utils#GetKeys()
     let s:keys = {}
     for k in l:keys.lowercase + l:keys.uppercase + l:keys.numbers + l:keys.specials1
         let s:keys[k] = k
@@ -116,22 +116,16 @@ endfunction
 
 " FUNCTION: s:dispPopup() {{{
 function! s:dispPopup()
-    let l:list = s:lyr.getBufs()
-    let s:size = len(l:list)
-    let l:maxheight = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2)
-    let l:maxwidth = &columns - 10
-    let l:height = (s:size <= l:maxheight) ? s:size : l:maxheight
-    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
-
-    " set text and title
-    let [l:title, l:width] = s:createTitle(l:width, l:maxwidth)
-    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
+    let [l:title, l:text, s:size, l:width, l:height] = popc#ui#popup#createContext(
+                \ s:lyr,
+                \ &columns - 10,
+                \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2))
 
     " disp text
     call popup_settext(s:id, l:text)
     call popup_move(s:id, #{
-            \ maxheight: l:maxheight,
-            \ maxwidth: l:maxwidth,
+            \ maxheight: l:height,
+            \ maxwidth: l:width,
             \ line: (&lines - l:height) / 2 + 1,
             \ col: (&columns - l:width) / 2,
             \ })
@@ -163,11 +157,15 @@ function! s:dispPopup()
 endfunction
 " }}}
 
-" FUNCTION: s:createTitle(width) {{{
-" @width: max width of text
-" @maxwidth: the possible max width
-" @return: title with final max width
-function! s:createTitle(width, maxwidth)
+" FUNCTION: popc#ui#popup#createContext(lyr, maxwidth, maxheight) {{{
+" @return: [title-segs, text-list, text-size, text-width, text-height]
+function! popc#ui#popup#createContext(lyr, maxwidth, maxheight)
+    let l:list = a:lyr.getBufs()
+    let l:size = len(l:list)
+    let l:height = (l:size <= a:maxheight) ? l:size : a:maxheight
+    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
+
+    " title
     if s:conf.usePowerFont
         let l:spl  = s:conf.separator.left
         let l:spr  = s:conf.separator.right
@@ -175,24 +173,22 @@ function! s:createTitle(width, maxwidth)
         let l:spl  = ''
         let l:spr  = ''
     endif
-
-    let l:title = []
-    call add(l:title, 'Popc ')
-    call add(l:title, l:spl)
-    call add(l:title, ' ' . s:lyr.info.centerText . ' ')
-    call add(l:title, l:spr)
-    call add(l:title, ' ' . s:lyr.name)
+    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, ' ' . a:lyr.name]
     let l:wseg = 0
     for seg in l:title
         let l:wseg += strwidth(seg)
     endfor
-    let l:width = min([max([a:width, l:wseg]), a:maxwidth])
+    let l:width = min([max([l:width, l:wseg]), a:maxwidth])
     if l:wseg < l:width
         let l:title[2] .= repeat(' ', l:width - l:wseg)
     elseif l:wseg > l:width
         let l:title[2] = strpart(l:title[2], 0, strlen(l:title[2]) - (l:wseg - l:width))
     endif
-    return [l:title, l:width]
+
+    " text
+    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
+
+    return [l:title, l:text, l:size, l:width, l:height]
 endfunction
 " }}}
 

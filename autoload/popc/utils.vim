@@ -7,8 +7,8 @@ let s:conf = popc#init#GetConfig()
 
 " SECTION: api functions {{{1
 
-" FUNCTION: popc#utils#getKeys() {{{
-function! popc#utils#getKeys()
+" FUNCTION: popc#utils#GetKeys() {{{
+function! popc#utils#GetKeys()
     let lowercase = split('q w e r t y u i o p a s d f g h j k l z x c v b n m', ' ')
     let uppercase = split('Q W E R T Y U I O P A S D F G H J K L Z X C V B N M', ' ')
 

@@ -16,7 +16,7 @@ let s:recover = {
 
 " FUNCTION: popc#ui#default#Init() {{{
 function! popc#ui#default#Init()
-    let l:keys = popc#utils#getKeys()
+    let l:keys = popc#utils#GetKeys()
     let s:keys = {}
     for k in l:keys.lowercase + l:keys.uppercase + l:keys.numbers + l:keys.specials1
         let s:keys[(k == '"') ? '\"' : k] = k
