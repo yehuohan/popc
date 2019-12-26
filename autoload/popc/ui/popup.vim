@@ -50,7 +50,6 @@ function! s:create(layer)
         let s:id = popup_create('', #{
                 \ zindex: 1000,
                 \ pos: 'topleft',
-                \ maxwidth: &columns - 20,
                 \ border: [0, 1, 0, 1],
                 \ borderchars: ['', ' ', '', ' '],
                 \ borderhighlight: [],
@@ -64,7 +63,9 @@ function! s:create(layer)
         let s:id_title = popup_create('Popc', #{
                 \ zindex: 1000,
                 \ pos: 'topleft',
-                \ maxwidth: &columns - 20,
+                \ border: [0, 1, 0, 1],
+                \ borderchars: ['', ' ', '', ' '],
+                \ borderhighlight: ['PopcSlLabel'],
                 \ mapping: 0,
                 \ wrap: 0,
                 \ })
@@ -117,25 +118,22 @@ endfunction
 function! s:dispPopup()
     let l:list = s:lyr.getBufs()
     let s:size = len(l:list)
+    let l:maxheight = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2)
+    let l:maxwidth = &columns - 10
+    let l:height = (s:size <= l:maxheight) ? s:size : l:maxheight
+    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
 
     " set text and title
-    let l:text = []
-    let l:width = 0
-    for line in l:list
-        if strwidth(line) > l:width
-            let l:width = strwidth(line)
-        endif
-    endfor
-    let l:width += 2    " text end with 2 spaces
-    let [l:title, l:width] = s:createTitle(l:width)
-    for line in l:list
-        call add(l:text, line . repeat(' ', l:width - strwidth(line)))
-    endfor
+    let [l:title, l:width] = s:createTitle(l:width, l:maxwidth)
+    call map(l:list, 'v:val . repeat(" ", l:width - strwidth(v:val))')
 
     " disp text
-    call popup_settext(s:id, l:text)
+    call popup_settext(s:id, l:list)
     call popup_move(s:id, #{
-            \ maxheight: (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2),
+            \ maxheight: l:maxheight,
+            \ maxwidth: l:maxwidth,
+            \ line: (&lines - l:height) / 2 + 1,
+            \ col: (&columns - l:width) / 2,
             \ })
 
     " disp title
@@ -143,16 +141,17 @@ function! s:dispPopup()
     if l:pos.scrollbar > 0
         let l:title[2] .= ' '
     endif
-    let l:col = 1
-    for k in range(5)
-        let s:title[0].props[k].col = l:col
+    let s:title[0].props[0].col = 1
+    let s:title[0].props[0].length = strlen(l:title[0])
+    for k in range(1, 4)
+        let s:title[0].props[k].col = s:title[0].props[k-1].col + s:title[0].props[k-1].length
         let s:title[0].props[k].length = strlen(l:title[k])
-        let l:col += strlen(l:title[k])
     endfor
     let s:title[0].text = join(l:title, '')
     call popup_settext(s:id_title, s:title)
     call popup_move(s:id_title, #{
             \ line: l:pos.line - 1,
+            \ col: l:pos.col,
             \ })
 
     " init line
@@ -166,28 +165,33 @@ endfunction
 
 " FUNCTION: s:createTitle(width) {{{
 " @width: max width of text
-" @return: title with new max width
-function! s:createTitle(width)
+" @maxwidth: the possible max width
+" @return: title with final max width
+function! s:createTitle(width, maxwidth)
     if s:conf.usePowerFont
         let l:spl  = s:conf.separator.left
         let l:spr  = s:conf.separator.right
     else
-        let l:spl  = ' '
-        let l:spr  = ' '
+        let l:spl  = ''
+        let l:spr  = ''
     endif
 
     let l:title = []
-    call add(l:title, ' Popc ')
+    call add(l:title, 'Popc ')
     call add(l:title, l:spl)
     call add(l:title, ' ' . s:lyr.info.centerText . ' ')
     call add(l:title, l:spr)
-    call add(l:title, ' ' . s:lyr.name . ' ')
+    call add(l:title, ' ' . s:lyr.name)
     let l:wseg = 0
     for seg in l:title
         let l:wseg += strwidth(seg)
     endfor
-    let l:width = max([a:width, l:wseg])
-    let l:title[2] .= repeat(' ', l:width - l:wseg + 2)     " + text border with 2 spaces
+    let l:width = min([max([a:width, l:wseg]), a:maxwidth])
+    if l:wseg < l:width
+        let l:title[2] .= repeat(' ', l:width - l:wseg)
+    elseif l:wseg > l:width
+        let l:title[2] = strpart(l:title[2], 0, strlen(l:title[2]) - (l:wseg - l:width))
+    endif
     return [l:title, l:width]
 endfunction
 " }}}
