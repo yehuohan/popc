@@ -65,9 +65,9 @@ is below:
     jsonPath      = expand($VIM)
     symbols       = {}
     highlight     = {
-        'text'        : 'PmenuSbar',
+        'text'        : 'Pmenu',
         'selected'    : 'PmenuSel',
-        'lineTxt'     : 'PmenuSbar',
+        'lineTxt'     : 'Pmenu',
         'lineSel'     : 'PmenuSel',
         'modifiedTxt' : '',
         'modifiedSel' : 'DiffAdd',
@@ -193,9 +193,9 @@ Set your own tabline layout with `popc#ui#TabLineSetLayout()`:
 Customize highlight via `g:Popc_highlight` or function `popc#ui#InitHi()`:
 >
     let g:hi = {
-        \ 'text'        : 'PmenuSbar',
+        \ 'text'        : 'Pmenu',
         \ 'selected'    : 'PmenuSel',
-        \ 'lineTxt'     : 'PmenuSbar',
+        \ 'lineTxt'     : 'Pmenu',
         \ 'lineSel'     : 'PmenuSel',
         \ 'modifiedTxt' : '',
         \ 'modifiedSel' : 'DiffAdd',

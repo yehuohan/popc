@@ -9,9 +9,9 @@ let s:conf = {
     \ 'symbols'        : {},
     \ 'useUnicode'     : 1,
     \ 'highlight'      : {
-        \ 'text'        : 'PmenuSbar',
+        \ 'text'        : 'Pmenu',
         \ 'selected'    : 'PmenuSel',
-        \ 'lineTxt'     : 'PmenuSbar',
+        \ 'lineTxt'     : 'Pmenu',
         \ 'lineSel'     : 'PmenuSel',
         \ 'modifiedTxt' : '',
         \ 'modifiedSel' : 'DiffAdd',
