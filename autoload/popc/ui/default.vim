@@ -165,9 +165,7 @@ function! s:dispBuffer()
     let l:list = s:lyr.getBufs()
     let b:size = len(l:list)
     let b:text = ''
-    for k in range(b:size)
-        let b:text .= l:list[k] . repeat(' ', &columns - strwidth(l:list[k]) + 1) . "\n"
-    endfor
+    let b:text = join(map(l:list, 'v:val . repeat(" ", &columns - strwidth(v:val) + 1)'), "\n")
 
     " resize buffer
     let l:max = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 3)
