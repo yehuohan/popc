@@ -76,7 +76,7 @@ function! s:destroy()
     endif
 
     " recover window
-    if &timeoutlen
+    if &timeout
         silent execute 'set timeoutlen=' . s:recover.timeoutlen
     endif
     set guicursor-=n:block-PopcSel-blinkon0
