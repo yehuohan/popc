@@ -307,7 +307,7 @@ function! s:createTabBuffer(tidx)
         " symbol for tab
         if s:lyr.info.state ==# s:STATE.Alltab
             if a:tidx == tabpagenr() - 1
-                let l:line .= (k > 0) ? '|' : s:conf.symbols.CTab
+                let l:line .= (k > 0) ? '.' : s:conf.symbols.CTab
             else
                 let l:line .= (k > 0) ? ' ' : s:conf.symbols.Tab
             endif
