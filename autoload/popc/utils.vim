@@ -128,8 +128,8 @@ function! popc#utils#FindRoot()
 endfunction
 " }}}
 
-" FUNCTION: popc#utils#useSlashPath(path) {{{
-function! popc#utils#useSlashPath(path)
+" FUNCTION: popc#utils#UseSlashPath(path) {{{
+function! popc#utils#UseSlashPath(path)
     if exists('+shellslash')
         let s:sslSave = &shellslash
         set shellslash
@@ -147,8 +147,8 @@ endfunction
 " @l: long dir
 " @s: short dir
 function! s:getParentDir(l, s)
-    let l:ldir = popc#utils#useSlashPath(a:l)
-    let l:sdir = popc#utils#useSlashPath(a:s)
+    let l:ldir = popc#utils#UseSlashPath(a:l)
+    let l:sdir = popc#utils#UseSlashPath(a:s)
     let l:sdirLast = l:sdir
     while l:ldir . '/' !~# '^' . l:sdir . '/'
         let l:sdir = fnamemodify(l:sdir, ':h')

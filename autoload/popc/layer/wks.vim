@@ -72,7 +72,7 @@ endfunction
 
 " FUNCTION: s:useSlash(path, endslash) {{{
 function! s:useSlash(path, endslash)
-    let l:path = popc#utils#useSlashPath(a:path)
+    let l:path = popc#utils#UseSlashPath(a:path)
     if a:endslash && l:path !~# '/$'
         let l:path .= '/'
     elseif !a:endslash && l:path =~# '/$'
