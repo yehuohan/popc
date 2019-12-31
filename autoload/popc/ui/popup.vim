@@ -119,7 +119,7 @@ function! s:dispPopup()
     let [l:title, l:text, s:size, l:width, l:height] = popc#ui#popup#createContext(
                 \ s:lyr,
                 \ &columns - 10,
-                \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 2))
+                \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (float2nr(&lines * 0.7)))
 
     " disp text
     call popup_settext(s:id, l:text)
