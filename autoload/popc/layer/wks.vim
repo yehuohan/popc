@@ -73,9 +73,9 @@ endfunction
 " FUNCTION: s:useSlash(path, endslash) {{{
 function! s:useSlash(path, endslash)
     let l:path = popc#utils#UseSlashPath(a:path)
-    if a:endslash && l:path !~# '/$'
+    if a:endslash && l:path[-1:] !=# '/'
         let l:path .= '/'
-    elseif !a:endslash && l:path =~# '/$'
+    elseif !a:endslash && l:path[-1:] ==# '/'
         let l:path = strcharpart(l:path, 0, strchars(l:path) - 1)
     endif
     return l:path
