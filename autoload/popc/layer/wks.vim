@@ -86,7 +86,7 @@ endfunction
 function! s:switchSettings(switch)
     if a:switch ==# 'on'
         " sessionoptions
-        let l:ssopSave = &sessionoptions
+        let s:ssopSave = &sessionoptions
         set sessionoptions=winsize,tabpages,slash,unix,curdir
         " switchbuf
         if !empty(&switchbuf)
@@ -102,7 +102,7 @@ function! s:switchSettings(switch)
         " sessionoptions
         if exists('s:ssopSave')
             let &sessionoptions = s:ssopSave
-            unlet s:ssopSave
+            unlet! s:ssopSave
         endif
         " switchbuf
         if exists('s:swbSave')

@@ -119,7 +119,7 @@ function! s:tab.insertBuffer(tidx, bnr) dict
 
     let l:bnr = (type(a:bnr) == v:t_number) ? string(a:bnr) : a:bnr
     let b = getbufinfo(str2nr(l:bnr))[0]
-    if b.loaded && b.listed && getbufvar(str2nr(l:bnr), '&filetype') != 'Popc'
+    if b.loaded && b.listed && getbufvar(str2nr(l:bnr), '&filetype') !=# 'Popc'
         if !has_key(l:cbnr, l:bnr)
             " insert index in order to s:tab.idx
             if (len(l:cidx) == 0) || (l:cbnr[l:cidx[-1]] <= b.name)
