@@ -13,6 +13,7 @@ let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
+    \ 'timeoutlen' : 0,
     \ }
 
 
