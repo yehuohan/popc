@@ -36,8 +36,8 @@ let s:hi = {
 " FUNCTION: popc#ui#Init() {{{
 function! popc#ui#Init()
     " set highlight
+    call popc#ui#InitHi(s:conf.highlight)
     if s:conf.useTabline || s:conf.useStatusline
-        call popc#ui#InitHi(s:conf.highlight)
         augroup PopcUiInit
             autocmd!
             autocmd ColorScheme * call popc#ui#InitHi(s:hi)
