@@ -21,7 +21,7 @@ let s:mapsData = [
 function! popc#layer#bms#Init()
     let s:lyr = s:popc.addLayer('Bookmark')
     call s:lyr.setInfo('sort', 'path')
-    call s:lyr.setInfo('centerText', s:conf.symbols.Bm)
+    call s:lyr.setInfo('centerText', s:conf.symbols.Bms)
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1], md[2])

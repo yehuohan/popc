@@ -41,7 +41,7 @@ function! s:popc.removeLayer(layer) dict
 endfunction
 " }}}
 
-" FUNCTION: s:layer.addMaps(funcName, keys) dict {{{
+" FUNCTION: s:layer.addMaps(funcName, keys, [help-text]) dict {{{
 " @funcName: one args for map-key at least and must be the last args.
 " @keys: the map-key-list.
 " @param(a:1): map-key help text
