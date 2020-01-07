@@ -26,6 +26,7 @@ function! popc#layer#bms#Init()
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1], md[2])
     endfor
+    unlet! s:mapsData
 endfunction
 " }}}
 
