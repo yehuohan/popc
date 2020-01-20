@@ -127,11 +127,6 @@ function! s:setBuffer()
         set timeoutlen=10
     endif
 
-    " set root path
-    if !empty(s:lyr.info.rootDir)
-        silent execute 'lcd ' . s:lyr.info.rootDir
-    endif
-
     " set auto-command
     augroup PopcUiSetBuffer
         autocmd!
