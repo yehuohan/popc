@@ -7,7 +7,6 @@ let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:tab = {
-    \ 'bnr' : [],
     \ 'idx' : [],
     \ 'pos' : [],
     \ 'lbl' : [],
@@ -16,12 +15,7 @@ let s:tab = {
                         " operateing(edit,open,close...) vim's tab-buffers actually
 " {{{ s:tab format
 "{
-"   'bnr' : [                           " all tab's bufnr
-"       {'nr6' : bufname, 'nr3' : bufname},
-"       {'nr6' : bufname, 'nr9' : bufname},
-"       ...
-"   ],
-"   'idx' : [                           " all tas's bufnr index, use in self.bnr[idx[k]]
+"   'idx' : [                           " all tas's bufnr index, use in self.idx[k]
 "       ['nr3', 'nr6', ...],
 "       ['nr6', 'nr9', ...],
 "       ...
@@ -60,7 +54,6 @@ let s:mapsData = [
 
 " FUNCTION: s:tab.insertTab(tidx) dict {{{
 function! s:tab.insertTab(tidx) dict
-    call insert(self.bnr, {}, a:tidx)
     call insert(self.idx, [], a:tidx)
     call insert(self.pos, 0,  a:tidx)
     call insert(self.lbl, '', a:tidx)
@@ -75,7 +68,6 @@ function! s:tab.removeTab(tidx) dict
             call remove(self.cnt, k)
         endif
     endfor
-    call remove(self.bnr, a:tidx)
     call remove(self.idx, a:tidx)
     call remove(self.pos, a:tidx)
     call remove(self.lbl, a:tidx)
@@ -114,29 +106,15 @@ endfunction
 
 " FUNCTION: s:tab.insertBuffer(tidx, bnr) dict {{{
 function! s:tab.insertBuffer(tidx, bnr) dict
-    let l:cbnr = self.bnr[a:tidx]
-    let l:cidx = self.idx[a:tidx]
-
     let l:bnr = (type(a:bnr) == v:t_number) ? string(a:bnr) : a:bnr
     let b = getbufinfo(str2nr(l:bnr))[0]
     if b.loaded && b.listed && getbufvar(str2nr(l:bnr), '&filetype') !=# 'Popc'
-        if !has_key(l:cbnr, l:bnr)
-            " insert index in order to s:tab.idx
-            if (len(l:cidx) == 0) || (l:cbnr[l:cidx[-1]] <= b.name)
-                call add(l:cidx, l:bnr)
-            else
-                for k in range(len(l:cidx))
-                    if b.name < l:cbnr[l:cidx[k]]
-                        call insert(l:cidx, l:bnr, k)
-                        break
-                    endif
-                endfor
-            endif
+        if index(self.idx[a:tidx], l:bnr) == -1
+            " append bnr to s:tab.idx
+            call add(self.idx[a:tidx], l:bnr)
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
         endif
-        " add or update buffer to s:tab.bnr
-        call extend(l:cbnr, {l:bnr : b.name}, 'force')
         " set tabel to s:tab.lbl
         let self.lbl[a:tidx] = empty(b.name) ? l:bnr . '.NoName' : fnamemodify(b.name, ':t')
     endif
@@ -146,8 +124,6 @@ endfunction
 " FUNCTION: s:tab.removeBuffer(tidx, bnr) dict {{{
 function! s:tab.removeBuffer(tidx, bnr) dict
     let l:bnr = (type(a:bnr) == v:t_number) ? string(a:bnr) : a:bnr
-    " s:tab.bnr
-    call remove(self.bnr[a:tidx], l:bnr)
     " s:tab.idx
     call filter(self.idx[a:tidx], 'v:val !=#' . l:bnr)
     " s:tab.pos
@@ -261,10 +237,10 @@ function! s:tabCallback(type)
 endfunction
 " }}}
 
-" FUNCTION: s:bufCallback() {{{
+" FUNCTION: s:bufCallback(type) {{{
 function! s:bufCallback(type)
     let l:tidx = tabpagenr() - 1
-    if a:type == 'enter'
+    if a:type ==# 'enter'
         if !s:tab.num()
             call s:tab.insertTab(l:tidx)
         endif
