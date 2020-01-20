@@ -26,7 +26,7 @@ let s:tab = {
 "       ['nr6', 'nr9', ...],
 "       ...
 "   ],
-"   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][pos[k]]
+"   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][self.pos[k]]
 "   'lbl' : ['tab1', 'tab2', ...],      " all tab's label
 "   'cnt' :                             " reference counter of each bufnr
 "   {
@@ -190,6 +190,7 @@ function! popc#layer#buf#Init()
     call s:lyr.setInfo('state', s:STATE.Sigtab)
     call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
     call s:lyr.setInfo('userCmd', 1)
+    call s:lyr.setInfo('rootDir', '')
 
     augroup PopcLayerBufInit
         autocmd!

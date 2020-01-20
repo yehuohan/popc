@@ -13,7 +13,6 @@ let s:layer = {
     \ 'bufs' : {'typ': v:t_list, 'fnc': '', 'txt': []},
     \ 'info' : {
         \ 'bindCom'    : 0,
-        \ 'rootDir'    : '',
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
         \ 'userCmd'    : 0,
