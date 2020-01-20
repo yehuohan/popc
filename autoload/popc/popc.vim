@@ -12,7 +12,7 @@ let s:layer = {
     \ 'help' : [],
     \ 'bufs' : {'typ': v:t_list, 'fnc': '', 'txt': []},
     \ 'info' : {
-        \ 'useCm'      : 0,
+        \ 'bindCom'    : 0,
         \ 'rootDir'    : '',
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
@@ -28,7 +28,7 @@ let s:layer = {
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
-    call self[a:layer].setInfo('useCm', (a:0 > 0) ? a:1 : 1)
+    call self[a:layer].setInfo('bindCom', (a:0 > 0) ? a:1 : 1)
     return self[a:layer]
 endfunctio
 " }}}

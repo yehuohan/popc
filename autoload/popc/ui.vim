@@ -158,7 +158,7 @@ function! popc#ui#Trigger(key, index)
     " key response priority： operation > common > layer > default
     if has_key(s:ui.maps.operation, a:key)
         call s:ui.maps.operation[a:key]()
-    elseif s:lyr.info.useCm && has_key(s:ui.maps.common, a:key)
+    elseif s:lyr.info.bindCom && has_key(s:ui.maps.common, a:key)
         call s:ui.maps.common[a:key](a:index)
     elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
         call s:lyr.maps[a:key](a:index)
