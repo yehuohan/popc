@@ -44,7 +44,7 @@ let s:mapsData = [
     \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
     \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C-Close tab''s all buffer)'],
     \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                 'Switch to left/right(i/o) tab'],
-    \ ['popc#layer#buf#MoveBuffer'   , ['I','O'],                 'Move buffer to left/right(I/O) tab'],
+    \ ['popc#layer#buf#Move'         , ['I','O'],                 'Move buffer or tab to the left/right(I/O)'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
     \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
     \ ]
@@ -71,6 +71,16 @@ function! s:tab.removeTab(tidx) dict
     call remove(self.idx, a:tidx)
     call remove(self.pos, a:tidx)
     call remove(self.lbl, a:tidx)
+endfunction
+" }}}
+
+" FUNCTION: s:tab.swapTab(ltdix, rtidx) dict {{{
+function! s:tab.swapTab(ltidx, rtidx) dict
+    let l:lhs = (a:ltidx < self.num()) ? a:ltidx : 0
+    let l:rhs = (a:rtidx < self.num()) ? a:rtidx : 0
+    let [self.idx[l:lhs], self.idx[l:rhs]] = [self.idx[l:rhs], self.idx[l:lhs]]
+    let [self.pos[l:lhs], self.pos[l:rhs]] = [self.pos[l:rhs], self.pos[l:lhs]]
+    let [self.lbl[l:lhs], self.lbl[l:rhs]] = [self.lbl[l:rhs], self.lbl[l:lhs]]
 endfunction
 " }}}
 
@@ -137,6 +147,14 @@ function! s:tab.removeBuffer(tidx, bnr) dict
     if self.cnt[l:bnr] == 0
         call remove(self.cnt, l:bnr)
     endif
+endfunction
+" }}}
+
+" FUNCTION: s:tab.swapBuffer(tidx, lbnr, rbnr) dict {{{
+function! s:tab.swapBuffer(tidx, lbnr, rbnr) dict
+    let l:lhs = (a:lbnr < self.num(a:tidx)) ? a:lbnr : 0
+    let l:rhs = (a:rbnr < self.num(a:tidx)) ? a:rbnr : 0
+    let [self.idx[a:tidx][l:lhs], self.idx[a:tidx][l:rhs]] = [self.idx[a:tidx][l:rhs], self.idx[a:tidx][l:lhs]]
 endfunction
 " }}}
 
@@ -474,7 +492,7 @@ function! popc#layer#buf#SplitTab(key, index)
 
     call popc#ui#Destroy()
     if s:lyr.info.state ==# s:STATE.Listab
-        call popc#ui#Msg("Can NOT split or tabedit in tab-list.")
+        call popc#ui#Msg('Can NOT split or tabedit in tab-list.')
         call s:pop(s:lyr.info.state)
     else
         if a:key ==? 's'
@@ -527,7 +545,7 @@ function! popc#layer#buf#Goto(key, index)
                 return
             endif
         endfor
-        call popc#ui#Msg("No window contain current buffer.")
+        call popc#ui#Msg('No window contain current buffer.')
     endif
 endfunction
 " }}}
@@ -590,9 +608,9 @@ endfunction
 " FUNCTION: popc#layer#buf#SwitchTab(key, index) {{{
 function! popc#layer#buf#SwitchTab(key, index)
     call popc#ui#Destroy()
-    if a:key == 'i'
+    if a:key ==# 'i'
         silent normal! gT
-    elseif a:key == 'o'
+    elseif a:key ==# 'o'
         silent normal! gt
     endif
     call s:pop(s:lyr.info.state)
@@ -626,39 +644,71 @@ function! popc#layer#buf#SwitchBuffer(type)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#MoveBuffer(key, index) {{{
-function! popc#layer#buf#MoveBuffer(key, index)
-    if s:tab.isTabEmpty() || (s:tab.num() <= 1)
+" FUNCTION: popc#layer#buf#Move(key, index) {{{
+function! popc#layer#buf#Move(key, index)
+    if s:tab.isTabEmpty()
         return
     endif
 
     let [l:tidx, l:bidx, l:bnr] = s:getIndexs(a:index)
-    call popc#ui#Destroy()
 
-    " goto origin tab
-    if s:lyr.info.state ==# s:STATE.Alltab
-        silent execute string(l:tidx + 1) . 'tabnext'
+    if (s:lyr.info.state ==# s:STATE.Sigtab)
+        " swap buffer with the left or right
+        if (s:tab.num(l:tidx) < 2)
+            call popc#ui#Msg('Number of buffer < 2.')
+        else
+            call popc#ui#Destroy()
+            if a:key ==# 'I'
+                call s:tab.swapBuffer(l:tidx, l:bidx, l:bidx - 1)
+                let s:tab.pos[l:tidx] = l:bidx - 1
+            elseif a:key ==# 'O'
+                call s:tab.swapBuffer(l:tidx, l:bidx, l:bidx + 1)
+                let s:tab.pos[l:tidx] = l:bidx + 1
+            endif
+            call s:pop(s:lyr.info.state)
+        endif
+    elseif (s:lyr.info.state ==# s:STATE.Alltab)
+        " move buffer to the left or right tab
+        if (s:tab.num() < 2)
+            call popc#ui#Msg('Number of tab < 2.')
+        else
+            call popc#ui#Destroy()
+            let l:tnr = tabpagenr()
+            silent execute string(l:tidx + 1) . 'tabnext'
+            if a:key ==# 'I'
+                silent normal! gT
+            elseif a:key ==# 'O'
+                silent normal! gt
+            endif
+            silent execute 'buffer ' . l:bnr
+            call s:closeBuffer(l:tidx, l:bidx)
+            silent execute string(l:tnr) . 'tabnext'
+            call s:pop(s:lyr.info.state)
+        endif
+    elseif (s:lyr.info.state ==# s:STATE.Listab)
+        " swap tab with the left or right
+        if (s:tab.num() < 2)
+            call popc#ui#Msg('Number of tab < 2.')
+        elseif (a:key ==# 'I' && l:tidx == 0) || (a:key ==# 'O' && l:tidx == s:tab.num() - 1)
+            call popc#ui#Msg('Can NOT swap the boundary tab.')
+        else
+            call popc#ui#Destroy()
+            if a:key ==# 'I'
+                let l:ltidx = l:tidx - 1
+                let l:rtidx = l:tidx
+                call s:lyr.setInfo('lastIndex', a:index - 1)
+            elseif a:key ==# 'O'
+                let l:ltidx = l:tidx
+                let l:rtidx = l:tidx + 1
+                call s:lyr.setInfo('lastIndex', a:index + 1)
+            endif
+            silent execute string(l:ltidx + 1) . 'tabnext'
+            " BUG: it gets wrong when use '-tabmove', '0tabmove' or '$tabmove'
+            noautocmd +tabmove
+            call s:tab.swapTab(l:ltidx, l:rtidx)
+            call s:pop(s:lyr.info.state)
+        endif
     endif
-    " goto target tab
-    if a:key == 'I'
-        silent normal! gT
-    elseif a:key == 'O'
-        silent normal! gt
-    endif
-    " move buffer from origin tab to target tab
-    if s:lyr.info.state ==# s:STATE.Listab
-        for k in s:tab.idx[l:tidx]
-            silent execute 'buffer ' . k
-        endfor
-        for k in range(s:tab.num(l:tidx) - 1, 0, -1)
-            call s:closeBuffer(l:tidx, k)
-        endfor
-    else
-        silent execute 'buffer ' . l:bnr
-        call s:closeBuffer(l:tidx, l:bidx)
-    endif
-
-    call s:pop(s:lyr.info.state)
 endfunction
 " }}}
 
