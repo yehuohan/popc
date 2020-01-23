@@ -299,42 +299,39 @@ function! s:createTabBuffer(tidx)
         let l:bnr = s:tab.idx[a:tidx][k]
         let b = getbufinfo(str2nr(l:bnr))[0]
 
-        let l:line  = '  '
         " symbol for tab
+        let l:symTab = ' '
         if s:lyr.info.state ==# s:STATE.Alltab
             if a:tidx == tabpagenr() - 1
-                let l:line .= (k > 0) ? '.' : s:conf.symbols.CTab
+                let l:symTab = (k > 0) ? '.' : s:conf.symbols.CTab
             else
-                let l:line .= (k > 0) ? ' ' : s:conf.symbols.Tab
+                let l:symTab = (k > 0) ? ' ' : s:conf.symbols.Tab
             endif
-        else
-            let l:line .= ' '
         endif
         " symbol for buffer
-        if empty(b.windows)
-            let l:line .= ' '
-        else
-            let l:sym = ' '
+        let l:symWin = ' '
+        if !empty(b.windows)
             for l:id in b.windows
                 if win_id2tabwin(l:id)[0] == a:tidx + 1
                     " Note that a buffer may appear in more than one window.
-                    let l:sym = s:conf.symbols.WOut
+                    let l:symWin = s:conf.symbols.WOut
                     if l:id == l:winid
-                        let l:sym = s:conf.symbols.WIn
+                        let l:symWin = s:conf.symbols.WIn
                         break
                     endif
                 endif
             endfor
-            let l:line .= l:sym
         endif
-        " symbol for changed
-        let l:line .= b.changed ? '+' : ' '
-        let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
+        " final line
+        let l:line = printf('  %s%s%s %s',
+                    \ l:symTab, l:symWin, b.changed ? '+' : ' ',
+                    \ (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
+                    \ )
         "let l:root = escape(expand(s:lyr.info.rootDir), '\:')
         "if l:root =~# '[/\\]$'
         "    let l:root = strcharpart(l:root, 0, strchars(l:root) - 1)
         "endif
-        "let l:line .= ' ' . (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':s?' . l:root . '??'))
+        "let l:bname = (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':s?' . l:root . '??'))
         call add(l:text, l:line)
     endfor
 
@@ -348,11 +345,12 @@ function! s:createTabList()
 
     for k in range(s:tab.num())
         let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
-        let l:line = '  '
-        let l:line .= (k == tabpagenr() - 1) ? s:conf.symbols.CTab : s:conf.symbols.Tab
-        let l:line .= s:tab.isTabModified(k) ? '+' : ' '
-        let l:line .= ' ' . '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
-                        \ . popc#utils#Num2RankStr(s:tab.num(k))
+        let l:line = printf('  %s%s [%s]%s',
+                    \ (k == tabpagenr() - 1) ? s:conf.symbols.CTab : s:conf.symbols.Tab,
+                    \ s:tab.isTabModified(k) ? '+' : ' ',
+                    \ (empty(l:tname) ? s:tab.lbl[k] : l:tname),
+                    \ popc#utils#Num2RankStr(s:tab.num(k))
+                    \ )
         call add(l:text, l:line)
     endfor
 

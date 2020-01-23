@@ -44,9 +44,15 @@ function! s:createBuffer()
 
     " get context
     for k in range(len(s:bms))
-        let l:line =  '  ' . s:bms[k].name
-        let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' ' . s:conf.symbols.Arr . ' '
-        let l:line .= s:bms[k].path
+        "let l:line =  '  ' . s:bms[k].name
+        "let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' ' . s:conf.symbols.Arr . ' '
+        "let l:line .= s:bms[k].path
+        let l:line = printf('  %s%s %s %s',
+                    \ s:bms[k].name,
+                    \ repeat(' ', l:max - strwidth(s:bms[k].name) - 2),
+                    \ s:conf.symbols.Arr,
+                    \ s:bms[k].path
+                    \ )
         call add(l:text, l:line)
     endfor
 
