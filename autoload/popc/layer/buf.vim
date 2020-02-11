@@ -42,7 +42,7 @@ let s:mapsData = [
     \ ['popc#layer#buf#Load'         , ['CR','Space'],            'Load buffers (Space to stay in popc)'],
     \ ['popc#layer#buf#SplitTab'     , ['s','S','v','V','t','T'], 'Split or tab buffers (SVT to stay in popc)'],
     \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
-    \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C-Close tab''s all buffer)'],
+    \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C to close all buffers of current tab)'],
     \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                 'Switch to left/right(i/o) tab'],
     \ ['popc#layer#buf#Move'         , ['I','O'],                 'Move buffer or tab to the left/right(I/O)'],
     \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
