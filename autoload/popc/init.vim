@@ -28,7 +28,7 @@ let s:conf = {
     \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
     \ 'maxHeight'      : 0,
     \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
-    \ 'useLayerRoots'  : ['.popc', '.git', '.svn'],
+    \ 'useLayerRoots'  : ['.popc', '.git', '.svn', '.hg'],
     \ 'useLayerPath'   : 0,
     \ 'layerInit'      : {},
     \ 'layerComMaps'   : {},
