@@ -143,6 +143,11 @@ function! s:makeSession(filename, root)
                 let l:file = fnameescape(s:useSlash(l:file, 0))
                 call add(l:lines, substitute('edit ' . l:file, l:root, '', 'g'))
             endfor
+            " add name variables of tabs
+            let l:tname = gettabvar(l:tabnr, 'PopcLayerBuf_TabName')
+            if !empty(l:tname)
+                call add(l:lines, 'let t:PopcLayerBuf_TabName = "' . l:tname . '"')
+            endif
             let l:tabnr += 1
         elseif l:cmd =~# '^tabrewind'
             " start from base tabnr
