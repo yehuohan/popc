@@ -193,7 +193,10 @@ function! s:saveWorkspace(name, root)
     execute 'cd ' . a:root
     silent execute 'mksession! ' . l:filename
     call s:switchSettings('off')
-    doautocmd User PopcLayerWksSavePre
+    try
+        doautocmd User PopcLayerWksSavePre
+    catch
+    endtry
     call s:makeSession(l:filename, a:root)
 endfunction
 " }}}
@@ -217,7 +220,10 @@ function! s:loadWorkspace(name, root)
     execute 'cd ' . a:root
     silent execute 'source ' . l:filename
     call s:switchSettings('off')
-    doautocmd User PopcLayerWksLoaded
+    try
+        doautocmd User PopcLayerWksLoaded
+    catch
+    endtry
     return 1
 endfunction
 " }}}
