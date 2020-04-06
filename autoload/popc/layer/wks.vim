@@ -7,6 +7,7 @@ let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:wks = []          " workspaces from .popc.json
+let s:settings = {}     " workspace's settings to saved
 let s:mapsData = [
     \ ['popc#layer#wks#Pop'    , ['w'],                  'Pop workspace layer'],
     \ ['popc#layer#wks#Load'   , ['CR','Space','t','T'], 'Load workspace (CR-Open, Space-Stay, tT-Tab)'],
@@ -125,7 +126,10 @@ endfunction
 function! s:makeSession(filename, root)
     let l:lines = [
             \ 'let s:session_root = popc#layer#wks#GetCurrentWks()[1]',
-            \ 'let s:session_tabbase = tabpagenr()']
+            \ 'let s:session_tabbase = tabpagenr()',
+            \ 'let s:session_json = ' . json_encode(s:settings),
+            \ 'call popc#layer#wks#SetSettings(s:session_json)',
+            \ ]
     let l:root = escape(fnameescape(a:root), '\')   " <Space> must convert to '\\ '
     let l:tabnr = 1
     for l:cmd in readfile(a:filename)
@@ -188,8 +192,9 @@ function! s:saveWorkspace(name, root)
     call s:switchSettings('on')
     execute 'cd ' . a:root
     silent execute 'mksession! ' . l:filename
-    call s:makeSession(l:filename, a:root)
     call s:switchSettings('off')
+    doautocmd User PopcLayerWksSavePre
+    call s:makeSession(l:filename, a:root)
 endfunction
 " }}}
 
@@ -212,6 +217,7 @@ function! s:loadWorkspace(name, root)
     execute 'cd ' . a:root
     silent execute 'source ' . l:filename
     call s:switchSettings('off')
+    doautocmd User PopcLayerWksLoaded
     return 1
 endfunction
 " }}}
@@ -476,5 +482,21 @@ endfunction
 " be attention that workspace name and root path can be empty.
 function! popc#layer#wks#GetCurrentWks()
     return [s:lyr.info.wksName, s:lyr.info.rootDir]
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#wks#GetSettings() {{{
+function! popc#layer#wks#GetSettings()
+    return s:settings
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#wks#SetSettings(dict) {{{
+function! popc#layer#wks#SetSettings(dict)
+    if type(a:dict) == v:t_dict
+        let s:settings = a:dict
+    elseif type(a:dict) == v:t_string
+        let s:setting = json_decode(dict)
+    endif
 endfunction
 " }}}

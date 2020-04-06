@@ -326,6 +326,12 @@ Search file or context in workspace with LeaderF(or fzf if you want):
     nnoremap <leader>wf :call PopcWksSearchFile()<CR>
     nnoremap <leader>wc :call PopcWksSearchContext()<CR>
 <
+You can save and load your own settings in dict type with autocmd:
+>
+    let g:ws = {'settings': {'key': 'test'}}
+    autocmd User PopcLayerWksSavePre call popc#layer#wks#SetSettings(g:ws.settings)
+    autocmd User PopcLayerWksLoaded let g:ws.settings = popc#layer#wks#GetSettings()
+<
 In workspace layer, press '?' to see all command help:
 >
     w            | Pop workspace layer
