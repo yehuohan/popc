@@ -205,7 +205,7 @@ endfunction
 function! s:loadWorkspace(name, root)
     let l:filename = s:getWksFileName(a:name, a:root)
     if !filereadable(l:filename)
-        return 0
+        return -1
     endif
 
     " set root and name of layer
@@ -217,14 +217,17 @@ function! s:loadWorkspace(name, root)
     endif
 
     call s:switchSettings('on')
-    execute 'cd ' . a:root
+    try
+        execute 'cd ' . a:root
+    catch
+    endtry
     silent execute 'source ' . l:filename
     call s:switchSettings('off')
     try
         doautocmd User PopcLayerWksLoaded
     catch
     endtry
-    return 1
+    return 0
 endfunction
 " }}}
 
@@ -299,14 +302,14 @@ function! popc#layer#wks#Load(key, index)
         tabedit
     endif
     let l:ret = s:loadWorkspace(l:name, l:path)
-    if l:ret
+    if 0 == l:ret
         if a:key ==# 'Space' || a:key ==# 'T'
             call popc#layer#wks#Pop('w', 0)
         endif
         call popc#ui#Msg('Load workspace ''' . l:name . ''' successful.')
     else
         call popc#layer#wks#Pop('w', 0)
-        call popc#ui#Msg('The workspace ''' . l:name . ''' is NOT valid which should be removed.')
+        call popc#ui#Msg('Workspace ''' . l:name . ''' is invalid.')
     endif
 endfunction
 " }}}
@@ -326,6 +329,10 @@ function! popc#layer#wks#Add(key, index)
                 \ 'dir')
     if empty(l:path)
         call popc#ui#Msg('No root for workspace.')
+        return
+    endif
+    if !isdirectory(l:path)
+        call popc#ui#Msg('Root ''' . l:path . ''' is NOT exists.')
         return
     endif
     let l:path = s:useSlash(fnamemodify(l:path, ':p'), 1)
@@ -351,6 +358,11 @@ function! popc#layer#wks#Save(key, index)
 
     let l:name = s:wks[a:index].name
     let l:path = s:wks[a:index].path
+
+    if !isdirectory(l:path)
+        call popc#ui#Msg('Root ''' . l:path . ''' is NOT exists.')
+        return
+    endif
 
     if a:key ==# 's'
         if l:name !=# s:lyr.info.wksName || l:path !=# s:lyr.info.rootDir

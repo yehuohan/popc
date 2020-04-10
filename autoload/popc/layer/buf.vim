@@ -288,7 +288,10 @@ endfunction
 " FUNCTION: s:createTabBuffer(tidx) {{{
 function! s:createTabBuffer(tidx)
     call s:tab.checkBuffer(a:tidx)
-    silent execute 'lcd ' . s:lyr.info.rootDir
+    try
+        silent execute 'lcd ' . s:lyr.info.rootDir
+    catch
+    endtry
 
     " join lines
     let l:text = []
