@@ -160,7 +160,7 @@ function! s:makeSession(filename, root)
             " back to init tab
             let l:inc = string(str2nr(split(l:cmd)[-1]) - 1)
             call add(l:lines, 'exe "tabnext " . string(s:session_tabbase + ' . l:inc . ')')
-        elseif l:cmd =~# 'win_findbuf(s:wipebuf)'
+        elseif l:cmd =~# 'win_findbuf(s:wipebuf)' || l:cmd =~# 'exists(''s:wipebuf'')'
             " only remove no name buffer
             call add(l:lines, 'if exists(''s:wipebuf'') && empty(bufname(s:wipebuf))')
         elseif l:cmd =~# l:root
