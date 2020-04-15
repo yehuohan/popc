@@ -134,15 +134,9 @@ function! s:makeSession(filename, root)
     let l:tabnr = 1
     for l:cmd in readfile(a:filename)
         if l:cmd =~# '^cd'
-            call add(l:lines, 'try')
-            call add(l:lines, '  exe "cd " . s:session_root')
-            call add(l:lines, 'catch')
-            call add(l:lines, 'endtry')
+            call add(l:lines, 'exe "cd " . s:session_root')
         elseif l:cmd =~# '^lcd'
-            call add(l:lines, 'try')
-            call add(l:lines, '  exe "lcd " . s:session_root')
-            call add(l:lines, 'catch')
-            call add(l:lines, 'endtry')
+            call add(l:lines, 'exe "lcd " . s:session_root')
         elseif ((l:cmd =~# '^%argdel') && (l:tabnr == 1)) ||
              \ ((l:cmd =~# '^tabnew') && (l:tabnr > 1)) ||
              \ ((l:cmd =~# '^tabedit') && (l:tabnr > 1))
@@ -298,10 +292,6 @@ function! popc#layer#wks#Load(key, index)
 
     let l:name = s:wks[a:index].name
     let l:path = s:wks[a:index].path
-
-    if !popc#ui#Confirm('The root ''' . l:path . ''' is NOT existed, try load workspace anyway?')
-        return
-    endif
 
     call popc#ui#Destroy()
     call popc#ui#Msg('Loading workspace ''' . l:name . ''' ......')
