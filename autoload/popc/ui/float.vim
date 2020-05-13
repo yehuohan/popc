@@ -75,6 +75,7 @@ function! s:destroy()
     if !(exists('s:flag') && s:flag)
         return
     endif
+    set guicursor-=n:block-PopcSel-blinkon0
     if &timeout
         silent execute 'set timeoutlen=' . s:recover.timeoutlen
     endif
@@ -181,6 +182,7 @@ function! s:dispFloat()
             \ 'row': (&lines - l:height) / 2 + 1,
             \ 'col': (&columns - l:width) / 2,
             \ })
+    set guicursor+=n:block-PopcSel-blinkon0
 
     " set title
     call nvim_buf_set_lines(s:hbuf_title, 0, 1, v:false, [join(l:title, ''), ])
