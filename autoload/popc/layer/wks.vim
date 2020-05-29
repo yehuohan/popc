@@ -80,7 +80,7 @@ function! s:useSlash(path, endslash)
     if a:endslash && l:path[-1:] !=# '/'
         let l:path .= '/'
     elseif !a:endslash && l:path[-1:] ==# '/'
-        let l:path = strcharpart(l:path, 0, strchars(l:path) - 1)
+        let l:path = l:path[:-2]
     endif
     return l:path
 endfunction
