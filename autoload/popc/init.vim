@@ -42,6 +42,7 @@ let s:conf = {
         \ 'help'             : ['?'],
         \ 'quit'             : ['q', 'Esc'],
         \ },
+    \ 'enableLog' : 0
     \ }
 let s:defaultSymbols = {
     \ 'unicode' : {
@@ -75,7 +76,8 @@ let s:defaultSymbols = {
     \ }
 let s:json = {
     \ 'json' : {},
-    \ 'file' : '',
+    \ 'fp_json' : '',
+    \ 'fp_log' : '',
     \ 'dir' : '',
     \ }
 
@@ -100,6 +102,7 @@ function! popc#init#Init()
     if s:conf.useLayer.Workspace
         command! -nargs=0 PopcWorkspace :call popc#popc#Popc('Workspace')
     endif
+    command! -nargs=* PopcDbg :call popc#utils#Dbg(<f-args>)
 endfunction
 " }}}
 
@@ -111,17 +114,30 @@ endfunction
 
 " FUNCTION: s:initJson() {{{
 function! s:initJson()
-    let s:json.file = s:conf.jsonPath . '/.popc.json'
     let s:json.dir = s:conf.jsonPath . '/.popc'
+    let s:json.fp_json = s:conf.jsonPath . '/.popc.json'
 
-    if !filereadable(s:json.file)
+    " create .popc.json file
+    if !filereadable(s:json.fp_json)
         let s:json.json = {'bookmarks' : [], 'workspaces' : []}
         call popc#init#SaveJson()
+        call popc#utils#Log('init', '%s was created', s:json.fp_json)
     endif
-    if !s:conf.useLayerPath
-        if !isdirectory(s:json.dir)
-            call mkdir(s:json.dir, 'p')
-        endif
+    " create .popc dir
+    if !isdirectory(s:json.dir)
+        call mkdir(s:json.dir, 'p')
+        call popc#utils#Log('init', '%s was created', s:json.dir)
+    endif
+    " create .popc.log file
+    if s:conf.enableLog
+        let s:json.fp_log = s:json.dir . '/.popc.log'
+        call writefile([], s:json.fp_log)
+        call popc#utils#Log('init', '%s was created', s:json.fp_log)
+        augroup PopcInitInit
+            autocmd!
+            autocmd VimLeave * call popc#utils#Log('init', 'vim was exited') | call popc#utils#WriteLog()
+        augroup END
+        call popc#utils#RegDbg('log', 'popc#utils#DbgDispLog', 'all')
     endif
 endfunction
 " }}}
@@ -129,15 +145,17 @@ endfunction
 " FUNCTION: popc#init#SaveJson() {{{
 function! popc#init#SaveJson()
     let l:json = json_encode(s:json.json)
-    call writefile([l:json], s:json.file)
+    call writefile([l:json], s:json.fp_json)
 endfunction
 " }}}
 
 " FUNCTION: popc#init#GetJson(type) {{{
 function! popc#init#GetJson(type)
     if a:type == 'json'
-        let s:json.json = json_decode(join(readfile(s:json.file)))
+        let s:json.json = json_decode(join(readfile(s:json.fp_json)))
         return s:json.json
+    elseif a:type == 'log'
+        return s:json.fp_log
     elseif a:type == 'dir'
         return s:json.dir
     endif
@@ -150,7 +168,7 @@ function! s:initConfig()
     for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
             \ 'useTabline', 'useStatusline', 'usePowerFont',
             \ 'statusLine', 'tabLine', 'maxHeight',
-            \ 'useLayerRoots', 'useLayerPath']
+            \ 'useLayerRoots', 'useLayerPath', 'enableLog']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
         endif

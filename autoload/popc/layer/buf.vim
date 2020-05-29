@@ -57,6 +57,7 @@ function! s:tab.insertTab(tidx) dict
     call insert(self.idx, [], a:tidx)
     call insert(self.pos, 0,  a:tidx)
     call insert(self.lbl, '', a:tidx)
+    call popc#utils#Log('buf', 'add tab: %s', a:tidx)
 endfunction
 " }}}
 
@@ -71,6 +72,7 @@ function! s:tab.removeTab(tidx) dict
     call remove(self.idx, a:tidx)
     call remove(self.pos, a:tidx)
     call remove(self.lbl, a:tidx)
+    call popc#utils#Log('buf', 'remove tab: %s', a:tidx)
 endfunction
 " }}}
 
@@ -143,6 +145,7 @@ function! s:tab.insertBuffer(tidx, bnr) dict
             call add(self.idx[a:tidx], l:bnr)
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
+            call popc#utils#Log('buf', 'tab %s add buffer nr: %s, filetype: %s', a:tidx, l:bnr, l:ft)
         endif
 
         " set tabel to s:tab.lbl
@@ -167,6 +170,7 @@ function! s:tab.removeBuffer(tidx, bnr) dict
     if self.cnt[l:bnr] == 0
         call remove(self.cnt, l:bnr)
     endif
+    call popc#utils#Log('buf', 'tab %s remove buffer nr: %s, filetype: %s', a:tidx, l:bnr, getbufvar(l:bnr, '&filetype'))
 endfunction
 " }}}
 
@@ -200,6 +204,8 @@ function! popc#layer#buf#Init()
     call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
     call s:lyr.setInfo('userCmd', 1)
     call s:lyr.setInfo('rootDir', '')
+    call popc#utils#RegDbg('buf', 'popc#layer#buf#DbgInfo', '')
+    call popc#utils#Log('buf', 'buffer layer was enabled')
 
     augroup PopcLayerBufInit
         autocmd!
@@ -875,5 +881,20 @@ function! popc#layer#buf#GetFiles(type)
         endfor
     endif
     return l:files
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#DbgInfo(type) {{{
+function! popc#layer#buf#DbgInfo(type)
+    let l:info = []
+    if empty(a:type)
+        call add(l:info, 'idx: ' . string(s:tab.idx))
+        call add(l:info, 'pos: ' . string(s:tab.pos))
+        call add(l:info, 'lbl: ' . string(s:tab.lbl))
+        call add(l:info, 'cnt: ' . string(s:tab.cnt))
+    else
+        call add(l:info, printf("%s: %s", a:type, string(s:tab[a:type])))
+    endif
+    return l:info
 endfunction
 " }}}

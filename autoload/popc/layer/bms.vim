@@ -22,6 +22,7 @@ function! popc#layer#bms#Init()
     let s:lyr = s:popc.addLayer('Bookmark')
     call s:lyr.setInfo('sort', 'path')
     call s:lyr.setInfo('centerText', s:conf.symbols.Bms)
+    call popc#utils#Log('bms', 'bookmark layer was enabled')
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1], md[2])
@@ -119,6 +120,7 @@ function! popc#layer#bms#Add(key, index)
     call popc#init#SaveJson()
     call popc#layer#bms#Pop('b', 0)
     call popc#ui#Msg('Add bookmark ''' . l:name . ''' successful.')
+    call popc#utils#Log('bms', 'add bookmark file: %s path:%s', l:name, l:path)
 endfunction
 " }}}
 
@@ -134,6 +136,7 @@ function! popc#layer#bms#Delete(key, index)
         return
     endif
 
+    call popc#utils#Log('bms', 'delete bookmark file: %s path:%s', l:name,  s:bms[a:index].path)
     call remove(s:bms, a:index)
     call popc#init#SaveJson()
     call popc#layer#bms#Pop('b', 0)

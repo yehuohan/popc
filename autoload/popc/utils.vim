@@ -4,6 +4,8 @@
 " SECTION: variables {{{1
 
 let s:conf = popc#init#GetConfig()
+let s:log = []
+let s:dbg = {}
 
 " SECTION: api functions {{{1
 
@@ -198,4 +200,72 @@ function! popc#utils#GetParentDir(dirs)
     endfor
     return l:pdir
 endfunction
+" }}}
+
+" FUNCTION: popc#utils#Dbg([tag, args]) {{{
+function! popc#utils#Dbg(...)
+    let l:str = ''
+    if a:0 > 0
+        if has_key(s:dbg, a:1)
+            let l:func = s:dbg[a:1].func
+            let l:args = (a:0 > 1) ? a:2 : s:dbg[a:1].args
+            let l:str .= printf("%s:\n%s", a:1, "\t" . join(function(l:func)(l:args), "\n\t"))
+        else
+            let l:str .= printf("'%s' is NOT one of the registered tag:\n%s", a:1, "\t" . join(keys(s:dbg), "\n\t"))
+        endif
+    else
+        for [key, tag] in items(s:dbg)
+            if !empty(l:str)
+                let l:str .= "\n"
+            endif
+            let l:str .= printf("%s:\n%s", key, "\t" . join(function(tag.func)(tag.args), "\n\t"))
+        endfor
+    endif
+    echo l:str
+endfunction
+" }}}
+
+" FUNCTION: popc#utils#RegDbg(tag, func, args) {{{
+" func should return string-list
+function! popc#utils#RegDbg(tag, func, args)
+    let s:dbg[a:tag] = {'func': a:func, 'args': a:args}
+endfunction
+" }}}
+
+" FUNCTION: popc#utils#DbgDispLog(type) {{{
+function! popc#utils#DbgDispLog(type)
+if s:conf.enableLog
+    let l:log = []
+    if a:type == 'all'
+        let l:log = readfile(popc#init#GetJson('log'))
+    endif
+    return l:log + s:log
+endif
+endfunction
+" }}}
+
+" FUNCTION: popc#utils#Log(tag, str, [args]) {{{
+function! popc#utils#Log(tag, str, ...)
+if s:conf.enableLog
+    let l:line = printf("[%s] %s", a:tag, a:str)
+    if a:0 > 0
+        let l:line = call('printf', [l:line] + a:000)
+    endif
+    call add(s:log, l:line)
+
+    if len(s:log) > 100
+        call popc#utils#WriteLog()
+    endif
+endif
+endfunction
+" }}}
+
+" FUNCTION: popc#utils#WriteLog() {{{
+function! popc#utils#WriteLog()
+if s:conf.enableLog
+    call writefile(s:log, popc#init#GetJson('log'), 'a')
+    let s:log = []
+endif
+endfunction
+" }}}
 " }}}

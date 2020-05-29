@@ -30,6 +30,7 @@ function! popc#layer#wks#Init()
     call s:lyr.setInfo('wksName', '')
     call s:lyr.setInfo('rootDir', '')
     call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
+    call popc#utils#Log('wks', 'workspace layer was enabled')
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1], md[2])
@@ -204,6 +205,7 @@ function! s:saveWorkspace(name, root)
     catch
     endtry
     call s:makeSession(l:filename, a:root)
+    call popc#utils#Log('wks', 'save workspace: %s root: %s', l:filename, a:root)
 endfunction
 " }}}
 
@@ -357,6 +359,7 @@ function! popc#layer#wks#Add(key, index)
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w', 0)
     call popc#ui#Msg('Add workspace ''' . l:name . ''' successful.')
+    call popc#utils#Log('wks', 'add workspace: %s, path: %s', l:name, l:path)
 endfunction
 " }}}
 
@@ -413,6 +416,7 @@ function! popc#layer#wks#Delete(key, index)
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w', 0)
     call popc#ui#Msg('Delete workspace ''' . l:name . ''' successful.')
+    call popc#utils#Log('wks', 'delete workspace: %s, path: %s', l:name, l:path)
 endfunction
 " }}}
 
@@ -480,6 +484,7 @@ function! popc#layer#wks#SetRoot(key, index)
     call popc#init#SaveJson()
     call popc#layer#wks#Pop('w', 0)
     call popc#ui#Msg('Set root of workspace to ''' . l:newPath . ''' successful.')
+    call popc#utils#Log('wks', 'change workspace root to: %s', l:newPath)
 endfunction
 " }}}
 
