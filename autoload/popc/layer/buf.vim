@@ -16,17 +16,17 @@ let s:tab = {
 " {{{ s:tab format
 "{
 "   'idx' : [                           " all tas's bufnr index, use in self.idx[k]
-"       ['nr3', 'nr6', ...],
-"       ['nr6', 'nr9', ...],
+"       [nr3, nr6, ...],                " nr is number type
+"       [nr6, nr9, ...],
 "       ...
 "   ],
 "   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][self.pos[k]]
-"   'lbl' : ['tab1', 'tab2', ...],      " all tab's label
+"   'lbl' : ['tl1', 'tl2', ...],        " all tab's label
 "   'cnt' :                             " reference counter of each bufnr
 "   {
-"       'nr3' : 1,
-"       'nr6' : 2,
-"       'nr9' : 1,
+"       nr3 : 1,                        " use nr as key of dict
+"       nr6 : 2,
+"       nr9 : 1,
 "       ...
 "   }
 "}
@@ -102,9 +102,9 @@ endfunction
 " @param(a:1): list to store nr of modified buffer
 function! s:tab.isTabModified(tidx, ...) dict
     for bnr in self.idx[a:tidx]
-        if getbufvar(str2nr(bnr), '&modified')
+        if getbufvar(bnr, '&modified')
             if a:0 >= 1
-                call add(a:1, str2nr(bnr))
+                call add(a:1, bnr)
             else
                 return 1
             endif
@@ -114,17 +114,37 @@ function! s:tab.isTabModified(tidx, ...) dict
 endfunction
 " }}}
 
+" FUNCTION: s:tab.isBufferValid(bnr) dict {{{
+function! s:tab.isBufferValid(bnr) dict
+    if !bufexists(a:bnr)
+        return 0
+    else
+        let b = getbufinfo(a:bnr)[0]
+        let l:ft = getbufvar(a:bnr, '&filetype')
+        if !b.loaded || !b.listed || l:ft ==# 'Popc' || l:ft ==# 'qf'
+            return 0
+        endif
+    endif
+    return 1
+endfunction
+" }}}
+
 " FUNCTION: s:tab.insertBuffer(tidx, bnr) dict {{{
 function! s:tab.insertBuffer(tidx, bnr) dict
-    let l:bnr = (type(a:bnr) == v:t_number) ? string(a:bnr) : a:bnr
-    let b = getbufinfo(str2nr(l:bnr))[0]
-    if b.loaded && b.listed && getbufvar(str2nr(l:bnr), '&filetype') !=# 'Popc'
+    let l:bnr = (type(a:bnr) == v:t_string) ? str2nr(a:bnr) : a:bnr
+
+    if self.isBufferValid(l:bnr)
+        let b = getbufinfo(l:bnr)[0]
+        let l:ft = getbufvar(l:bnr, '&filetype')
+
+        " insert buffer
         if index(self.idx[a:tidx], l:bnr) == -1
             " append bnr to s:tab.idx
             call add(self.idx[a:tidx], l:bnr)
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
         endif
+
         " set tabel to s:tab.lbl
         let self.lbl[a:tidx] = empty(b.name) ? l:bnr . '.NoName' : fnamemodify(b.name, ':t')
     endif
@@ -133,7 +153,7 @@ endfunction
 
 " FUNCTION: s:tab.removeBuffer(tidx, bnr) dict {{{
 function! s:tab.removeBuffer(tidx, bnr) dict
-    let l:bnr = (type(a:bnr) == v:t_number) ? string(a:bnr) : a:bnr
+    let l:bnr = (type(a:bnr) == v:t_string) ? str2nr(a:bnr) : a:bnr
     " s:tab.idx
     call filter(self.idx[a:tidx], 'v:val !=#' . l:bnr)
     " s:tab.pos
@@ -163,13 +183,8 @@ function! s:tab.checkBuffer(tidx) dict
     " remove buffer not closed by s:closeBuffer
     for k in range(self.num(a:tidx) - 1, 0, -1)    " traversal must in reverse order
         let l:bnr = self.idx[a:tidx][k]
-        if !bufexists(str2nr(l:bnr))
+        if !self.isBufferValid(l:bnr)
             call s:tab.removeBuffer(a:tidx, l:bnr)
-        else
-            let b = getbufinfo(str2nr(l:bnr))[0]
-            if !b.listed || !b.loaded
-                call s:tab.removeBuffer(a:tidx, l:bnr)
-            endif
         endif
     endfor
 endfunction
@@ -247,7 +262,7 @@ function! s:tabCallback(type)
         let l:bnrs = copy(s:tab.idx[l:tidx])
         call s:tab.removeTab(l:tidx)
         for bnr in l:bnrs
-            if !has_key(s:tab.cnt, bnr) && !getbufvar(str2nr(bnr), "&modified")
+            if !has_key(s:tab.cnt, bnr) && !getbufvar(bnr, "&modified")
                 silent execute 'noautocmd bdelete! ' . bnr
             endif
         endfor
@@ -300,7 +315,7 @@ function! s:createTabBuffer(tidx)
                 \ a:tidx + 1)
     for k in range(s:tab.num(a:tidx))
         let l:bnr = s:tab.idx[a:tidx][k]
-        let b = getbufinfo(str2nr(l:bnr))[0]
+        let b = getbufinfo(l:bnr)[0]
 
         " symbol for tab
         let l:symTab = ' '
@@ -328,13 +343,13 @@ function! s:createTabBuffer(tidx)
         " final line
         let l:line = printf('  %s%s%s %s',
                     \ l:symTab, l:symWin, b.changed ? '+' : ' ',
-                    \ (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':.'))
+                    \ (empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : fnamemodify(b.name, ':.'))
                     \ )
         "let l:root = escape(expand(s:lyr.info.rootDir), '\:')
         "if l:root =~# '[/\\]$'
         "    let l:root = strcharpart(l:root, 0, strchars(l:root) - 1)
         "endif
-        "let l:bname = (empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':s?' . l:root . '??'))
+        "let l:bname = (empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : fnamemodify(b.name, ':s?' . l:root . '??'))
         call add(l:text, l:line)
     endfor
 
@@ -402,8 +417,8 @@ endfunction
 function! s:getTabParentDir(tidx)
     let l:dirs = []
     for bnr in s:tab.idx[a:tidx]
-        if bufexists(str2nr(bnr))
-            call add(l:dirs, fnamemodify(getbufinfo(str2nr(bnr))[0].name, ':h'))
+        if bufexists(bnr)
+            call add(l:dirs, fnamemodify(getbufinfo(bnr)[0].name, ':h'))
         endif
     endfor
     return popc#utils#GetParentDir(l:dirs)
@@ -475,7 +490,7 @@ function! popc#layer#buf#Load(key, index)
         silent execute string(l:tidx + 1) . 'tabnext'
     else
         " load buffer
-        silent execute 'buffer ' . l:bnr
+        silent execute 'buffer ' . string(l:bnr)
     endif
     if a:key ==# 'Space'
         call s:pop(s:lyr.info.state)
@@ -505,7 +520,7 @@ function! popc#layer#buf#SplitTab(key, index)
             silent execute 'tabedit'
             set eventignore-=BufEnter
         endif
-        silent execute 'buffer ' . l:bnr
+        silent execute 'buffer ' . string(l:bnr)
         if a:key ==# 'T'
             silent execute string(l:tidx + 1) . 'tabnext'
         endif
@@ -531,7 +546,7 @@ function! popc#layer#buf#Goto(key, index)
             call s:pop(s:lyr.info.state)
         endif
     else
-        let b = getbufinfo(str2nr(l:bnr))[0]
+        let b = getbufinfo(l:bnr)[0]
         for l:id in b.windows
             let [l:tabnr, l:winnr] = win_id2tabwin(l:id)
             if l:tabnr == l:tidx + 1
@@ -554,9 +569,9 @@ endfunction
 " FUNCTION: s:closeBuffer(tidx, bidx) {{{
 function! s:closeBuffer(tidx, bidx)
     let l:bnr = s:tab.idx[a:tidx][a:bidx]
-    if getbufvar(str2nr(l:bnr), "&modified") && (s:tab.cnt[l:bnr] == 1)
+    if getbufvar(l:bnr, "&modified") && (s:tab.cnt[l:bnr] == 1)
         \ && !popc#ui#Confirm('The buffer '''
-                            \ . fnamemodify(bufname(str2nr(l:bnr)), ':t')
+                            \ . fnamemodify(bufname(l:bnr), ':t')
                             \ . ''' contains unsaved changes. Continue anyway?')
         return
     endif
@@ -572,14 +587,14 @@ function! s:closeBuffer(tidx, bidx)
     if s:tab.isTabEmpty(a:tidx)
         enew
     else
-        if str2nr(l:bnr) == bufnr('%')
+        if l:bnr == bufnr('%')
             silent execute 'buffer ' . s:tab.idx[a:tidx][
                         \ (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1]
         endif
     endif
     if !has_key(s:tab.cnt, l:bnr)
         " delete bnr if no tab contain bnr
-        silent execute 'noautocmd bdelete! ' . l:bnr
+        silent execute 'noautocmd bdelete! ' . string(l:bnr)
     endif
     silent execute 'noautocmd' . string(l:tnr) . 'tabnext'
 
@@ -625,7 +640,7 @@ function! popc#layer#buf#SwitchBuffer(type)
     endif
 
     let l:tidx = tabpagenr() - 1
-    let l:bidx = index(s:tab.idx[l:tidx], string(bufnr('%')))
+    let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
 
     if a:type == 'left'
         if l:bidx == 0
@@ -641,7 +656,7 @@ function! popc#layer#buf#SwitchBuffer(type)
         endif
     endif
     let l:bnr = s:tab.idx[l:tidx][l:bidx]
-    silent execute 'buffer ' . l:bnr
+    silent execute 'buffer ' . string(l:bnr)
 endfunction
 " }}}
 
@@ -681,7 +696,7 @@ function! popc#layer#buf#Move(key, index)
             elseif a:key ==# 'O'
                 silent normal! gt
             endif
-            silent execute 'buffer ' . l:bnr
+            silent execute 'buffer ' . string(l:bnr)
             call s:closeBuffer(l:tidx, l:bidx)
             silent execute string(l:tnr) . 'tabnext'
             call s:pop(s:lyr.info.state)
@@ -729,7 +744,7 @@ function! popc#layer#buf#Edit(key, index)
     endif
 
     let l:bnr = s:getIndexs(a:index)[2]
-    let l:name = getbufinfo(str2nr(l:bnr))[0].name
+    let l:name = getbufinfo(l:bnr)[0].name
     if empty(l:name)
         return
     endif
@@ -765,16 +780,16 @@ function! popc#layer#buf#GetBufs(tabnr) abort
     call s:tab.checkBuffer(l:tidx)
 
     if getbufvar(bufnr('%'), '&filetype') == 'Popc'
-        let l:curIdx = index(s:tab.idx[l:tidx], string(winbufnr(popc#ui#GetVal('winnr'))))
+        let l:curIdx = index(s:tab.idx[l:tidx], winbufnr(popc#ui#GetVal('winnr')))
     else
-        let l:curIdx = index(s:tab.idx[l:tidx], string(bufnr('%')))
+        let l:curIdx = index(s:tab.idx[l:tidx], bufnr('%'))
     endif
     for k in range(s:tab.num(l:tidx))
         let l:bnr = s:tab.idx[l:tidx][k]
-        let b = getbufinfo(str2nr(l:bnr))[0]
+        let b = getbufinfo(l:bnr)[0]
         call add(l:list, {
                     \ 'index' : string(k+1),
-                    \ 'title' : empty(b.name) ? '[' . l:bnr . '.NoName]' : fnamemodify(b.name, ':t'),
+                    \ 'title' : empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : fnamemodify(b.name, ':t'),
                     \ 'modified' : b.changed ? 1 : 0,
                     \ 'selected' : (k == l:curIdx) ? 1 : 0,
                     \ })
@@ -835,7 +850,7 @@ endfunction
 function! popc#layer#buf#GetWksFiles(tabnr)
     let l:files = []
     for bnr in s:tab.idx[a:tabnr - 1]
-        call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+        call add(l:files, getbufinfo(bnr)[0].name)
     endfor
     return l:files
 endfunction
@@ -850,12 +865,12 @@ function! popc#layer#buf#GetFiles(type)
     if a:type == 'sigtab'
         let l:tidx = tabpagenr() - 1
         for bnr in s:tab.idx[l:tidx]
-            call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+            call add(l:files, getbufinfo(bnr)[0].name)
         endfor
     elseif a:type == 'alltab'
         for k in range(s:tab.num())
             for bnr in s:tab.idx[k]
-                call add(l:files, getbufinfo(str2nr(bnr))[0].name)
+                call add(l:files, getbufinfo(bnr)[0].name)
             endfor
         endfor
     endif
