@@ -135,21 +135,23 @@ function! popc#ui#Input(prompt, ...)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#Confirm(prompt) {{{
+" FUNCTION: popc#ui#Confirm(prompt, [args]) {{{
 " global confirm funtion interface for ui of popc.
 " input 'y' for 'Yes', and anythin else for 'No'.
-function! popc#ui#Confirm(prompt)
-    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g') . ' (yN): '
+function! popc#ui#Confirm(prompt, ...)
+    let l:msg = (a:0 > 0) ? call('printf', [a:prompt] + a:000) : a:prompt
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(l:msg, '\M\n', '\n   ', 'g') . ' (yN): '
     redraw
     return input(l:msg) ==# 'y'
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#Msg(msg) {{{
+" FUNCTION: popc#ui#Msg(msg, [args]) {{{
 " global message function interface for ui of popc.
-function! popc#ui#Msg(msg)
+function! popc#ui#Msg(msg, ...)
     redraw
-    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(a:msg, '\M\n', '\n   ', 'g')
+    let l:msg = (a:0 > 0) ? call('printf', [a:msg] + a:000) : a:msg
+    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(l:msg, '\M\n', '\n   ', 'g')
 endfunction
 " }}}
 
@@ -163,7 +165,7 @@ function! popc#ui#Trigger(key, index)
     elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
         call s:lyr.maps[a:key](a:index)
     else
-        call popc#ui#Msg('Key ''' . a:key . ''' doesn''t work in layer ''' . s:lyr.name . '''.')
+        call popc#ui#Msg('Key ''%s'' doesn''t work in layer ''%s''.', a:key, s:lyr.name)
     endif
 endfunction
 " }}}

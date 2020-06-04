@@ -379,7 +379,7 @@ function! popc#layer#wks#Save(key, index)
 
     if a:key ==# 's'
         if l:name !=# s:lyr.info.wksName || l:path !=# s:lyr.info.rootDir
-            call popc#ui#Msg('Can NOT override with the workspace: ' . s:lyr.info.wksName . ' [' . s:lyr.info.rootDir . ']')
+            call popc#ui#Msg('Can NOT override with the workspace: %s [%s]', s:lyr.info.wksName, s:lyr.info.rootDir)
             return
         elseif !popc#ui#Confirm('Save to workspace ''' . l:name . ''' ?')
             return
