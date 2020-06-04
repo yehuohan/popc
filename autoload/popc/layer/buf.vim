@@ -627,6 +627,23 @@ function! popc#layer#buf#Close(key, index)
 endfunction
 " }}}
 
+" FUNCTION: popc#layer#buf#CloseBuffer([index=%]) {{{
+function! popc#layer#buf#CloseBuffer(...)
+    let l:tidx = tabpagenr() - 1
+    let l:curIdx = (a:0 > 0) ? a:1 : index(s:tab.idx[l:tidx], bufnr('%'))
+
+    if 0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx)
+        if s:tab.num(l:tidx) > 1
+            call s:closeBuffer(l:tidx, l:curIdx)
+        else
+            quit
+        endif
+    else
+        call popc#ui#Msg('Index is of out of range.')
+    endif
+endfunction
+" }}}
+
 " FUNCTION: popc#layer#buf#SwitchTab(key, index) {{{
 function! popc#layer#buf#SwitchTab(key, index)
     call popc#ui#Destroy()

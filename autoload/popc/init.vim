@@ -95,6 +95,7 @@ function! popc#init#Init()
         command! -nargs=0 PopcBuffer :call popc#popc#Popc('Buffer')
         command! -nargs=0 PopcBufferSwitchLeft :call popc#layer#buf#SwitchBuffer('left')
         command! -nargs=0 PopcBufferSwitchRight :call popc#layer#buf#SwitchBuffer('right')
+        command! -nargs=? PopcBufferClose :call popc#layer#buf#CloseBuffer(<f-args>)
     endif
     if s:conf.useLayer.Bookmark
         command! -nargs=0 PopcBookmark :call popc#popc#Popc('Bookmark')
