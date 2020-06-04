@@ -125,7 +125,7 @@ endfunction
 " FUNCTION: s:makeSession(filename, root) {{{
 function! s:makeSession(filename, root)
     let l:lines = [
-            \ 'let s:session_root = popc#layer#wks#GetCurrentWks()[1]',
+            \ 'let s:session_root = popc#layer#wks#GetCurrentWks("root")',
             \ 'let s:session_tabbase = tabpagenr()',
             \ 'let s:session_json = ' . json_encode(s:settings),
             \ 'call popc#layer#wks#SetSettings(s:session_json)',
@@ -505,11 +505,19 @@ endfunction
 
 " SECTION: api functions {{{1
 
-" FUNCTION: popc#layer#wks#GetCurrentWks() {{{
+" FUNCTION: popc#layer#wks#GetCurrentWks([type]) {{{
 " return current workspace name and root path.
 " be attention that workspace name and root path can be empty.
-function! popc#layer#wks#GetCurrentWks()
-    return [s:lyr.info.wksName, s:lyr.info.rootDir]
+function! popc#layer#wks#GetCurrentWks(...)
+    if a:0 == 0
+        return [s:lyr.info.wksName, s:lyr.info.rootDir]
+    else
+        if a:1 ==# 'root'
+            return s:lyr.info.rootDir
+        elseif a:1 ==# 'name'
+            return s:lyr.info.wksName
+        endif
+    endif
 endfunction
 " }}}
 

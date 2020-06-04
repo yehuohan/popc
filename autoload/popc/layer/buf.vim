@@ -434,7 +434,7 @@ function! s:pop(state)
         call s:lyr.setInfo('lastIndex', s:tab.pos[tabpagenr() - 1])
     endif
     " set rootDir
-    let l:root = popc#layer#wks#GetCurrentWks()[1]
+    let l:root = popc#layer#wks#GetCurrentWks('root')
     if empty(l:root)
         let l:root = s:rootBuf
     endif

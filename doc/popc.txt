@@ -312,13 +312,13 @@ Use the following example maps to open buffer layer:
 Search file or context in workspace with LeaderF(or fzf if you want):
 >
     function! PopcWksSearchFile()
-        let l:wks_root = popc#layer#wks#GetCurrentWks()[1]
+        let l:wks_root = popc#layer#wks#GetCurrentWks('root')
         if !empty(l:wks_root)
             execute ':LeaderfFile ' . l:wks_root
         endif
     endfunction
     function! PopcWksSearchContext()
-        let l:wks_root = popc#layer#wks#GetCurrentWks()[1]
+        let l:wks_root = popc#layer#wks#GetCurrentWks('root')
         if !empty(l:wks_root)
             execute ':Leaderf rg -e "" ' . l:wks_root
         endif
