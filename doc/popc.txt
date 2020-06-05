@@ -79,8 +79,8 @@ is below:
     usePowerFont  = 0
     separator     = {'left' : '', 'right' : ''}
     subSeparator  = {'left' : '', 'right' : ''}
-    statusLine    = 'popc#ui#StatusLine()'
-    tabLine       = 'popc#ui#TabLine()'
+    statusLine    = 'popc#stl#StatusLine()'
+    tabLine       = 'popc#stl#TabLine()'
     tabLineLayout = {'left' : 'buffer', 'right': 'tab'}
     maxHeight     = 0
     useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
@@ -138,12 +138,12 @@ default symbols:
 
 Set your own statusline by provide a function to `g:Popc_statusLine`, and set
 `g:Popc_useStatusline` to 1 which means use the statusline for popc. Function
-`popc#ui#GetStatusLineSegments()` can get the content for statusline.
+`popc#stl#StatusLineGetSegments()` can get the content for statusline.
 
 An example with airline:
 >
     function! StatusLine()
-        let [l:left, l:center, l:right] = popc#ui#GetStatusLineSegments('a')
+        let [l:left, l:center, l:right] = popc#stl#StatusLineGetSegments('a')
         let b = airline#builder#new({ 'active': 1 })
         call b.add_section('airline_a', l:left)
         call b.add_section('airline_b', '')
@@ -169,18 +169,18 @@ information of tabs and buffers of each tab for tabline.
 Attention: the tabline of popc is used for buffer layer. So if `useTabLine` is
 set to 1, `useLayer.Buffer` will be set to 1 automatically.
 
-Set your own tabline layout with `popc#ui#TabLineSetLayout()`:
+Set your own tabline layout with `popc#stl#TabLineSetLayout()`:
 
 >
     function! PopcTablineToggleLayout(lyt)
         if a:lyt == 0
-            call popc#ui#TabLineSetLayout('buffer', 'tab')
+            call popc#stl#TabLineSetLayout('buffer', 'tab')
         elseif a:lyt == 1
-            call popc#ui#TabLineSetLayout('tab', 'buffer')
+            call popc#stl#TabLineSetLayout('tab', 'buffer')
         elseif a:lyt == 2
-            call popc#ui#TabLineSetLayout('buffer', '')
+            call popc#stl#TabLineSetLayout('buffer', '')
         elseif a:lyt == 3
-            call popc#ui#TabLineSetLayout('', 'tab')
+            call popc#stl#TabLineSetLayout('', 'tab')
         endif
     endfunction
 <
@@ -190,7 +190,7 @@ Set your own tabline layout with `popc#ui#TabLineSetLayout()`:
 --------------------------------------------------------------------------------
  2.5 Highlight                                                  *popc-highlight*
 
-Customize highlight via `g:Popc_highlight` or function `popc#ui#InitHi()`:
+Customize highlight use `g:Popc_highlight` or `popc#stl#InitHighLight()`:
 >
     let g:hi = {
         \ 'text'        : 'Pmenu',
@@ -202,7 +202,7 @@ Customize highlight via `g:Popc_highlight` or function `popc#ui#InitHi()`:
         \ 'labelTxt'    : 'IncSearch',
         \ 'blankTxt'    : 'Normal',
         \ }
-    call popc#ui#InitHi(g:hi)
+    call popc#stl#InitHighLight(g:hi)
 <
 `g:hi` is a dictionary to save highlight name, and `g:hi.text` and
 `g:hi.selected` is necessary at least.

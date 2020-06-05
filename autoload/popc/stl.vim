@@ -1,0 +1,331 @@
+
+" statusline and tabline
+
+" SECTION: variables {{{1
+
+let s:conf = popc#init#GetConfig()
+let s:hi = {
+    \ 'text'        : '',
+    \ 'selected'    : '',
+    \ 'lineTxt'     : '',
+    \ 'lineSel'     : '',
+    \ 'modifiedTxt' : '',
+    \ 'modifiedSel' : '',
+    \ 'labelTxt'    : '',
+    \ 'blankTxt'    : '',
+    \ }
+
+
+" SETCION: functions {{{1
+
+" FUNCTION: popc#stl#Init() {{{
+function! popc#stl#Init()
+    call popc#stl#InitHighLight(s:conf.highlight)
+    if s:conf.useTabline || s:conf.useStatusline
+        augroup PopcStlInit
+            autocmd!
+            autocmd ColorScheme * call popc#stl#InitHighLight(s:hi)
+        augroup END
+    endif
+    if s:conf.useTabline
+        set showtabline=2
+        silent execute 'set tabline=%!' . s:conf.tabLine
+    endif
+endfunction
+" }}}
+
+" FUNCTION: s:createHiSep(hifg, hibg, hinew) {{{
+function! s:createHiSep(hifg, hibg, hinew)
+    let r = range(4)
+    let r[0] = synIDattr(synIDtrans(hlID(a:hifg)), 'reverse', 'gui') ? 'fg' : 'bg'
+    let r[1] = synIDattr(synIDtrans(hlID(a:hibg)), 'reverse', 'gui') ? 'fg' : 'bg'
+    let r[2] = synIDattr(synIDtrans(hlID(a:hifg)), 'reverse', 'cterm') ? 'fg' : 'bg'
+    let r[3] = synIDattr(synIDtrans(hlID(a:hibg)), 'reverse', 'cterm') ? 'fg' : 'bg'
+    let c = range(4)
+    let c[0] = synIDattr(synIDtrans(hlID(a:hifg)), r[0], 'gui')      " separator guifg
+    let c[1] = synIDattr(synIDtrans(hlID(a:hibg)), r[1], 'gui')      " separator guibf
+    let c[2] = synIDattr(synIDtrans(hlID(a:hifg)), r[2], 'cterm')    " separator ctermfg
+    let c[3] = synIDattr(synIDtrans(hlID(a:hibg)), r[3], 'cterm')    " separator ctrembf
+    let c[0] = empty(c[0]) ? 'NONE' : c[0]
+    let c[1] = empty(c[1]) ? 'NONE' : c[1]
+    let c[2] = empty(c[2]) ? 'NONE' : c[2]
+    let c[3] = empty(c[3]) ? 'NONE' : c[3]
+    execute printf('highlight %s guifg=%s guibg=%s ctermfg=%s ctermbg=%s', a:hinew, c[0], c[1], c[2], c[3])
+    return a:hinew
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#InitHighLight(hi) {{{
+function! popc#stl#InitHighLight(hi)
+    let s:hi.text        = a:hi.text
+    let s:hi.selected    = a:hi.selected
+    let s:hi.lineTxt     = !empty(a:hi.lineTxt)     ? a:hi.lineTxt     : a:hi.text
+    let s:hi.lineSel     = !empty(a:hi.lineSel)     ? a:hi.lineSel     : a:hi.selected
+    let s:hi.labelTxt    = !empty(a:hi.labelTxt)    ? a:hi.labelTxt    : a:hi.selected
+    let s:hi.blankTxt    = !empty(a:hi.blankTxt)    ? a:hi.blankTxt    : a:hi.text
+    let s:hi.modifiedSel = !empty(a:hi.modifiedSel) ? a:hi.modifiedSel : a:hi.selected
+    let s:hi.modifiedTxt = !empty(a:hi.modifiedTxt) ? a:hi.modifiedTxt :
+                           \ s:createHiSep(s:hi.modifiedSel, s:hi.text, 'PopcModifiedTxt')
+    " menu
+    execute printf('highlight default link PopcTxt      %s', s:hi.text)
+    execute printf('highlight default link PopcSel      %s', s:hi.selected)
+
+    " statusline
+    execute printf('highlight default link PopcSlLabel  %s', s:hi.labelTxt)
+    execute printf('highlight default link PopcSl       %s', s:hi.lineTxt)
+    call s:createHiSep('PopcSlLabel', 'PopcSl', 'PopcSlSep')
+
+    " tabline
+    execute printf('highlight default link PopcTlLabel  %s', s:hi.labelTxt)
+    execute printf('highlight default link PopcTl       %s', s:hi.lineTxt)
+    execute printf('highlight default link PopcTlSel    %s', s:hi.lineSel)
+    execute printf('highlight default link PopcTlM      %s', s:hi.modifiedTxt)
+    execute printf('highlight default link PopcTlMSel   %s', s:hi.modifiedSel)
+    execute printf('highlight default link PopcTlBlank  %s', s:hi.blankTxt)
+    " lable -> separator -> title
+    call s:createHiSep('PopcTlLabel', 'PopcTl'     , 'PopcTlSepL0')
+    call s:createHiSep('PopcTlLabel', 'PopcTlM'    , 'PopcTlSepL1')
+    call s:createHiSep('PopcTlLabel', 'PopcTlSel'  , 'PopcTlSepL2')
+    call s:createHiSep('PopcTlLabel', 'PopcTlMsel' , 'PopcTlSepL3')
+    call s:createHiSep('PopcTlLabel', 'PopcTlBlank', 'PopcTlSepL4')
+    " title
+    "       sel,mod = 0,0 = 0
+    "       sel,mod = 0,1 = 1
+    "       sel,mod = 1,0 = 2
+    "       sel,mod = 1,1 = 3
+    highlight default link PopcTl0  PopcTl
+    highlight default link PopcTl1  PopcTlM
+    highlight default link PopcTl2  PopcTlSel
+    highlight default link PopcTl3  PopcTlMSel
+    " title -> separator -> title
+    "       (sel,mod) -> (sel,mod) = (0,0) -> (0,0) = 0, 0 = 0
+    "       (sel,mod) -> (sel,mod) = (0,0) -> (0,1) = 0, 1 = 1
+    "       (sel,mod) -> (sel,mod) = (0,0) -> (1,0) = 0, 2 = 2
+    "       (sel,mod) -> (sel,mod) = (0,0) -> (1,1) = 0, 3 = 3
+    "       (sel,mod) -> (sel,mod) = (0,1) -> (0,0) = 4, 0 = 4
+    "       (sel,mod) -> (sel,mod) = (0,1) -> (0,1) = 4, 1 = 5
+    "       (sel,mod) -> (sel,mod) = (0,1) -> (1,0) = 4, 2 = 6
+    "       (sel,mod) -> (sel,mod) = (0,1) -> (1,1) = 4, 3 = 7
+    "       (sel,mod) -> (sel,mod) = (1,0) -> (0,0) = 8, 0 = 8
+    "       (sel,mod) -> (sel,mod) = (1,0) -> (0,1) = 8, 1 = 9
+    "       (sel,mod) -> (sel,mod) = (1,1) -> (0,0) = 12, 0 = 12
+    "       (sel,mod) -> (sel,mod) = (1,1) -> (0,1) = 12, 1 = 13
+    highlight default link                          PopcTlSep0 PopcTl
+    highlight default link                          PopcTlSep1 PopcTl
+    call s:createHiSep('PopcTl'    , 'PopcTlSel' , 'PopcTlSep2')
+    call s:createHiSep('PopcTl'    , 'PopcTlMSel', 'PopcTlSep3')
+    highlight default link                          PopcTlSep4 PopcTl
+    highlight default link                          PopcTlSep5 PopcTl
+    call s:createHiSep('PopcTlM'   , 'PopcTlSel' , 'PopcTlSep6')
+    call s:createHiSep('PopcTlM'   , 'PopcTlMSel', 'PopcTlSep7')
+    call s:createHiSep('PopcTlSel' , 'PopcTl'    , 'PopcTlSep8')
+    call s:createHiSep('PopcTlSel' , 'PopcTlM'   , 'PopcTlSep9')
+    call s:createHiSep('PopcTlMSel', 'PopcTl'    , 'PopcTlSep12')
+    call s:createHiSep('PopcTlMSel', 'PopcTlM'   , 'PopcTlSep13')
+    " title -> separator -> blank
+    call s:createHiSep('PopcTl'    , 'PopcTlBlank', 'PopcTlSepB0')
+    call s:createHiSep('PopcTlM'   , 'PopcTlBlank', 'PopcTlSepB1')
+    call s:createHiSep('PopcTlSel' , 'PopcTlBlank', 'PopcTlSepB2')
+    call s:createHiSep('PopcTlMSel', 'PopcTlBlank', 'PopcTlSepB3')
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#StatusLineGetSegments(seg) abort {{{
+function! popc#stl#StatusLineGetSegments(seg) abort
+    let l:segs = []
+
+    if a:seg =~? '[al]'
+        let l:left = 'Popc'
+        call add(l:segs, l:left)
+    endif
+
+    if a:seg =~? '[ac]'
+        let l:center = s:lyr.info.centerText
+        call add(l:segs, l:center)
+    endif
+
+    if a:seg =~? '[ar]'
+        let l:rank = '[' . string(len(s:lyr.bufs.txt)) . ']' . popc#utils#Num2RankStr(line('.'))
+        let l:right = l:rank . ' ' . s:conf.symbols.Rank . ' '. s:lyr.name
+        call add(l:segs, l:right)
+    endif
+
+    return l:segs
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#StatusLine() abort {{{
+function! popc#stl#StatusLine() abort
+    if s:conf.usePowerFont
+        let l:spl  = s:conf.separator.left
+        let l:spr  = s:conf.separator.right
+    else
+        let l:spl  = ''
+        let l:spr  = ''
+    endif
+
+    let [l:left, l:center, l:right] = popc#stl#StatusLineGetSegments('a')
+    let l:value  = ('%#PopcSlLabel# ' . l:left . ' ') . ('%#PopcSlSep#' . l:spl)
+    let l:value .= ('%#PopcSl# ' . l:center . ' ')
+    let l:value .= '%='
+    let l:value .= ('%#PopcSlSep#' . l:spr) . ('%#PopcSlLabel# ' . l:right . ' ')
+    return l:value
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#TabLineSetLayout(lhs, rhs) abort {{{
+function! popc#stl#TabLineSetLayout(lhs, rhs) abort
+    let s:conf.tabLineLayout.left = a:lhs
+    let s:conf.tabLineLayout.right = a:rhs
+    if empty(a:lhs) && empty(a:rhs)
+        let s:conf.useTabline = 0
+        set showtabline=0
+    else
+        let s:conf.useTabline = 1
+        set showtabline=2
+    endif
+    if s:conf.useTabline
+        silent execute 'set tabline=%!' . s:conf.tabLine
+    endif
+endfunction
+" }}}
+
+" FUNCTION: s:createTabLineLeft(lst, ch, seps) abort {{{
+function! s:createTabLineLeft(lst, ch, seps) abort
+    let l:list = a:lst
+    let l:spl  = a:seps.spl
+    let l:spr  = a:seps.spr
+    let l:sspl = a:seps.sspl
+    let l:sspr = a:seps.sspr
+
+    if empty(l:list)
+        let l:lhs = '%#PopcTlBlank#%='
+    else
+        let l:len = len(l:list)
+        " lable -> separator -> title
+        let l:id = (l:len > 0) ? string(l:list[0].selected*2 + l:list[0].modified) : '4'
+        let l:lhs = '%#PopcTlLabel#' . a:ch . '%#PopcTlSepL' . l:id . '#' . l:spl
+        for k in range(l:len)
+            let i = l:list[k]
+            " title
+            let l:id = string(i.selected*2 + i.modified)
+            let l:hi = '%#PopcTl' . l:id . '#'
+            if (k+1 < l:len)
+                " title -> separator -> title
+                let ii = l:list[k+1]
+                let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
+                let l:hisep = '%#PopcTlSep' . l:id . '#'
+                let l:sep = (i.selected || ii.selected) ? l:spl : l:sspl
+            else
+                " title -> separator -> blank
+                let l:id = string(i.selected*2 + i.modified)
+                let l:hisep = '%#PopcTlSepB' . l:id . '#'
+                let l:sep = l:spl
+            endif
+            let l:lhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
+            let l:lhs .= l:hisep . l:sep
+        endfor
+        let l:lhs .= '%#PopcTlBlank#%='
+    endif
+    return l:lhs
+endfunction
+" }}}
+
+" FUNCTION: s:createTabLineRight(lst, ch, seps) abort {{{
+function! s:createTabLineRight(lst, ch, seps) abort
+    let l:list = a:lst
+    let l:spl  = a:seps.spl
+    let l:spr  = a:seps.spr
+    let l:sspl = a:seps.sspl
+    let l:sspr = a:seps.sspr
+
+    if empty(l:list)
+        let l:rhs = ''
+    else
+        let l:len = len(l:list)
+        let l:rhs = ''
+        for k in range(l:len)
+            let i = l:list[k]
+            " title
+            let l:id = string(i.selected*2 + i.modified)
+            let l:hi = '%#PopcTl' . l:id . '#'
+            if k == 0
+                " blank -> separator -> title
+                let l:hisep = '%#PopcTlSepB' . l:id . '#'
+                let l:sep = l:spr
+            else
+                " title -> separator -> title
+                let ii = l:list[k-1]
+                let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
+                let l:hisep = '%#PopcTlSep' . l:id . '#'
+                let l:sep = (i.selected || ii.selected) ? l:spr : l:sspr
+            endif
+            let l:rhs .= l:hisep . l:sep
+            let l:rhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
+        endfor
+        " title -> separator -> lable
+        let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
+        let l:rhs .= '%#PopcTlSepL' . l:id . '#' . l:spr
+        let l:rhs .= '%#PopcTlLabel#' . a:ch
+    endif
+    return l:rhs
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#TabLine() abort {{{
+function! popc#stl#TabLine() abort
+    if s:conf.usePowerFont
+        let l:seps = {
+            \ 'spl'  : s:conf.separator.left,
+            \ 'spr'  : s:conf.separator.right,
+            \ 'sspl' : s:conf.subSeparator.left,
+            \ 'sspr' : s:conf.subSeparator.right
+            \ }
+    else
+        let l:seps = {
+            \ 'spl'  : '',
+            \ 'spr'  : '',
+            \ 'sspl' : '|',
+            \ 'sspr' : '|'
+            \ }
+    endif
+
+    " init buf and tab list"
+    let l:buflst = []
+    let l:tablst = []
+    if s:conf.tabLineLayout.left ==# 'tab' || s:conf.tabLineLayout.right ==# 'tab'
+        let l:tablst = popc#layer#buf#GetTabs()
+    endif
+    if s:conf.tabLineLayout.left ==# 'buffer' || s:conf.tabLineLayout.right ==# 'buffer'
+        let l:buflst = popc#layer#buf#GetBufs(tabpagenr())
+    endif
+
+    " left side
+    if s:conf.tabLineLayout.left ==# 'tab'
+        let l:lst = l:tablst
+        let l:ch = 'T'
+    elseif s:conf.tabLineLayout.left ==# 'buffer'
+        let l:lst = l:buflst
+        let l:ch = 'B'
+    else
+        let l:lst = []
+        let l:ch = ''
+    endif
+    let l:lhs = s:createTabLineLeft(l:lst, l:ch, l:seps)
+
+    " right side
+    if s:conf.tabLineLayout.right ==# 'tab'
+        let l:lst = l:tablst
+        let l:ch = 'T'
+    elseif s:conf.tabLineLayout.right ==# 'buffer'
+        let l:lst = l:buflst
+        let l:ch = 'B'
+    else
+        let l:lst = []
+        let l:ch = ''
+    endif
+    let l:rhs = s:createTabLineRight(l:lst, l:ch, l:seps)
+
+    return l:lhs . l:rhs
+endfunction
+" }}}
