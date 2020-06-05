@@ -14,6 +14,134 @@ let s:hi = {
     \ 'labelTxt'    : '',
     \ 'blankTxt'    : '',
     \ }
+let s:lst = {}
+" {
+"   'sum' : 0,              " sum length of all items
+"   'idx' : 0,              " the index of selected item
+"   'len' : [],             " length for each item
+"   'res' : []              " result: 1 for visible, 0 for hidden, -1 for replace item
+" }
+
+
+" SECTION: dictionary function {{{1
+
+" FUNCTION: s:lst.calcLen(lst) dict {{{
+function! s:lst.calcLen(lst) dict
+    let self.sum = 0
+    let self.idx = 0
+    let self.len = []
+    if !empty(a:lst)
+        let self.sum += 2
+        for k in range(len(a:lst))
+            call add(self.len, strwidth(a:lst[k].title) + 3)
+            let self.sum += self.len[-1]
+            if a:lst[k].selected
+                let self.idx = k
+            endif
+        endfor
+    endif
+endfunction
+" }}}
+
+" FUNCTION: s:lst.calcMin(lst) dict {{{
+" the min struct is only one buf and one tab: ... > item > ...
+function! s:lst.calcMin(lst) dict
+    let self.sum = 0
+    if !empty(a:lst)
+        let self.res = repeat([0], len(a:lst))
+        let self.sum += 2
+
+        if self.idx - 1 >= 0
+            let self.sum += 6
+            let self.res[self.idx - 1] = -1
+        endif
+
+        let self.res[self.idx] = 1
+        let self.sum += self.len[self.idx]
+
+        if self.idx + 1 < len(a:lst)
+            let self.sum += 6
+            let self.res[self.idx + 1] = -1
+        endif
+    endif
+endfunction
+" }}}
+
+" FUNCTION: s:lst.calcExt(lst, csum) dict {{{
+" extend list
+function! s:lst.calcExt(lst, csum) dict
+    let l = self.idx
+    let r = self.idx
+    let l:sz = len(a:lst)
+    while (r - l + 1 < l:sz)
+        if (r + 1 < l:sz)
+            let r += 1
+            if self.sum + a:csum + self.len[r] <= &columns
+                let self.sum += self.len[r]
+                let self.res[r] = 1
+                if r + 1 < l:sz
+                    let self.res[r + 1] = -1
+                endif
+            else
+                break
+            endif
+        endif
+        if (l - 1 >= 0)
+            let l -= 1
+            if self.sum + a:csum + self.len[l] <= &columns
+                let self.sum += self.len[l]
+                let self.res[l] = 1
+                if l - 1 >= 0
+                    let self.res[l - 1] = -1
+                endif
+            else
+                break
+            endif
+        endif
+    endwhile
+endfunction
+" }}}
+
+" FUNCTION: s:lst.calcRes(lst) dict {{{
+function! s:lst.calcRes(lst) dict
+    let l:out = []
+    for k in range(len(a:lst))
+        if self.res[k] >= 1
+            call add(l:out, a:lst[k])
+        elseif self.res[k] <= -1
+            call add(l:out, {'index': len(l:out), 'title': '...', 'modified': 0, 'selected': 0})
+        endif
+    endfor
+    return l:out
+endfunction
+" }}}
+
+" FUNCTION: s:tabLineShorten(buflst, tablst) abort {{{
+" @param *lst [{'index': 0, 'title': '', 'modified': 0, 'selected': 0}, ...]
+function! s:tabLineShorten(buflst, tablst) abort
+    let l:buf = copy(s:lst)
+    let l:tab = copy(s:lst)
+
+    call l:buf.calcLen(a:buflst)
+    call l:tab.calcLen(a:tablst)
+
+    " columns is enough
+    if l:buf.sum + l:tab.sum <= &columns
+        return [a:buflst, a:tablst]
+    endif
+
+    " get min struct
+    call l:buf.calcMin(a:buflst)
+    call l:tab.calcMin(a:tablst)
+
+    " extend buf firstly and then tab
+    call l:buf.calcExt(a:buflst, l:tab.sum)
+    call l:tab.calcExt(a:tablst, l:buf.sum)
+
+    " return short list
+    return [l:buf.calcRes(a:buflst), l:tab.calcRes(a:tablst)]
+endfunction
+" }}}
 
 
 " SETCION: functions {{{1
@@ -299,6 +427,7 @@ function! popc#stl#TabLine() abort
     if s:conf.tabLineLayout.left ==# 'buffer' || s:conf.tabLineLayout.right ==# 'buffer'
         let l:buflst = popc#layer#buf#GetBufs(tabpagenr())
     endif
+    let [l:buflst, l:tablst] = s:tabLineShorten(l:buflst, l:tablst)
 
     " left side
     if s:conf.tabLineLayout.left ==# 'tab'

@@ -9,6 +9,7 @@ let s:lyr = {}          " this layer
 let s:tab = {
     \ 'idx' : [],
     \ 'pos' : [],
+    \ 'sel' : [],
     \ 'lbl' : [],
     \ 'cnt' : {},
     \ }                 " only manager Popc's internal tab-buffers data instead of
@@ -21,6 +22,7 @@ let s:tab = {
 "       ...
 "   ],
 "   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][self.pos[k]]
+"   'sel' : [0, 1, ...]                 " current selected bufnr index for tabline selected attribute, use in self.idx[i][self.sel[k]]
 "   'lbl' : ['tl1', 'tl2', ...],        " all tab's label
 "   'cnt' :                             " reference counter of each bufnr
 "   {
@@ -56,6 +58,7 @@ let s:mapsData = [
 function! s:tab.insertTab(tidx) dict
     call insert(self.idx, [], a:tidx)
     call insert(self.pos, 0,  a:tidx)
+    call insert(self.sel, 0,  a:tidx)
     call insert(self.lbl, '', a:tidx)
     call popc#utils#Log('buf', 'add tab: %s', a:tidx)
 endfunction
@@ -71,6 +74,7 @@ function! s:tab.removeTab(tidx) dict
     endfor
     call remove(self.idx, a:tidx)
     call remove(self.pos, a:tidx)
+    call remove(self.sel, a:tidx)
     call remove(self.lbl, a:tidx)
     call popc#utils#Log('buf', 'remove tab: %s', a:tidx)
 endfunction
@@ -82,6 +86,7 @@ function! s:tab.swapTab(ltidx, rtidx) dict
     let l:rhs = (a:rtidx < self.num()) ? a:rtidx : 0
     let [self.idx[l:lhs], self.idx[l:rhs]] = [self.idx[l:rhs], self.idx[l:lhs]]
     let [self.pos[l:lhs], self.pos[l:rhs]] = [self.pos[l:rhs], self.pos[l:lhs]]
+    let [self.sel[l:lhs], self.sel[l:rhs]] = [self.sel[l:rhs], self.sel[l:lhs]]
     let [self.lbl[l:lhs], self.lbl[l:rhs]] = [self.lbl[l:rhs], self.lbl[l:lhs]]
 endfunction
 " }}}
@@ -140,12 +145,17 @@ function! s:tab.insertBuffer(tidx, bnr) dict
         let l:ft = getbufvar(l:bnr, '&filetype')
 
         " insert buffer
-        if index(self.idx[a:tidx], l:bnr) == -1
+        let l:bidx = index(self.idx[a:tidx], l:bnr)
+        if l:bidx == -1
             " append bnr to s:tab.idx
             call add(self.idx[a:tidx], l:bnr)
+            let s:selSave = self.sel[a:tidx]
+            let self.sel[a:tidx] = self.num(a:tidx) - 1
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
             call popc#utils#Log('buf', 'tab %s add buffer nr: %s, filetype: %s', a:tidx, l:bnr, l:ft)
+        else
+            let self.sel[a:tidx] = l:bidx
         endif
 
         " set tabel to s:tab.lbl
@@ -164,6 +174,12 @@ function! s:tab.removeBuffer(tidx, bnr) dict
         let self.pos[a:tidx] = 0
     elseif self.pos[a:tidx] >= self.num(a:tidx)
         let self.pos[a:tidx] = self.num(a:tidx) - 1
+    endif
+    " s:tab.sel
+    if self.num(a:tidx) == 0
+        let self.sel[a:tidx] = 0
+    elseif self.sel[a:tidx] >= self.num(a:tidx)
+        let self.sel[a:tidx] = self.num(a:tidx) - 1
     endif
     " s:tab.cnt
     let self.cnt[l:bnr] -= 1
@@ -188,6 +204,10 @@ function! s:tab.checkBuffer(tidx) dict
     for k in range(self.num(a:tidx) - 1, 0, -1)    " traversal must in reverse order
         let l:bnr = self.idx[a:tidx][k]
         if !self.isBufferValid(l:bnr)
+            if l:bnr == self.idx[a:tidx][self.sel[a:tidx]]
+                call popc#utils#Log('buf', 'backup sel from %s to %s', self.sel[a:tidx], s:selSave)
+                let self.sel[a:tidx] = s:selSave
+            endif
             call s:tab.removeBuffer(a:tidx, l:bnr)
         endif
     endfor
@@ -656,9 +676,11 @@ function! popc#layer#buf#Move(key, index)
             if a:key ==# 'I'
                 call s:tab.swapBuffer(l:tidx, l:bidx, l:bidx - 1)
                 let s:tab.pos[l:tidx] = l:bidx - 1
+                let s:tab.sel[l:tidx] = l:bidx - 1
             elseif a:key ==# 'O'
                 call s:tab.swapBuffer(l:tidx, l:bidx, l:bidx + 1)
                 let s:tab.pos[l:tidx] = l:bidx + 1
+                let s:tab.sel[l:tidx] = l:bidx + 1
             endif
             call s:pop(s:lyr.info.state)
         endif
@@ -795,6 +817,7 @@ function! popc#layer#buf#SwitchBuffer(type)
         endif
     endif
     let l:bnr = s:tab.idx[l:tidx][l:bidx]
+    let s:tab.sel[l:tidx] = l:bidx
     silent execute 'buffer ' . string(l:bnr)
 endfunction
 " }}}
@@ -816,6 +839,12 @@ function! popc#layer#buf#GetBufs(tabnr) abort
     else
         let l:curIdx = index(s:tab.idx[l:tidx], bufnr('%'))
     endif
+    if 0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx)
+        let s:tab.sel[l:tidx] = l:curIdx
+    else
+        let l:curIdx = s:tab.sel[l:tidx]
+    endif
+
     for k in range(s:tab.num(l:tidx))
         let l:bnr = s:tab.idx[l:tidx][k]
         let b = getbufinfo(l:bnr)[0]
@@ -916,6 +945,7 @@ function! popc#layer#buf#DbgInfo(type)
     if empty(a:type)
         call add(l:info, 'idx: ' . string(s:tab.idx))
         call add(l:info, 'pos: ' . string(s:tab.pos))
+        call add(l:info, 'sel: ' . string(s:tab.sel))
         call add(l:info, 'lbl: ' . string(s:tab.lbl))
         call add(l:info, 'cnt: ' . string(s:tab.cnt))
     else
