@@ -627,23 +627,6 @@ function! popc#layer#buf#Close(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#CloseBuffer([index=%]) {{{
-function! popc#layer#buf#CloseBuffer(...)
-    let l:tidx = tabpagenr() - 1
-    let l:curIdx = (a:0 > 0) ? a:1 : index(s:tab.idx[l:tidx], bufnr('%'))
-
-    if 0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx)
-        if s:tab.num(l:tidx) > 1
-            call s:closeBuffer(l:tidx, l:curIdx)
-        else
-            quit
-        endif
-    else
-        call popc#ui#Msg('Index is of out of range.')
-    endif
-endfunction
-" }}}
-
 " FUNCTION: popc#layer#buf#SwitchTab(key, index) {{{
 function! popc#layer#buf#SwitchTab(key, index)
     call popc#ui#Destroy()
@@ -653,33 +636,6 @@ function! popc#layer#buf#SwitchTab(key, index)
         silent normal! gt
     endif
     call s:pop(s:lyr.info.state)
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
-function! popc#layer#buf#SwitchBuffer(type)
-    if s:tab.isTabEmpty()
-        return
-    endif
-
-    let l:tidx = tabpagenr() - 1
-    let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
-
-    if a:type == 'left'
-        if l:bidx == 0
-            let l:bidx = s:tab.num(l:tidx) - 1
-        else
-            let l:bidx -= 1
-        endif
-    elseif a:type == 'right'
-        if l:bidx == s:tab.num(l:tidx) - 1
-            let l:bidx = 0
-        else
-            let l:bidx += 1
-        endif
-    endif
-    let l:bnr = s:tab.idx[l:tidx][l:bidx]
-    silent execute 'buffer ' . string(l:bnr)
 endfunction
 " }}}
 
@@ -789,6 +745,59 @@ endfunction
 
 
 " SECTION: api functions {{{1
+
+" FUNCTION: popc#layer#buf#CloseBuffer([index=%]) {{{
+function! popc#layer#buf#CloseBuffer(...)
+    let l:tidx = tabpagenr() - 1
+    let l:winNum = 0
+    let l:curIdx = (a:0 > 0) ? a:1 : index(s:tab.idx[l:tidx], bufnr('%'))
+
+    for k in range(1, winnr('$'))
+        if index(s:tab.idx[l:tidx], winbufnr(k)) > -1
+            let l:winNum += 1
+            if l:winNum > 1
+                break
+            endif
+        endif
+    endfor
+    call popc#utils#Log('buf', 'buf num: %s, win num: %s, cur idx: %s', s:tab.num(l:tidx), l:winNum, l:curIdx)
+
+    " close buffer only there's only one 'valid win' and more than one buffer of current tab.
+    " 'valid win' means one win contains a buffer that was managed by popc-buffer layer.
+    if (s:tab.num(l:tidx) > 1) && (l:winNum == 1) && (0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx))
+        call s:closeBuffer(l:tidx, l:curIdx)
+    else
+        quit
+    endif
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
+function! popc#layer#buf#SwitchBuffer(type)
+    if s:tab.isTabEmpty()
+        return
+    endif
+
+    let l:tidx = tabpagenr() - 1
+    let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
+
+    if a:type == 'left'
+        if l:bidx == 0
+            let l:bidx = s:tab.num(l:tidx) - 1
+        else
+            let l:bidx -= 1
+        endif
+    elseif a:type == 'right'
+        if l:bidx == s:tab.num(l:tidx) - 1
+            let l:bidx = 0
+        else
+            let l:bidx += 1
+        endif
+    endif
+    let l:bnr = s:tab.idx[l:tidx][l:bidx]
+    silent execute 'buffer ' . string(l:bnr)
+endfunction
+" }}}
 
 " FUNCTION: popc#layer#buf#GetBufs(tabnr) abort {{{
 " @param tabnr: get all buffers information of tabnr.
