@@ -8,8 +8,6 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:exp = [
     \ 'This is example layer.',
-    \ 'Add layer init function: let g:Popc_layerInit={"Exp": "popc#layer#exp#Init"}',
-    \ 'Add layer common maps if necessary: let g:Popc_layerComMaps = {"Exp" : ["popc#layer#exp#Pop", "p"]}',
     \ 'Use s:popc.addLayer to add layer.',
     \ 'Use s:popc.removeLayer to remove layer.',
     \ 'Use s:lyr.addMaps to add maps for layer.',

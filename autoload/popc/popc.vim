@@ -153,10 +153,9 @@ function! s:initLayers()
     if s:conf.useLayer.Workspace
         call popc#ui#AddComMap('popc#layer#wks#Pop', 'w')
     endif
-    for m in values(s:conf.layerComMaps)
-        " {'layerName': [funcName, key]}
-        call popc#ui#AddComMap(m[0], m[1])
-    endfor
+
+    "call popc#ui#AddComMap('popc#layer#exp#Pop', 'p')
+    "call popc#layer#exp#Init()
 
     " layer init
     if s:conf.useLayer.Buffer
@@ -168,12 +167,6 @@ function! s:initLayers()
     if s:conf.useLayer.Workspace
         call popc#layer#wks#Init()
     endif
-    for l in values(s:conf.layerInit)
-        " {'layerName': initFuncName}
-        call function(l)()
-    endfor
-    "call popc#ui#AddComMap('popc#layer#exp#Pop', 'p')
-    "call popc#layer#exp#Init()
 endfunction
 " }}}
 
