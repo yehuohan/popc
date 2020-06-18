@@ -154,17 +154,3 @@ function! popc#ui#AddComMap(funcName, key)
     let s:ui.maps.common[a:key] = function(a:funcName, [a:key])
 endfunction
 " }}}
-
-
-" keep compatible
-function! popc#ui#GetStatusLineSegments(seg) abort
-    return popc#stl#StatusLineGetSegments(a:seg)
-endfunction
-
-function! popc#ui#TabLineSetLayout(lhs, rhs) abort
-    call popc#stl#TabLineSetLayout(a:lhs, a:rhs)
-endfunction
-
-function! popc#ui#InitHi(hi)
-    call popc#stl#InitHighLight(a:hi)
-endfunction
