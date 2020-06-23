@@ -8,6 +8,7 @@ let s:lyr = {}              " current layer
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
+    \ 'line' : [0, 0],
     \ 'timeoutlen' : 0,
     \ }
 
@@ -227,6 +228,7 @@ function! s:operate(dir, ...)
     setlocal nomodifiable
 
     " save layer index
+    let s:recover.line = [line('$'), line('.')]
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
         if s:lyr.info.userCmd

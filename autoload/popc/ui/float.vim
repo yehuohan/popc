@@ -13,6 +13,7 @@ let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
+    \ 'line' : [0, 0],
     \ 'timeoutlen' : 0,
     \ }
 
@@ -50,13 +51,13 @@ endfunction
 function! s:create(layer)
     let s:lyr = s:popc[a:layer]
     if exists('s:flag') && s:flag
-        call s:dispFloat()     " just only re-display buffer
+        call s:dispFloat(1)     " just only re-display buffer
         return
     endif
     let s:flag = 1
     call s:saveRecover()
     call s:setFloat()
-    call s:dispFloat()
+    call s:dispFloat(1)
 endfunction
 " }}}
 
@@ -162,14 +163,15 @@ function! s:setFloat()
 endfunction
 " }}}
 
-" FUNCTION: s:dispFloat() {{{
-function! s:dispFloat()
-    let [l:title, l:text, s:size, l:width, l:height] = popc#ui#popup#createContext(
+" FUNCTION: s:dispFloat(updateall) {{{
+function! s:dispFloat(updateall)
+    let [l:title, l:text, s:size, l:width, l:height] = popc#stl#CreateTitle(
                 \ s:lyr,
                 \ &columns - 10,
                 \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (float2nr(&lines * 0.7)))
 
     " set text
+if a:updateall
     if s:size > nvim_buf_line_count(s:hbuf)
         call nvim_buf_set_lines(s:hbuf, 0, s:size, v:false, l:text)
     else
@@ -183,6 +185,7 @@ function! s:dispFloat()
             \ 'col': (&columns - l:width) / 2,
             \ })
     set guicursor+=n:block-PopcSel-blinkon0
+endif
 
     " set title
     call nvim_buf_set_lines(s:hbuf_title, 0, 1, v:false, [join(l:title, ''), ])
@@ -205,11 +208,13 @@ function! s:dispFloat()
             \ })
 
     " init line
+if a:updateall
     if s:lyr.mode == 'normal'
         call s:operate('num', s:lyr.info.lastIndex + 1)
     else
         call s:operate('num', 1)
     endif
+endif
 endfunction
 " }}}
 
@@ -258,12 +263,16 @@ function! s:operate(dir, ...)
     call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
 
     " save layer index
+    let s:recover.line = [line('$'), line('.')]
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
         if s:lyr.info.userCmd
             doautocmd User PopcUiIndexChanged
         endif
     endif
+
+    " update title
+    call s:dispFloat(0)
 endfunction
 " }}}
 

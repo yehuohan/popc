@@ -259,25 +259,22 @@ endfunction
 " }}}
 
 " FUNCTION: popc#stl#StatusLineGetSegments(seg) abort {{{
+" @param seg a=all, l=left, c=center, r=right
 function! popc#stl#StatusLineGetSegments(seg) abort
     let l:segs = []
-
     if a:seg =~? '[al]'
-        let l:left = 'Popc'
-        call add(l:segs, l:left)
+        call add(l:segs, 'Popc')
     endif
-
     if a:seg =~? '[ac]'
-        let l:center = s:lyr.info.centerText
-        call add(l:segs, l:center)
+        call add(l:segs, popc#ui#CurrentLayer().info.centerText)
     endif
-
     if a:seg =~? '[ar]'
-        let l:rank = '[' . string(len(s:lyr.bufs.txt)) . ']' . popc#utils#Num2RankStr(line('.'))
-        let l:right = l:rank . ' ' . s:conf.symbols.Rank . ' '. s:lyr.name
-        call add(l:segs, l:right)
+        let l:line = popc#ui#GetVal('line')
+        let l:rank = printf('[%s]%s %s %s',
+                    \ l:line[0], popc#utils#Num2RankStr(l:line[1]),
+                    \ s:conf.symbols.Rank, popc#ui#CurrentLayer().name)
+        call add(l:segs, l:rank)
     endif
-
     return l:segs
 endfunction
 " }}}
@@ -456,5 +453,44 @@ function! popc#stl#TabLine() abort
     let l:rhs = s:createTabLineRight(l:lst, l:ch, l:seps)
 
     return l:lhs . l:rhs
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#CreateTitle(lyr, maxwidth, maxheight) {{{
+" @return: [title-segs, text-list, text-size, text-width, text-height]
+function! popc#stl#CreateTitle(lyr, maxwidth, maxheight)
+    let l:list = a:lyr.getBufs()
+    let l:size = len(l:list)
+    let l:height = (l:size <= a:maxheight) ? l:size : a:maxheight
+    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
+
+    " title
+    if s:conf.usePowerFont
+        let l:spl  = s:conf.separator.left
+        let l:spr  = s:conf.separator.right
+    else
+        let l:spl  = ''
+        let l:spr  = ''
+    endif
+    let l:line = popc#ui#GetVal('line')
+    let l:rank = printf('[%s]%s %s %s',
+                \ l:line[0], popc#utils#Num2RankStr(l:line[1]),
+                \ s:conf.symbols.Rank, a:lyr.name)
+    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, ' ' . l:rank]
+    let l:wseg = 0
+    for seg in l:title
+        let l:wseg += strwidth(seg)
+    endfor
+    let l:width = min([max([l:width, l:wseg]), a:maxwidth])
+    if l:wseg < l:width
+        let l:title[2] .= repeat(' ', l:width - l:wseg)
+    elseif l:wseg > l:width
+        let l:title[2] = strpart(l:title[2], 0, strlen(l:title[2]) - (l:wseg - l:width))
+    endif
+
+    " text
+    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
+
+    return [l:title, l:text, l:size, l:width, l:height]
 endfunction
 " }}}

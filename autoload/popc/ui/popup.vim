@@ -11,6 +11,7 @@ let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
+    \ 'line' : [0, 0],
     \ }
 
 
@@ -41,7 +42,7 @@ endfunction
 function! s:create(layer)
     let s:lyr = s:popc[a:layer]
     if exists('s:flag') && s:flag
-        call s:dispPopup()     " just only re-display buffer
+        call s:dispPopup(1)     " just only re-display buffer
         return
     endif
     let s:flag = 1
@@ -81,7 +82,7 @@ function! s:create(layer)
     endif
     call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
     set guicursor+=n:block--blinkon0
-    call s:dispPopup()
+    call s:dispPopup(1)
 endfunction
 " }}}
 
@@ -114,14 +115,15 @@ function! s:destroy()
 endfunction
 " }}}
 
-" FUNCTION: s:dispPopup() {{{
-function! s:dispPopup()
-    let [l:title, l:text, s:size, l:width, l:height] = popc#ui#popup#createContext(
+" FUNCTION: s:dispPopup(updateall) {{{
+function! s:dispPopup(updateall)
+    let [l:title, l:text, s:size, l:width, l:height] = popc#stl#CreateTitle(
                 \ s:lyr,
                 \ &columns - 10,
                 \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (float2nr(&lines * 0.7)))
 
     " disp text
+if a:updateall
     call popup_settext(s:id, l:text)
     call popup_move(s:id, #{
             \ maxheight: l:height,
@@ -129,6 +131,7 @@ function! s:dispPopup()
             \ line: (&lines - l:height) / 2 + 1,
             \ col: (&columns - l:width) / 2,
             \ })
+endif
 
     " disp title
     let l:pos = popup_getpos(s:id)
@@ -149,46 +152,13 @@ function! s:dispPopup()
             \ })
 
     " init line
+if a:updateall
     if s:lyr.mode == 'normal'
         call s:operate('num', s:lyr.info.lastIndex + 1)
     else
         call s:operate('num', 1)
     endif
-endfunction
-" }}}
-
-" FUNCTION: popc#ui#popup#createContext(lyr, maxwidth, maxheight) {{{
-" @return: [title-segs, text-list, text-size, text-width, text-height]
-function! popc#ui#popup#createContext(lyr, maxwidth, maxheight)
-    let l:list = a:lyr.getBufs()
-    let l:size = len(l:list)
-    let l:height = (l:size <= a:maxheight) ? l:size : a:maxheight
-    let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
-
-    " title
-    if s:conf.usePowerFont
-        let l:spl  = s:conf.separator.left
-        let l:spr  = s:conf.separator.right
-    else
-        let l:spl  = ''
-        let l:spr  = ''
-    endif
-    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, ' ' . a:lyr.name]
-    let l:wseg = 0
-    for seg in l:title
-        let l:wseg += strwidth(seg)
-    endfor
-    let l:width = min([max([l:width, l:wseg]), a:maxwidth])
-    if l:wseg < l:width
-        let l:title[2] .= repeat(' ', l:width - l:wseg)
-    elseif l:wseg > l:width
-        let l:title[2] = strpart(l:title[2], 0, strlen(l:title[2]) - (l:wseg - l:width))
-    endif
-
-    " text
-    let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
-
-    return [l:title, l:text, l:size, l:width, l:height]
+endif
 endfunction
 " }}}
 
@@ -206,6 +176,9 @@ function! s:operate(dir, ...)
             doautocmd User PopcUiIndexChanged
         endif
     endif
+
+    " update title
+    call s:dispPopup(0)
 endfunction
 " }}}
 
@@ -254,6 +227,7 @@ function! s:operate_internal(dir, ...)
     call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
 
     " save layer index
+    let s:recover.line = [line('$'), line('.')]
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
     endif

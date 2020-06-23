@@ -154,3 +154,10 @@ function! popc#ui#AddComMap(funcName, key)
     let s:ui.maps.common[a:key] = function(a:funcName, [a:key])
 endfunction
 " }}}
+
+" FUNCTION: popc#ui#CurrentLayer() {{{
+" current layer displayed to ui
+function! popc#ui#CurrentLayer()
+    return s:lyr
+endfunction
+" }}}
