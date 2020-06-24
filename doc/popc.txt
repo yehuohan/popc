@@ -231,7 +231,8 @@ very convenient with tabline.
     nnoremap <M-o> gt
     nnoremap <M-u> :PopcBufferSwitchLeft<CR>    " switch to left tab
     nnoremap <M-p> :PopcBufferSwitchRight<CR>   " switch to right tab
-    cnoremap q<CR> :PopcBufferClose<CR>         " close current buffer when buffer number > 1 of current tab
+    cnoremap q<CR> :PopcBufferClose<CR>         " close current buffer NOT keep window when buffer number > 1 of current tab
+    cnoremap Q<CR> :PopcBufferClose!<CR>        " close current buffer but keep window
 <
 Search context in buffers with LeaderF(or fzf if you want):
 >

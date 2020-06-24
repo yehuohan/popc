@@ -768,28 +768,34 @@ endfunction
 
 " SECTION: api functions {{{1
 
-" FUNCTION: popc#layer#buf#CloseBuffer([index=%]) {{{
-function! popc#layer#buf#CloseBuffer(...)
+" FUNCTION: popc#layer#buf#CloseBuffer(bang) {{{
+" @param bang 0:NOT keep window 1:keep window
+function! popc#layer#buf#CloseBuffer(bang)
     let l:tidx = tabpagenr() - 1
-    let l:winNum = 0
-    let l:curIdx = (a:0 > 0) ? a:1 : index(s:tab.idx[l:tidx], bufnr('%'))
+    let l:curIdx = index(s:tab.idx[l:tidx], bufnr('%'))
 
-    for k in range(1, winnr('$'))
-        if index(s:tab.idx[l:tidx], winbufnr(k)) > -1
-            let l:winNum += 1
-            if l:winNum > 1
-                break
-            endif
-        endif
-    endfor
-    call popc#utils#Log('buf', 'buf num: %s, win num: %s, cur idx: %s', s:tab.num(l:tidx), l:winNum, l:curIdx)
-
-    " close buffer only there's only one 'valid win' and more than one buffer of current tab.
-    " 'valid win' means one win contains a buffer that was managed by popc-buffer layer.
-    if (s:tab.num(l:tidx) > 1) && (l:winNum == 1) && (0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx))
+    if a:bang
         call s:closeBuffer(l:tidx, l:curIdx)
+        call popc#utils#Log('buf', 'buf num: %s, cur idx: %s', s:tab.num(l:tidx), l:curIdx)
     else
-        quit
+        let l:winNum = 0
+        for k in range(1, winnr('$'))
+            if index(s:tab.idx[l:tidx], winbufnr(k)) > -1
+                let l:winNum += 1
+                if l:winNum > 1
+                    break
+                endif
+            endif
+        endfor
+        call popc#utils#Log('buf', 'buf num: %s, win num: %s, cur idx: %s', s:tab.num(l:tidx), l:winNum, l:curIdx)
+
+        " close buffer only there's only one 'valid win' and more than one buffer of current tab.
+        " 'valid win' means one win contains a buffer that was managed by popc-buffer layer.
+        if (s:tab.num(l:tidx) > 1) && (l:winNum == 1) && (0 <= l:curIdx && l:curIdx < s:tab.num(l:tidx))
+            call s:closeBuffer(l:tidx, l:curIdx)
+        else
+            quit
+        endif
     endif
 endfunction
 " }}}
