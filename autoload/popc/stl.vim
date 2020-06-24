@@ -476,7 +476,7 @@ function! popc#stl#CreateTitle(lyr, maxwidth, maxheight)
     let l:rank = printf('[%s]%s %s %s',
                 \ l:line[0], popc#utils#Num2RankStr(l:line[1]),
                 \ s:conf.symbols.Rank, a:lyr.name)
-    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, ' ' . l:rank]
+    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, l:rank]
     let l:wseg = 0
     for seg in l:title
         let l:wseg += strwidth(seg)
