@@ -19,9 +19,11 @@ let s:mapsData = [
 
 " FUNCTION: popc#layer#bms#Init() {{{
 function! popc#layer#bms#Init()
-    let s:lyr = s:popc.addLayer('Bookmark')
-    call s:lyr.setInfo('sort', 'path')
-    call s:lyr.setInfo('centerText', s:conf.symbols.Bms)
+    let s:lyr = s:popc.addLayer('Bookmark', {
+                \ 'bindCom' : 1,
+                \ 'sort' : 'path',
+                \ 'centerText' : s:conf.symbols.Bms
+                \ })
     call popc#utils#Log('bms', 'bookmark layer was enabled')
 
     for md in s:mapsData

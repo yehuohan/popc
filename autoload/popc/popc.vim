@@ -23,11 +23,19 @@ let s:layer = {
 " SECTION: dictionary function {{{1
 
 " FUNCTION: s:popc.addLayer(layer, ...) dict {{{
-" @param(a:1): bind to common maps or not
+" @param layer: layer name as index of s:popc
+" @param(a:1): v:t_number or v:t_bool for value decide bind to common maps or not
+"              v:t_dict for info value
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
-    call self[a:layer].setInfo('bindCom', (a:0 > 0) ? a:1 : 1)
+    if a:0 > 0
+        if type(a:1) == v:t_number || type(a:1) == v:t_bool
+            call self[a:layer].setInfo('bindCom', a:1)
+        elseif type(a:1) == v:t_dict
+            call extend(self[a:layer].info, a:1, 'force')
+        endif
+    endif
     return self[a:layer]
 endfunctio
 " }}}
@@ -41,7 +49,7 @@ endfunction
 " }}}
 
 " FUNCTION: s:layer.addMaps(funcName, keys, [help-text]) dict {{{
-" @funcName: one args for map-key at least and must be the last args.
+" @funcName: function(key, index) format with map-key and selected index
 " @keys: the map-key-list.
 " @param(a:1): map-key help text
 function! s:layer.addMaps(funcName, keys, ...) dict
@@ -58,43 +66,34 @@ function! s:layer.createHelp() dict
         return self.help
     endif
 
-    let l:text = [
-        \ '  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~',
-        \ '',
-        \ ]
-
-    " get max name width
+    " get line-format
     let l:max = 0
     for md in self.help
         let l:wid = strwidth(join(md[0], ','))
         let l:max = (l:wid > l:max) ? l:wid : l:max
     endfor
-    let l:max += 2
+    for md in values(s:conf.operationMaps)
+        let l:wid = strwidth(join(md, ','))
+        let l:max = (l:wid > l:max) ? l:wid : l:max
+    endfor
+    let l:fmt = printf('  %%-%ds | %%s', l:max)
 
-    " get context
+    " add help-context
+    let l:text = ['  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~']
     for md in self.help
-        let l:line =  '  ' . join(md[0], ',')
-        let l:line .= repeat(' ', l:max - strwidth(l:line)) . ' | '
-        let l:line .= md[1]
-        call add(l:text, l:line)
+        call add(l:text, printf(l:fmt, join(md[0], ','), md[1]))
     endfor
 
-    " append help for operation
-    call add(l:text, '')
-    let l:line = printf('  Up  : [%s]    Top   : [%s]    Page up  : [%s]    Help: [%s]',
-                        \ join(s:conf.operationMaps['moveCursorUp']     , ','),
-                        \ join(s:conf.operationMaps['moveCursorTop']    , ','),
-                        \ join(s:conf.operationMaps['moveCursorPgUp']   , ','),
-                        \ join(s:conf.operationMaps['help']             , ',')
-                        \ )
-    call add(l:text, l:line)
-    let l:line = printf('  Down: [%s]    Bottom: [%s]    Page down: [%s]    Quit: [%s]',
-                        \ join(s:conf.operationMaps['moveCursorDown']   , ','),
-                        \ join(s:conf.operationMaps['moveCursorBottom'] , ','),
-                        \ join(s:conf.operationMaps['moveCursorPgDown'] , ','),
-                        \ join(s:conf.operationMaps['quit']             , ',')
-                        \ )
-    call add(l:text, l:line)
+    " add help-operation
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorUp']     , ','), 'Operation up'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorDown']   , ','), 'Operation down'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorPgUp']   , ','), 'Operation page up'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorPgDown'] , ','), 'Operation page down'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorTop']    , ','), 'Operation top'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorBottom'] , ','), 'Operation bottom'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['help']             , ','), 'Operation help'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['back']             , ','), 'Operation back'))
+    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['quit']             , ','), 'Operation quit'))
 
     let self.help = l:text
     return self.help

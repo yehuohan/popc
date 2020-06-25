@@ -11,7 +11,7 @@ let s:ui = {
         \ 'operation' : {},
         \ 'common'    : {},
         \ },
-    \ 'funcs' : {
+    \ 'api' : {
         \ 'create'  : '',
         \ 'destroy' : '',
         \ 'toggle'  : '',
@@ -27,43 +27,46 @@ let s:ui = {
 function! popc#ui#Init()
     call popc#stl#Init()
 
-    " set funcs
+    " set api
     if s:conf.useFloatingWin && !has('nvim') && v:version >= 802 " exists('+popupwin')
-        call extend(s:ui.funcs, popc#ui#popup#Init(), 'force')
+        call extend(s:ui.api, popc#ui#popup#Init(), 'force')
         highlight default link PopupSelected PopcSel
         call prop_type_add('PopcSlLabel', {'highlight': 'PopcSlLabel'})
         call prop_type_add('PopcSlSep',   {'highlight': 'PopcSlSep'})
         call prop_type_add('PopcSl',      {'highlight': 'PopcSl'})
     elseif s:conf.useFloatingWin && has('nvim-0.4.2')
-        call extend(s:ui.funcs, popc#ui#float#Init(), 'force')
+        call extend(s:ui.api, popc#ui#float#Init(), 'force')
     else
-        call extend(s:ui.funcs, popc#ui#default#Init(), 'force')
+        call extend(s:ui.api, popc#ui#default#Init(), 'force')
     endif
 
     " set operation
     for k in s:conf.operationMaps.moveCursorDown
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['down'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['down'])
     endfor
     for k in s:conf.operationMaps.moveCursorUp
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['up'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['up'])
     endfor
     for k in s:conf.operationMaps.moveCursorTop
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['top'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['top'])
     endfor
     for k in s:conf.operationMaps.moveCursorBottom
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['bottom'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['bottom'])
     endfor
     for k in s:conf.operationMaps.moveCursorPgDown
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['pgdown'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['pgdown'])
     endfor
     for k in s:conf.operationMaps.moveCursorPgUp
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.operate', ['pgup'])
+        let s:ui.maps.operation[k] = funcref('s:ui.api.operate', ['pgup'])
     endfor
     for k in s:conf.operationMaps.help
-        let s:ui.maps.operation[k] = funcref('s:createHelp')
+        let s:ui.maps.operation[k] = funcref('s:switchMode', ['help'])
+    endfor
+    for k in s:conf.operationMaps.back
+        let s:ui.maps.operation[k] = funcref('s:switchMode', [v:null])
     endfor
     for k in s:conf.operationMaps.quit
-        let s:ui.maps.operation[k] = funcref('s:ui.funcs.destroy')
+        let s:ui.maps.operation[k] = funcref('s:ui.api.destroy')
     endfor
 endfunction
 " }}}
@@ -71,21 +74,31 @@ endfunction
 " FUNCTION: popc#ui#Create(layer) {{{
 function! popc#ui#Create(layer)
     let s:lyr = s:popc[a:layer]
-    let s:lyr.mode = 'normal'
-    call s:ui.funcs.create(a:layer)
+    call s:switchMode('normal')
 endfunction
 " }}}
 
-" FUNCTION: s:createHelp() {{{
-function! s:createHelp()
-    let s:lyr.mode = 'help'
-    call s:ui.funcs.create(s:lyr.name)
+" FUNCTION: s:switchMode(mode) {{{
+" @param mode: 'normal' to display layer's text
+"             'help' to display help-text
+"             v:null to back to normal mode or destroy display
+function! s:switchMode(mode)
+    if a:mode == v:null
+        if s:lyr.mode !=# 'normal'
+            call s:switchMode('normal')
+        else
+            call s:ui.api.destroy()
+        endif
+    else
+        let s:lyr.mode = a:mode
+        call s:ui.api.create(s:lyr.name)
+    endif
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#Destroy() {{{
 function! popc#ui#Destroy()
-    call s:ui.funcs.destroy()
+    call s:ui.api.destroy()
 endfunction
 " }}}
 
@@ -93,13 +106,13 @@ endfunction
 " @param state: 0 for toggle out Popc temporarily to execute command in recover window
 "               1 fot toggle back to Popc
 function! popc#ui#Toggle(state)
-    call s:ui.funcs.toggle(a:state)
+    call s:ui.api.toggle(a:state)
 endfunction
 " }}}
 
 " FUNCTION: popc#ui#GetVal(key) {{{
 function! popc#ui#GetVal(key)
-    return s:ui.funcs.getval(a:key)
+    return s:ui.api.getval(a:key)
 endfunction
 " }}}
 

@@ -38,7 +38,8 @@ let s:conf = {
         \ 'moveCursorPgDown' : ['M-j'],
         \ 'moveCursorPgUp'   : ['M-k'],
         \ 'help'             : ['?'],
-        \ 'quit'             : ['q', 'Esc'],
+        \ 'back'             : ['q'],
+        \ 'quit'             : ['Esc']
         \ },
     \ 'enableLog' : 0
     \ }

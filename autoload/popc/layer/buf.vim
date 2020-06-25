@@ -219,11 +219,13 @@ endfunction
 
 " FUNCTION: popc#layer#buf#Init() {{{
 function! popc#layer#buf#Init()
-    let s:lyr = s:popc.addLayer('Buffer')
-    call s:lyr.setInfo('state', s:STATE.Sigtab)
-    call s:lyr.setInfo('centerText', s:conf.symbols.Buf)
-    call s:lyr.setInfo('userCmd', 1)
-    call s:lyr.setInfo('rootDir', '')
+    let s:lyr = s:popc.addLayer('Buffer', {
+                \ 'bindCom' : 1,
+                \ 'centerText' : s:conf.symbols.Buf,
+                \ 'userCmd' : 1,
+                \ 'state' : s:STATE.Sigtab,
+                \ 'rootDir' : ''
+                \ })
     call popc#utils#RegDbg('buf', 'popc#layer#buf#DbgInfo', '')
     call popc#utils#Log('buf', 'buffer layer was enabled')
 

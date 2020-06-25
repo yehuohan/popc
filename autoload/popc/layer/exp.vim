@@ -29,8 +29,10 @@ let s:mapsData = [
 
 " FUNCTION: popc#layer#exp#Init() {{{
 function! popc#layer#exp#Init()
-    let s:lyr = s:popc.addLayer('Example')
-    call s:lyr.setInfo('centerText', 'This Is Example Layer')
+    let s:lyr = s:popc.addLayer('Example', {
+                \ 'bindCom' : 1,
+                \ 'centerText' : 'This Is Example Layer'
+                \ })
 
     for md in s:mapsData
         call s:lyr.addMaps(md[0], md[1], md[2])

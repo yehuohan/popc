@@ -25,11 +25,13 @@ let s:mapsData = [
 
 " FUNCTION: popc#layer#wks#Init() {{{
 function! popc#layer#wks#Init()
-    let s:lyr = s:popc.addLayer('Workspace')
-    call s:lyr.setInfo('sort', 'path')
-    call s:lyr.setInfo('wksName', '')
-    call s:lyr.setInfo('rootDir', '')
-    call s:lyr.setInfo('centerText', s:conf.symbols.Wks)
+    let s:lyr = s:popc.addLayer('Workspace', {
+                \ 'bindCom' : 1,
+                \ 'sort' : 'path',
+                \ 'wksName' : '',
+                \ 'rootDir' : '',
+                \ 'centerText' : s:conf.symbols.Wks
+                \ })
     call popc#utils#Log('wks', 'workspace layer was enabled')
 
     for md in s:mapsData
