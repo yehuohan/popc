@@ -7,13 +7,15 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
 let s:hbuf = -1
 let s:hwin = -1
+let s:nsid = -1
 let s:hbuf_title = -1
 let s:hwin_title = -1
+let s:nsid_title = -1
 let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
-    \ 'line' : [0, 0],
+    \ 'line' : [1, 1],
     \ 'timeoutlen' : 0,
     \ }
 
@@ -36,6 +38,10 @@ function! popc#ui#float#Init()
         endif
         let s:keys[k] = '<' . k . '>'
     endfor
+
+    " namespace
+    let s:nsid = nvim_create_namespace('')
+    let s:nsid_title = nvim_create_namespace('')
 
     return {
         \ 'create'  : funcref('s:create'),
@@ -135,7 +141,7 @@ function! s:setFloat()
         set timeoutlen=10
     endif
 
-    " key
+    " buffer-key
     for [key, val] in items(s:keys)
         call nvim_buf_set_keymap(s:hbuf,
                 \ 'n',
@@ -143,7 +149,7 @@ function! s:setFloat()
                 \ {'noremap': v:true, 'silent': v:true})
     endfor
 
-    " window
+    " buffer-window
     let s:hwin = nvim_open_win(s:hbuf, v:true, {
             \ 'relative': 'editor',
             \ 'width': 1,
@@ -155,11 +161,6 @@ function! s:setFloat()
     call nvim_win_set_option(s:hwin, 'wrap', v:false)
     call nvim_win_set_option(s:hwin, 'foldenable', v:false)
     call win_gotoid(s:hwin)
-    if has('syntax')
-        syntax clear
-        syntax match PopcTxt /  .*/
-        syntax match PopcSel /> .*/hs=s+1
-    endif
 endfunction
 " }}}
 
@@ -194,11 +195,12 @@ endif
     let l:col_s = map(l:col_s, {k, v -> (k == 0) ? v : v + l:col_s[k - 1]})
     let l:col_e = copy(l:len)
     let l:col_e = map(l:col_e, {k, v -> (k == 0) ? v : v + l:col_e[k - 1]})
-    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlLabel', 0, l:col_s[0], l:col_e[0])
-    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlSep'  , 0, l:col_s[1], l:col_e[1])
-    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSl'     , 0, l:col_s[2], l:col_e[2])
-    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlSep'  , 0, l:col_s[3], l:col_e[3])
-    call nvim_buf_add_highlight(s:hbuf_title, -1, 'PopcSlLabel', 0, l:col_s[4], l:col_e[4])
+    call nvim_buf_clear_namespace(s:hbuf_title, s:nsid_title, 0, -1)
+    call nvim_buf_add_highlight(s:hbuf_title, s:nsid_title, 'PopcSlLabel', 0, l:col_s[0], l:col_e[0])
+    call nvim_buf_add_highlight(s:hbuf_title, s:nsid_title, 'PopcSlSep'  , 0, l:col_s[1], l:col_e[1])
+    call nvim_buf_add_highlight(s:hbuf_title, s:nsid_title, 'PopcSl'     , 0, l:col_s[2], l:col_e[2])
+    call nvim_buf_add_highlight(s:hbuf_title, s:nsid_title, 'PopcSlSep'  , 0, l:col_s[3], l:col_e[3])
+    call nvim_buf_add_highlight(s:hbuf_title, s:nsid_title, 'PopcSlLabel', 0, l:col_s[4], l:col_e[4])
     call nvim_win_set_config(s:hwin_title, {
             \ 'relative' : 'editor',
             \ 'width': l:width,
@@ -271,7 +273,9 @@ function! s:operate(dir, ...)
         endif
     endif
 
-    " update title
+    " update buf and title
+    call nvim_buf_clear_namespace(s:hbuf, s:nsid, l:oldLine-1, l:oldLine)
+    call nvim_buf_add_highlight(s:hbuf, s:nsid, 'PopcSel', l:newLine-1, 1, -1)
     call s:dispFloat(0)
 endfunction
 " }}}

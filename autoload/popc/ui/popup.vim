@@ -11,7 +11,7 @@ let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
-    \ 'line' : [0, 0],
+    \ 'line' : [1, 1],
     \ }
 
 

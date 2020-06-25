@@ -8,7 +8,7 @@ let s:lyr = {}              " current layer
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
-    \ 'line' : [0, 0],
+    \ 'line' : [1, 1],
     \ 'timeoutlen' : 0,
     \ }
 
