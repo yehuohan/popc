@@ -8,7 +8,11 @@ let s:lyr = {}              " current layer
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
-    \ 'line' : [1, 1],
+    \ 'line' : {
+        \ 'cur' : 1,
+        \ 'old' : 1,
+        \ 'cnt' : 1,
+        \ },
     \ 'timeoutlen' : 0,
     \ }
 
@@ -162,6 +166,7 @@ function! s:dispBuffer()
     let b:size = len(l:list)
     let b:text = ''
     let b:text = join(map(l:list, 'v:val . repeat(" ", &columns - strwidth(v:val) + 1)'), "\n")
+    let s:recover.line.cnt = b:size
 
     " resize buffer
     let l:max = (s:conf.maxHeight > 0) ? s:conf.maxHeight : (&lines / 3)
@@ -228,7 +233,8 @@ function! s:operate(dir, ...)
     setlocal nomodifiable
 
     " save layer index
-    let s:recover.line = [line('$'), line('.')]
+    let s:recover.line.old = l:oldLine
+    let s:recover.line.cur = l:newLine
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
         if s:lyr.info.userCmd

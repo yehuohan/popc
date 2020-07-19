@@ -270,9 +270,7 @@ function! popc#stl#StatusLineGetSegments(seg) abort
     endif
     if a:seg =~? '[ar]'
         let l:line = popc#ui#GetVal('line')
-        let l:rank = printf('[%s]%s %s %s',
-                    \ l:line[0], popc#utils#Num2RankStr(l:line[1]),
-                    \ s:conf.symbols.Rank, popc#ui#CurrentLayer().name)
+        let l:rank = popc#stl#CreateRank(popc#ui#CurrentLayer(), l:line.cnt, l:line.cur)
         call add(l:segs, l:rank)
     endif
     return l:segs
@@ -456,9 +454,18 @@ function! popc#stl#TabLine() abort
 endfunction
 " }}}
 
-" FUNCTION: popc#stl#CreateTitle(lyr, maxwidth, maxheight) {{{
-" @return: [title-segs, text-list, text-size, text-width, text-height]
-function! popc#stl#CreateTitle(lyr, maxwidth, maxheight)
+" FUNCTION: popc#stl#CreateRank(lyr, cnt, cur) {{{
+function! popc#stl#CreateRank(lyr, cnt, cur)
+    let l:fmt = printf('[%%s]%%-%dS %%s %%s', strwidth(string(a:cnt)))
+    return printf(l:fmt,
+                \ a:cnt, popc#utils#Num2RankStr(a:cur),
+                \ s:conf.symbols.Rank, a:lyr.name)
+endfunction
+" }}}
+
+" FUNCTION: popc#stl#CreateContext(lyr, maxwidth, maxheight) {{{
+" @return: {title-segs, text-list, text-size, text-width, text-height}
+function! popc#stl#CreateContext(lyr, maxwidth, maxheight)
     let l:list = a:lyr.getBufs()
     let l:size = len(l:list)
     let l:height = (l:size <= a:maxheight) ? l:size : a:maxheight
@@ -472,10 +479,7 @@ function! popc#stl#CreateTitle(lyr, maxwidth, maxheight)
         let l:spl  = ''
         let l:spr  = ''
     endif
-    let l:line = popc#ui#GetVal('line')
-    let l:rank = printf('[%s]%s %s %s',
-                \ l:line[0], popc#utils#Num2RankStr(l:line[1]),
-                \ s:conf.symbols.Rank, a:lyr.name)
+    let l:rank = popc#stl#CreateRank(a:lyr, l:size, popc#ui#GetVal('line').cur)
     let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, l:rank]
     let l:wseg = 0
     for seg in l:title
@@ -491,6 +495,12 @@ function! popc#stl#CreateTitle(lyr, maxwidth, maxheight)
     " text
     let l:text = map(copy(l:list), 'v:val . repeat(" ", l:width - strwidth(v:val))')
 
-    return [l:title, l:text, l:size, l:width, l:height]
+    return {
+        \ 'title' : l:title,
+        \ 'text' : l:text,
+        \ 'size' : l:size,
+        \ 'wid' : l:width,
+        \ 'hei' : l:height
+        \ }
 endfunction
 " }}}

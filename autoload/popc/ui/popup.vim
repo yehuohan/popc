@@ -5,13 +5,17 @@
 let s:popc = popc#popc#GetPopc()
 let s:conf = popc#init#GetConfig()
 let s:lyr = {}              " current layer
+let s:ctx = {}
 let s:id = -1
 let s:id_title = -1
-let s:size = 1
 let s:recover = {
     \ 'winnr' : 0,
     \ 'file' : '',
-    \ 'line' : [1, 1],
+    \ 'line' : {
+        \ 'cur' : 1,
+        \ 'old' : 1,
+        \ 'cnt' : 1,
+        \ },
     \ }
 
 
@@ -117,47 +121,51 @@ endfunction
 
 " FUNCTION: s:dispPopup(updateall) {{{
 function! s:dispPopup(updateall)
-    let [l:title, l:text, s:size, l:width, l:height] = popc#stl#CreateTitle(
+if a:updateall
+    if s:lyr.mode == 'normal'
+        let s:recover.line.cur = s:lyr.info.lastIndex + 1
+    else
+        let s:recover.line.cur = 1
+    endif
+    let s:ctx = popc#stl#CreateContext(
                 \ s:lyr,
                 \ &columns - 10,
                 \ (s:conf.maxHeight > 0) ? s:conf.maxHeight : (float2nr(&lines * 0.7)))
+    let s:recover.line.cnt = s:ctx.size
 
     " disp text
-if a:updateall
-    call popup_settext(s:id, l:text)
+    call popup_settext(s:id, s:ctx.text)
     call popup_move(s:id, #{
-            \ maxheight: l:height,
-            \ maxwidth: l:width,
-            \ line: (&lines - l:height) / 2 + 1,
-            \ col: (&columns - l:width) / 2,
+            \ maxheight: s:ctx.hei,
+            \ maxwidth: s:ctx.wid,
+            \ line: (&lines - s:ctx.hei) / 2 + 1,
+            \ col: (&columns - s:ctx.wid) / 2,
             \ })
-endif
 
     " disp title
     let l:pos = popup_getpos(s:id)
     if l:pos.scrollbar > 0
-        let l:title[2] .= ' '
+        let s:ctx.title[2] .= ' '
     endif
+
+    " set cursor
+    call s:operate('num', s:recover.line.cur)
+else
+    " disp title
+    let s:ctx.title[-1] = popc#stl#CreateRank(s:lyr, s:recover.line.cnt, s:recover.line.cur)
     let s:title[0].props[0].col = 1
-    let s:title[0].props[0].length = strlen(l:title[0])
+    let s:title[0].props[0].length = strlen(s:ctx.title[0])
     for k in range(1, 4)
         let s:title[0].props[k].col = s:title[0].props[k-1].col + s:title[0].props[k-1].length
-        let s:title[0].props[k].length = strlen(l:title[k])
+        let s:title[0].props[k].length = strlen(s:ctx.title[k])
     endfor
-    let s:title[0].text = join(l:title, '')
+    let s:title[0].text = join(s:ctx.title, '')
+    let l:pos = popup_getpos(s:id)
     call popup_settext(s:id_title, s:title)
     call popup_move(s:id_title, #{
             \ line: l:pos.line - 1,
             \ col: l:pos.col,
             \ })
-
-    " init line
-if a:updateall
-    if s:lyr.mode == 'normal'
-        call s:operate('num', s:lyr.info.lastIndex + 1)
-    else
-        call s:operate('num', 1)
-    endif
 endif
 endfunction
 " }}}
@@ -184,11 +192,11 @@ endfunction
 
 " FUNCTION: s:operate_internal(dir, ...) {{{
 function! s:operate_internal(dir, ...)
-    let l:oldLine = line('.')
-    if s:size < 1
+    if s:ctx.size < 1
         return
     endif
 
+    let l:oldLine = line('.')
     if a:dir ==# 'down'
         let l:pos = line('.') + 1
     elseif a:dir ==# 'up'
@@ -212,9 +220,9 @@ function! s:operate_internal(dir, ...)
     endif
 
     if l:pos < 1
-        call cursor(s:size - l:pos, 1)
-    elseif l:pos > s:size
-        call cursor(l:pos - s:size, 1)
+        call cursor(s:ctx.size - l:pos, 1)
+    elseif l:pos > s:ctx.size
+        call cursor(l:pos - s:ctx.size, 1)
     else
         call cursor(l:pos, 1)
     endif
@@ -227,7 +235,8 @@ function! s:operate_internal(dir, ...)
     call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
 
     " save layer index
-    let s:recover.line = [line('$'), line('.')]
+    let s:recover.line.old = l:oldLine
+    let s:recover.line.cur = l:newLine
     if s:lyr.mode == 'normal'
         call s:lyr.setInfo('lastIndex', line('.') - 1)
     endif
