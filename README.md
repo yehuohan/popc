@@ -46,6 +46,7 @@ All you need to do is implement one *layer* struct and add to *s:popc*. The [Exa
 
 Plugins using popc:
  - [popset](https://github.com/yehuohan/popset)
+ - [popc-floaterm](https://github.com/yehuohan/popc-floaterm)
 
 
 ## Thinks

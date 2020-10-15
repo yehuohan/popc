@@ -221,6 +221,8 @@ endfunction
 function! popc#layer#buf#Init()
     let s:lyr = s:popc.addLayer('Buffer', {
                 \ 'bindCom' : 1,
+                \ 'fnCom' : ['popc#layer#buf#Pop', 'h'],
+                \ 'fnPop' : function('popc#layer#buf#Pop', ['h', 0]),
                 \ 'centerText' : s:conf.symbols.Buf,
                 \ 'userCmd' : 1,
                 \ 'state' : s:STATE.Sigtab,

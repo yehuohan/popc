@@ -21,6 +21,8 @@ let s:mapsData = [
 function! popc#layer#bms#Init()
     let s:lyr = s:popc.addLayer('Bookmark', {
                 \ 'bindCom' : 1,
+                \ 'fnCom' : ['popc#layer#bms#Pop', 'b'],
+                \ 'fnPop' : function('popc#layer#bms#Pop'),
                 \ 'sort' : 'path',
                 \ 'centerText' : s:conf.symbols.Bms
                 \ })
@@ -63,8 +65,8 @@ function! s:createBuffer()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#bms#Pop(key, index) {{{
-function! popc#layer#bms#Pop(key, index)
+" FUNCTION: popc#layer#bms#Pop(...) {{{
+function! popc#layer#bms#Pop(...)
     let s:bms = popc#init#GetJson('json').bookmarks
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
@@ -120,7 +122,7 @@ function! popc#layer#bms#Add(key, index)
 
     call add(s:bms, {'name' : l:name, 'path' : l:path})
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b', 0)
+    call popc#layer#bms#Pop()
     call popc#ui#Msg('Add bookmark ''' . l:name . ''' successful.')
     call popc#utils#Log('bms', 'add bookmark file: %s path:%s', l:name, l:path)
 endfunction
@@ -141,7 +143,7 @@ function! popc#layer#bms#Delete(key, index)
     call popc#utils#Log('bms', 'delete bookmark file: %s path:%s', l:name,  s:bms[a:index].path)
     call remove(s:bms, a:index)
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b', 0)
+    call popc#layer#bms#Pop()
     call popc#ui#Msg('Delete bookmark ''' . l:name . ''' successful.')
 endfunction
 " }}}
@@ -160,7 +162,7 @@ function! popc#layer#bms#Sort(key, index)
         call s:lyr.setInfo('sort', 'name')
     endif
     call popc#init#SaveJson()
-    call popc#layer#bms#Pop('b', 0)
+    call popc#layer#bms#Pop()
     call popc#ui#Msg('Bookmarks sorted by: ''' . s:lyr.info.sort  . '''.')
 endfunction
 " }}}

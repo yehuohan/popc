@@ -90,7 +90,7 @@ function! popc#init#Init()
     call s:initJson()
 
     if s:conf.useLayer.Buffer
-        command! -nargs=0 Popc :call popc#popc#Popc('Buffer')
+        command! -nargs=1 -complete=customlist,popc#popc#GetLayerList Popc :call popc#popc#Popc(<f-args>)
         command! -nargs=0 PopcBuffer :call popc#popc#Popc('Buffer')
         command! -nargs=0 PopcBufferSwitchLeft :call popc#layer#buf#SwitchBuffer('left')
         command! -nargs=0 PopcBufferSwitchRight :call popc#layer#buf#SwitchBuffer('right')

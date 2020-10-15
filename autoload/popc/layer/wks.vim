@@ -27,6 +27,8 @@ let s:mapsData = [
 function! popc#layer#wks#Init()
     let s:lyr = s:popc.addLayer('Workspace', {
                 \ 'bindCom' : 1,
+                \ 'fnCom' : ['popc#layer#wks#Pop', 'w'],
+                \ 'fnPop' : function('popc#layer#wks#Pop'),
                 \ 'sort' : 'path',
                 \ 'wksName' : '',
                 \ 'rootDir' : '',
@@ -69,8 +71,8 @@ function! s:createBuffer()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#wks#Pop(ke, indexy) {{{
-function! popc#layer#wks#Pop(ke, indexy)
+" FUNCTION: popc#layer#wks#Pop(...) {{{
+function! popc#layer#wks#Pop(...)
     let s:wks = popc#init#GetJson('json').workspaces
     call s:createBuffer()
     call popc#ui#Create(s:lyr.name)
@@ -318,11 +320,11 @@ function! popc#layer#wks#Load(key, index)
     let l:ret = s:loadWorkspace(l:name, l:path)
     if 0 == l:ret
         if a:key ==# 'Space' || a:key ==# 'T'
-            call popc#layer#wks#Pop('w', 0)
+            call popc#layer#wks#Pop()
         endif
         call popc#ui#Msg('Load workspace ''' . l:name . ''' successful.')
     else
-        call popc#layer#wks#Pop('w', 0)
+        call popc#layer#wks#Pop()
         call popc#ui#Msg('Workspace ''' . l:name . ''' is invalid.')
     endif
 endfunction
@@ -359,7 +361,7 @@ function! popc#layer#wks#Add(key, index)
     call s:saveWorkspace(l:name, l:path)
     call add(s:wks, {'name' : l:name, 'path' : l:path})
     call popc#init#SaveJson()
-    call popc#layer#wks#Pop('w', 0)
+    call popc#layer#wks#Pop()
     call popc#ui#Msg('Add workspace ''' . l:name . ''' successful.')
     call popc#utils#Log('wks', 'add workspace: %s, path: %s', l:name, l:path)
 endfunction
@@ -416,7 +418,7 @@ function! popc#layer#wks#Delete(key, index)
     " save
     call remove(s:wks, a:index)
     call popc#init#SaveJson()
-    call popc#layer#wks#Pop('w', 0)
+    call popc#layer#wks#Pop()
     call popc#ui#Msg('Delete workspace ''' . l:name . ''' successful.')
     call popc#utils#Log('wks', 'delete workspace: %s, path: %s', l:name, l:path)
 endfunction
@@ -452,7 +454,7 @@ function! popc#layer#wks#SetName(key, index)
     endif
     call s:lyr.setInfo('wksName', l:newName)
     call popc#init#SaveJson()
-    call popc#layer#wks#Pop('w', 0)
+    call popc#layer#wks#Pop()
     call popc#ui#Msg('Rename workspace to ''' . l:newName . ''' successful.')
 endfunction
 " }}}
@@ -484,7 +486,7 @@ function! popc#layer#wks#SetRoot(key, index)
     endif
     " save
     call popc#init#SaveJson()
-    call popc#layer#wks#Pop('w', 0)
+    call popc#layer#wks#Pop()
     call popc#ui#Msg('Set root of workspace to ''' . l:newPath . ''' successful.')
     call popc#utils#Log('wks', 'change workspace root to: %s', l:newPath)
 endfunction
@@ -504,7 +506,7 @@ function! popc#layer#wks#Sort(key, index)
         call s:lyr.setInfo('sort', 'name')
     endif
     call popc#init#SaveJson()
-    call popc#layer#wks#Pop('w', 0)
+    call popc#layer#wks#Pop()
     call popc#ui#Msg('Workspaces sorted by: ''' . s:lyr.info.sort  . '''.')
 endfunction
 " }}}

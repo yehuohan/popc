@@ -13,6 +13,8 @@ let s:layer = {
     \ 'bufs' : {'typ': v:t_list, 'fnc': '', 'txt': []},
     \ 'info' : {
         \ 'bindCom'    : 0,
+        \ 'fnCom'      : [],
+        \ 'fnPop'      : '',
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
         \ 'userCmd'    : 0,
@@ -25,7 +27,7 @@ let s:layer = {
 " FUNCTION: s:popc.addLayer(layer, ...) dict {{{
 " @param layer: layer name as index of s:popc
 " @param(a:1): v:t_number or v:t_bool for value decide bind to common maps or not
-"              v:t_dict for info value
+"              v:t_dict for info value, see s:layer.setInfo
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
@@ -35,6 +37,9 @@ function! s:popc.addLayer(layer, ...) dict
         elseif type(a:1) == v:t_dict
             call extend(self[a:layer].info, a:1, 'force')
         endif
+    endif
+    if !empty(self[a:layer].info.fnCom)
+        call popc#ui#AddComMap(self[a:layer].info.fnCom[0], self[a:layer].info.fnCom[1])
     endif
     return self[a:layer]
 endfunctio
@@ -132,6 +137,12 @@ endfunction
 " }}}
 
 " FUNCTION: s:layer.setInfo(key, value) dict {{{
+" bindCom: response to command mappings or not
+" fnCom: provide common mapping of self-layer with ['funcName', 'key']
+" fnPop: provide pop function of self-layer in v:t_func
+" lastIndex: last index of self-layer
+" centerText: text of self-layer to display
+" userCmd: execute 'autocmd User PopcUiIndexChanged' or not when index changed
 function! s:layer.setInfo(key, value) dict
     let self.info[a:key] = a:value
 endfunction
@@ -140,23 +151,13 @@ endfunction
 
 " SECTION: functions {{{1
 
-" FUNCTION: s:initLayers() {{{
-function! s:initLayers()
-    " common maps init
-    if s:conf.useLayer.Buffer
-        call popc#ui#AddComMap('popc#layer#buf#Pop', 'h')
-    endif
-    if s:conf.useLayer.Bookmark
-        call popc#ui#AddComMap('popc#layer#bms#Pop', 'b')
-    endif
-    if s:conf.useLayer.Workspace
-        call popc#ui#AddComMap('popc#layer#wks#Pop', 'w')
-    endif
+" FUNCTION: popc#popc#Init() {{{
+function! popc#popc#Init()
+    call popc#init#Init()
+    call popc#ui#Init()
 
-    "call popc#ui#AddComMap('popc#layer#exp#Pop', 'p')
+    " init layers
     "call popc#layer#exp#Init()
-
-    " layer init
     if s:conf.useLayer.Buffer
         call popc#layer#buf#Init()
     endif
@@ -169,28 +170,29 @@ function! s:initLayers()
 endfunction
 " }}}
 
-" FUNCTION: popc#popc#Init() {{{
-function! popc#popc#Init()
-    call popc#init#Init()
-    call popc#ui#Init()
-    call s:initLayers()
-endfunction
-" }}}
-
 " FUNCTION: popc#popc#GetPopc() {{{
 function! popc#popc#GetPopc()
     return s:popc
 endfunction
 " }}}
 
+" FUNCTION: popc#popc#GetLayerList(ArgLead, CmdLine, CursorPos) {{{
+function! popc#popc#GetLayerList(ArgLead, CmdLine, CursorPos)
+    return filter(keys(s:popc),
+                \ {key, val -> val !=# 'addLayer' && val !=# 'removeLayer' && val =~# a:ArgLead})
+endfunction
+" }}}
+
 " FUNCTION: popc#popc#Popc(layername) {{{
 function! popc#popc#Popc(layername)
-    if a:layername ==# 'Buffer'
-        call popc#layer#buf#Pop('h', 0)
-    elseif a:layername ==# 'Bookmark'
-        call popc#layer#bms#Pop('b', 0)
-    elseif a:layername ==# 'Workspace'
-        call popc#layer#wks#Pop('w', 0)
+    if has_key(s:popc, a:layername)
+        if empty(s:popc[a:layername].info.fnPop)
+            call popc#ui#Msg('Layer ''%s'' doesn''t provide fnPop.', a:layername)
+        else
+            call s:popc[a:layername].info.fnPop()
+        endif
+    else
+        call popc#ui#Msg('Popc doest''t contain layer ''%s''.', a:layername)
     endif
 endfunction
 " }}}
