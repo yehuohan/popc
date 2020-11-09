@@ -287,7 +287,7 @@ function! popc#layer#wks#Close(ke, indexy)
     if !popc#ui#Confirm('Close all buffers and tabs in current workspace?')
         return
     endif
-    call popc#layer#buf#Empty()
+    call popc#layer#buf#CloseAll()
     if &title
         set titlestring=
     endif
@@ -312,7 +312,7 @@ function! popc#layer#wks#Load(key, index)
     call popc#ui#Destroy()
     call popc#ui#Msg('Loading workspace ''' . l:name . ''' ......')
     if a:key ==# 'CR' || a:key ==# 'Space'
-        call popc#layer#buf#Empty()
+        call popc#layer#buf#CloseAll()
     elseif a:key ==? 't'
         tablast
         tabedit

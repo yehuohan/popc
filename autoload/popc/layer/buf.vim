@@ -774,6 +774,34 @@ endfunction
 
 " SECTION: api functions {{{1
 
+" FUNCTION: popc#layer#buf#CloseAll() {{{
+" close all buffers and tabs. using this funtion carefully.
+function! popc#layer#buf#CloseAll()
+    call popc#ui#Destroy()
+
+    " detect modified buffer
+    let l:mbuf = []
+    for k in range(s:tab.num())
+        call s:tab.isTabModified(k, l:mbuf)
+    endfor
+    if len(l:mbuf) > 0
+        let l:prompt = 'There are buffers containing unsaved changes:'
+        for bnr in l:mbuf
+            let l:prompt .= "\n" . getbufinfo(bnr)[0].name
+        endfor
+        let l:prompt .= "\n" . 'Continue anyway?'
+        if !popc#ui#Confirm(l:prompt)
+            return
+        endif
+    endif
+
+    " close all tab and buffer
+    silent! execute '0tabnew'
+    silent! execute 'tabonly!'
+    silent! execute '%bwipeout!'
+endfunction
+" }}}
+
 " FUNCTION: popc#layer#buf#CloseBuffer(bang) {{{
 " @param bang 0:NOT keep window 1:keep window
 function! popc#layer#buf#CloseBuffer(bang)
@@ -887,34 +915,6 @@ function! popc#layer#buf#GetTabs() abort
                     \ })
     endfor
     return l:list
-endfunction
-" }}}
-
-" FUNCTION: popc#layer#buf#Empty() {{{
-" close all buffers and tabs. using this funtion carefully.
-function! popc#layer#buf#Empty()
-    call popc#ui#Destroy()
-
-    " detect modified buffer
-    let l:mbuf = []
-    for k in range(s:tab.num())
-        call s:tab.isTabModified(k, l:mbuf)
-    endfor
-    if len(l:mbuf) > 0
-        let l:prompt = 'There are buffers containing unsaved changes:'
-        for bnr in l:mbuf
-            let l:prompt .= "\n" . getbufinfo(bnr)[0].name
-        endfor
-        let l:prompt .= "\n" . 'Continue anyway?'
-        if !popc#ui#Confirm(l:prompt)
-            return
-        endif
-    endif
-
-    " close all tab and buffer
-    silent! execute '0tabnew'
-    silent! execute 'tabonly!'
-    silent! execute '%bwipeout!'
 endfunction
 " }}}
 

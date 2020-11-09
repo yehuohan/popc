@@ -54,5 +54,5 @@ if !empty(s:errors)
 endif
 
 call popc#popc#Init()
-let g:popc_version = 'Popc 3.7.11'
+let g:popc_version = 'Popc 3.7.12'
 let g:popc_loaded = 1
