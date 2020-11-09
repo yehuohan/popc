@@ -153,10 +153,10 @@ function! s:makeSession(filename, root)
              \ ((l:cmd =~# '^tabedit') && (l:tabnr > 1))
             " add tab files
             call add(l:lines, l:cmd)
-            let l:tabfiles = popc#layer#buf#GetWksFiles(l:tabnr)
-            for l:file in l:tabfiles
-                let l:file = fnameescape(s:useSlash(l:file, 0))
-                call add(l:lines, substitute('edit ' . l:file, l:root, '', 'g'))
+            for l:bnr in popc#layer#buf#GetTabBnrs(l:tabnr)
+                let b = getbufinfo(l:bnr)[0]
+                let l:file = substitute(fnameescape(s:useSlash(b.name, 0)), l:root, '', 'g')
+                call add(l:lines, printf('edit +%d %s', b.lnum, l:file))
             endfor
             " add name variables of tabs
             let l:tname = gettabvar(l:tabnr, 'PopcLayerBuf_TabName')

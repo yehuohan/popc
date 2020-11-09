@@ -918,14 +918,10 @@ function! popc#layer#buf#Empty()
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#GetWksFiles(tabnr) {{{
+" FUNCTION: popc#layer#buf#GetTabBnrs(tabnr) {{{
 " this function is used for workspace layer.
-function! popc#layer#buf#GetWksFiles(tabnr)
-    let l:files = []
-    for bnr in s:tab.idx[a:tabnr - 1]
-        call add(l:files, getbufinfo(bnr)[0].name)
-    endfor
-    return l:files
+function! popc#layer#buf#GetTabBnrs(tabnr)
+    return copy(s:tab.idx[a:tabnr - 1])
 endfunction
 " }}}
 
