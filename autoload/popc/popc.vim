@@ -27,7 +27,13 @@ let s:layer = {
 " FUNCTION: s:popc.addLayer(layer, ...) dict {{{
 " @param layer: layer name as index of s:popc
 " @param(a:1): v:t_number or v:t_bool for value decide bind to common maps or not
-"              v:t_dict for info value, see s:layer.setInfo
+"              v:t_dict for info value with keys bellow
+"   - bindCom: the `layer` should response to common mappings or not
+"   - fnCom: common mapping of the `layer` in format ['funcName', 'key'], which used by `popc#ui#AddComMap`
+"   - fnPop: pop function of the `layer` in type v:t_func, which used by `popc#popc#Popc`
+"   - lastIndex: last index of item of `layer`
+"   - centerText: text about `layer` to display
+"   - userCmd: command executed when index changed(`autocmd User PopcUiIndexChanged`)
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
@@ -137,12 +143,7 @@ endfunction
 " }}}
 
 " FUNCTION: s:layer.setInfo(key, value) dict {{{
-" bindCom: response to command mappings or not
-" fnCom: provide common mapping of self-layer with ['funcName', 'key']
-" fnPop: provide pop function of self-layer in v:t_func
-" lastIndex: last index of self-layer
-" centerText: text of self-layer to display
-" userCmd: execute 'autocmd User PopcUiIndexChanged' or not when index changed
+" see s:layer.addLayer
 function! s:layer.setInfo(key, value) dict
     let self.info[a:key] = a:value
 endfunction
