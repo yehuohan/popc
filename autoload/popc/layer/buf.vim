@@ -646,6 +646,9 @@ function! popc#layer#buf#Close(key, index)
         for k in range(s:tab.num(l:tidx) - 1, 0, -1)
             call s:closeBuffer(l:tidx, k)
         endfor
+        if !empty(gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
+            call settabvar(l:tidx + 1, 'PopcLayerBuf_TabName', '')
+        endif
     elseif a:key ==# 'c'
         call s:closeBuffer(l:tidx, l:bidx)
     endif
