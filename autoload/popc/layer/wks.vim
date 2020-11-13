@@ -139,25 +139,32 @@ function! s:makeSession(filename, root)
     let l:tabnr = 1
     for l:cmd in readfile(a:filename)
         if l:cmd =~# '^cd'
-            call add(l:lines, 'try')
-            call add(l:lines, '  exe "cd " . s:session_root')
-            call add(l:lines, 'catch')
-            call add(l:lines, 'endtry')
+            call extend(l:lines, [
+                \ 'try',
+                \ '  exe "cd " . s:session_root',
+                \ 'catch',
+                \ 'endtry',
+                \ ])
         elseif l:cmd =~# '^lcd'
-            call add(l:lines, 'try')
-            call add(l:lines, '  exe "lcd " . s:session_root')
-            call add(l:lines, 'catch')
-            call add(l:lines, 'endtry')
+            call extend(l:lines, [
+                \ 'try',
+                \ '  exe "lcd " . s:session_root',
+                \ 'catch',
+                \ 'endtry',
+                \ ])
         elseif ((l:cmd =~# '^%argdel') && (l:tabnr == 1)) ||
-             \ ((l:cmd =~# '^tabnew') && (l:tabnr > 1)) ||
-             \ ((l:cmd =~# '^tabedit') && (l:tabnr > 1))
+             \ ((l:cmd =~# '\v^tabnew|^tabedit') && (l:tabnr > 1))
+            call add(l:lines, (l:tabnr == 1) ? l:cmd : 'tabnew')
             " add tab files
-            call add(l:lines, l:cmd)
             for l:bnr in popc#layer#buf#GetTabBnrs(l:tabnr)
                 let b = getbufinfo(l:bnr)[0]
                 let l:file = substitute(fnameescape(s:useSlash(b.name, 0)), l:root, '', 'g')
                 call add(l:lines, printf('edit +%d %s', b.lnum, l:file))
             endfor
+            " switch to current buffer of tab
+            if l:tabnr > 1
+                call add(l:lines, 'edit' . substitute(l:cmd, '\v^tabnew|^tabedit', '', ''))
+            endif
             " add name variables of tabs
             let l:tname = gettabvar(l:tabnr, 'PopcLayerBuf_TabName')
             if !empty(l:tname)
@@ -177,7 +184,10 @@ function! s:makeSession(filename, root)
         elseif l:cmd =~# l:root
             " use relative path to root
             call add(l:lines, substitute(l:cmd, l:root, '', 'g'))
-        elseif l:cmd =~# '^\$argadd' || l:cmd =~# '^silent only' || l:cmd =~# '^silent tabonly'
+        elseif l:cmd =~# '^\$argadd' ||
+             \ l:cmd =~# '^badd' ||
+             \ l:cmd =~# '^silent only' ||
+             \ l:cmd =~# '^silent tabonly'
             " delete lines
             continue
         else
