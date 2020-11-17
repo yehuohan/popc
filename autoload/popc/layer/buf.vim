@@ -838,6 +838,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
+" switch 'left' or 'right' tab in current tab.
 function! popc#layer#buf#SwitchBuffer(type)
     if s:tab.isTabEmpty()
         return
@@ -847,21 +848,44 @@ function! popc#layer#buf#SwitchBuffer(type)
     let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
 
     if a:type == 'left'
-        if l:bidx == 0
-            let l:bidx = s:tab.num(l:tidx) - 1
-        else
-            let l:bidx -= 1
-        endif
+        let l:bidx -= 1 " vim support -1 index
     elseif a:type == 'right'
-        if l:bidx == s:tab.num(l:tidx) - 1
+        let l:bidx += 1
+        if l:bidx == s:tab.num(l:tidx)
             let l:bidx = 0
-        else
-            let l:bidx += 1
         endif
     endif
     let l:bnr = s:tab.idx[l:tidx][l:bidx]
     let s:tab.sel[l:tidx] = l:bidx
     silent execute 'buffer ' . string(l:bnr)
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#JumpBuffer(type) {{{
+" jump 'prev' or 'next' in current buffer according to jumplist.
+function! popc#layer#buf#JumpBuffer(type)
+    let [l:jumplist, l:jumpidx] = getjumplist()
+    let l:bnr = bufnr('%')
+
+    if a:type == 'prev'
+        let l:cmd = "normal! %d\<C-o>"
+        let l:step = -1
+        let l:end = 0
+    elseif a:type == 'next'
+        let l:cmd = "normal! %d\<C-i>"
+        let l:step = 1
+        let l:end = len(l:jumplist) - 1
+    endif
+
+    try
+        for k in range(l:jumpidx + l:step, l:end, l:step)
+            if l:jumplist[k]['bufnr'] == l:bnr
+                execute printf(l:cmd, abs(k - l:jumpidx))
+                break
+            endif
+        endfor
+    catch
+    endtry
 endfunction
 " }}}
 

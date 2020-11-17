@@ -220,17 +220,17 @@ you can switch to one tab or buffer easily.
 
 Use the following example maps to open buffer layer:
 >
-    nnoremap <C-Space> :Popc<CR>
-    inoremap <C-Space> <Esc>:Popc<CR>
     nnoremap <leader><leader>h :PopcBuffer<CR>
 <
 And use the following example maps for switching tabs and buffers, which can be
 very convenient with tabline.
 >
-    nnoremap <M-i> gT
-    nnoremap <M-o> gt
-    nnoremap <M-u> :PopcBufferSwitchLeft<CR>    " switch to left tab
-    nnoremap <M-p> :PopcBufferSwitchRight<CR>   " switch to right tab
+    nnoremap <M-i> gT                           " switch to left tab
+    nnoremap <M-o> gt                           " switch to right tab
+    nnoremap <M-u> :PopcBufferSwitchLeft<CR>    " switch to left buffer
+    nnoremap <M-p> :PopcBufferSwitchRight<CR>   " switch to right buffer
+    nnoremap <C-u> :PopcBufferJumpPrev<CR>      " jump to prev buffer location
+    nnoremap <C-p> :PopcBufferJumpNext<CR>      " jump to next buffer location
     cnoremap q<CR> :PopcBufferClose<CR>         " close current buffer NOT keep window when buffer number > 1 of current tab
     cnoremap Q<CR> :PopcBufferClose!<CR>        " close current buffer but keep window
 <

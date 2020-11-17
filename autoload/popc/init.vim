@@ -94,6 +94,8 @@ function! popc#init#Init()
         command! -nargs=0 PopcBuffer :call popc#popc#Popc('Buffer')
         command! -nargs=0 PopcBufferSwitchLeft :call popc#layer#buf#SwitchBuffer('left')
         command! -nargs=0 PopcBufferSwitchRight :call popc#layer#buf#SwitchBuffer('right')
+        command! -nargs=0 PopcBufferJumpNext :call popc#layer#buf#JumpBuffer('next')
+        command! -nargs=0 PopcBufferJumpPrev :call popc#layer#buf#JumpBuffer('prev')
         command! -nargs=0 -bang PopcBufferClose :call popc#layer#buf#CloseBuffer(<bang>0)
     endif
     if s:conf.useLayer.Bookmark
