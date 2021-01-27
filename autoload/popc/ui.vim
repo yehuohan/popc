@@ -116,14 +116,28 @@ function! popc#ui#GetVal(key)
 endfunction
 " }}}
 
-" FUNCTION: popc#ui#Input(prompt, ...) {{{
+" FUNCTION: popc#ui#Input(prompt, [text, completion]) {{{
 " global input funtion interface for ui of popc.
 function! popc#ui#Input(prompt, ...)
     let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(a:prompt, '\M\n', '\n   ', 'g')
     redraw
-    return a:0 == 0 ? input(l:msg) :
-         \ a:0 == 1 ? input(l:msg, a:1) :
-         \            input(l:msg, a:1, a:2)
+    if has('nvim')
+        let l:opts = {
+            \ 'prompt': l:msg,
+            \ 'default': a:0 >= 1 ? a:1 : '',
+            \ 'cancelreturn': v:null,
+            \ }
+        if a:0 >= 2
+            let l:opts['completion'] = a:2
+        endif
+        return input(l:opts)
+    else
+        " BUG: we can NOT input '' in vim because pressing <ESC> will return '' too
+        let l:ret = (a:0 == 0) ? input(l:msg) :
+                  \ (a:0 == 1) ? input(l:msg, a:1) :
+                  \              input(l:msg, a:1, a:2)
+        return l:ret == '' ? v:null : l:ret
+    endif
 endfunction
 " }}}
 
