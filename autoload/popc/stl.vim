@@ -408,8 +408,8 @@ function! popc#stl#TabLine() abort
         let l:seps = {
             \ 'spl'  : '',
             \ 'spr'  : '',
-            \ 'sspl' : '|',
-            \ 'sspr' : '|'
+            \ 'sspl' : '\',
+            \ 'sspr' : '/'
             \ }
     endif
 

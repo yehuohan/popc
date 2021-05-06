@@ -935,8 +935,7 @@ function! popc#layer#buf#GetTabs() abort
         let l:tname = gettabvar(k + 1, 'PopcLayerBuf_TabName')
         call add(l:list, {
                     \ 'index' : string(k+1),
-                    \ 'title' : '[' . (empty(l:tname) ? s:tab.lbl[k] : l:tname) . ']'
-                              \ . popc#utils#Num2RankStr(s:tab.num(k)),
+                    \ 'title' : (empty(l:tname) ? s:tab.lbl[k] : l:tname) . popc#utils#Num2RankStr(s:tab.num(k)),
                     \ 'modified' : s:tab.isTabModified(k),
                     \ 'selected' : (k+1 == tabpagenr()) ? 1 : 0,
                     \ })
