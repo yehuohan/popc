@@ -34,6 +34,7 @@ let s:layer = {
 "   - lastIndex: last index of item of `layer`
 "   - centerText: text about `layer` to display
 "   - userCmd: command executed when index changed(`autocmd User PopcUiIndexChanged`)
+"   - mapping: change keys of maps with mapping
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
