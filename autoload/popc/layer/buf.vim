@@ -742,6 +742,10 @@ endfunction
 function! popc#layer#buf#SetTabName(key, index)
     let l:tidx = s:getIndexs(a:index)[0]
     let l:name = popc#ui#Input('Input tab name: ', gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
+    if empty(l:name)
+        call popc#ui#Msg('No name to tab.')
+        return
+    endif
     call settabvar(l:tidx + 1, 'PopcLayerBuf_TabName', l:name)
     call s:pop(s:lyr.info.state)
 endfunction
@@ -764,6 +768,7 @@ function! popc#layer#buf#Edit(key, index)
     endif
     let l:file = popc#ui#Input('Edit new file: ', l:file, 'file')
     if empty(l:file)
+        call popc#ui#Msg('No file name to edit.')
         return
     endif
 

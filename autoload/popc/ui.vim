@@ -130,7 +130,9 @@ function! popc#ui#Input(prompt, ...)
         if a:0 >= 2
             let l:opts['completion'] = a:2
         endif
-        return input(l:opts)
+        let l:ret = input(l:opts)
+        " v:null returned by input() would be string type, so check with v:null before real return
+        return l:ret == v:null ? v:null : l:ret
     else
         " BUG: we can NOT input '' in vim because pressing <ESC> will return '' too
         let l:ret = (a:0 == 0) ? input(l:msg) :
