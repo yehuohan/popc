@@ -17,6 +17,7 @@ let s:recover = {
         \ 'cnt' : 1,
         \ },
     \ }
+let s:ptr = s:conf.usePowerFont ? s:conf.selectPointer : s:conf.symbols.Ptr
 
 
 " SETCION: functions {{{1
@@ -230,9 +231,9 @@ function! s:operate_internal(dir, ...)
     " mark index line with '>'
     let l:newLine = line('.')
     if l:oldLine != l:newLine
-        call setline(l:oldLine, ' ' . strpart(getline(l:oldLine), 1))
+        call setline(l:oldLine, ' ' . strcharpart(getline(l:oldLine), 1))
     endif
-    call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
+    call setline(l:newLine, s:ptr . strcharpart(getline(l:newLine), 1))
 
     " save layer index
     let s:recover.line.old = l:oldLine

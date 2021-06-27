@@ -21,6 +21,7 @@ let s:conf = {
     \ 'useTabline'     : 1,
     \ 'useStatusline'  : 1,
     \ 'usePowerFont'   : 0,
+    \ 'selectPointer'  : '',
     \ 'separator'      : {'left' : '', 'right': ''},
     \ 'subSeparator'   : {'left' : '', 'right': ''},
     \ 'statusLine'     : 'popc#stl#StatusLine()',
@@ -56,6 +57,7 @@ let s:defaultSymbols = {
         \ 'Rank'   : '≡',
         \ 'Arr'    : '→',
         \ 'Dots'   : '…',
+        \ 'Ptr'    : '►',
         \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
         \ },
     \ 'ascii' : {
@@ -70,6 +72,7 @@ let s:defaultSymbols = {
         \ 'Rank'   : '=',
         \ 'Arr'    : '->',
         \ 'Dots'   : '...',
+        \ 'Ptr'    : '>',
         \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
         \ },
     \ }
@@ -168,7 +171,7 @@ endfunction
 function! s:initConfig()
     " set confiuration's value and list
     for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
-            \ 'useTabline', 'useStatusline', 'usePowerFont',
+            \ 'useTabline', 'useStatusline', 'usePowerFont', 'selectPointer',
             \ 'statusLine', 'tabLine', 'maxHeight',
             \ 'useLayerRoots', 'useLayerPath', 'enableLog']
         if exists('g:Popc_' . k)

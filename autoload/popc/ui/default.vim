@@ -227,9 +227,9 @@ function! s:operate(dir, ...)
     " mark index line with '>'
     let l:newLine = line('.')
     if l:oldLine != l:newLine
-        call setline(l:oldLine, ' ' . strpart(getline(l:oldLine), 1))
+        call setline(l:oldLine, ' ' . strcharpart(getline(l:oldLine), 1))
     endif
-    call setline(l:newLine, '>' . strpart(getline(l:newLine), 1))
+    call setline(l:newLine, '>' . strcharpart(getline(l:newLine), 1))
     setlocal nomodifiable
 
     " save layer index
