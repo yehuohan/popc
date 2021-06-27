@@ -21,6 +21,17 @@ let s:lst = {}
 "   'len' : [],             " length for each item
 "   'res' : []              " result: 1 for visible, 0 for hidden, -1 for replace item
 " }
+if s:conf.usePowerFont
+    let s:spl = s:conf.separator.left
+    let s:spr = s:conf.separator.right
+    let s:sspl = s:conf.subSeparator.left
+    let s:sspr = s:conf.subSeparator.right
+else
+    let s:spl = ''
+    let s:spr = ''
+    let s:sspl = '\'
+    let s:sspr = '/'
+endif
 
 
 " SECTION: dictionary function {{{1
@@ -279,19 +290,11 @@ endfunction
 
 " FUNCTION: popc#stl#StatusLine() abort {{{
 function! popc#stl#StatusLine() abort
-    if s:conf.usePowerFont
-        let l:spl  = s:conf.separator.left
-        let l:spr  = s:conf.separator.right
-    else
-        let l:spl  = ''
-        let l:spr  = ''
-    endif
-
     let [l:left, l:center, l:right] = popc#stl#StatusLineGetSegments('a')
-    let l:value  = ('%#PopcSlLabel# ' . l:left . ' ') . ('%#PopcSlSep#' . l:spl)
+    let l:value  = ('%#PopcSlLabel# ' . l:left . ' ') . ('%#PopcSlSep#' . s:spl)
     let l:value .= ('%#PopcSl# ' . l:center . ' ')
     let l:value .= '%='
-    let l:value .= ('%#PopcSlSep#' . l:spr) . ('%#PopcSlLabel# ' . l:right . ' ')
+    let l:value .= ('%#PopcSlSep#' . s:spr) . ('%#PopcSlLabel# ' . l:right . ' ')
     return l:value
 endfunction
 " }}}
@@ -313,13 +316,9 @@ function! popc#stl#TabLineSetLayout(lhs, rhs) abort
 endfunction
 " }}}
 
-" FUNCTION: s:createTabLineLeft(lst, ch, seps) abort {{{
-function! s:createTabLineLeft(lst, ch, seps) abort
+" FUNCTION: s:createTabLineLeft(lst, ch) abort {{{
+function! s:createTabLineLeft(lst, ch) abort
     let l:list = a:lst
-    let l:spl  = a:seps.spl
-    let l:spr  = a:seps.spr
-    let l:sspl = a:seps.sspl
-    let l:sspr = a:seps.sspr
 
     if empty(l:list)
         let l:lhs = '%#PopcTlBlank#%='
@@ -327,7 +326,7 @@ function! s:createTabLineLeft(lst, ch, seps) abort
         let l:len = len(l:list)
         " lable -> separator -> title
         let l:id = (l:len > 0) ? string(l:list[0].selected*2 + l:list[0].modified) : '4'
-        let l:lhs = '%#PopcTlLabel#' . a:ch . '%#PopcTlSepL' . l:id . '#' . l:spl
+        let l:lhs = '%#PopcTlLabel#' . a:ch . '%#PopcTlSepL' . l:id . '#' . s:spl
         for k in range(l:len)
             let i = l:list[k]
             " title
@@ -338,12 +337,12 @@ function! s:createTabLineLeft(lst, ch, seps) abort
                 let ii = l:list[k+1]
                 let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
                 let l:hisep = '%#PopcTlSep' . l:id . '#'
-                let l:sep = (i.selected || ii.selected) ? l:spl : l:sspl
+                let l:sep = (i.selected || ii.selected) ? s:spl : s:sspl
             else
                 " title -> separator -> blank
                 let l:id = string(i.selected*2 + i.modified)
                 let l:hisep = '%#PopcTlSepB' . l:id . '#'
-                let l:sep = l:spl
+                let l:sep = s:spl
             endif
             let l:lhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
             let l:lhs .= l:hisep . l:sep
@@ -354,13 +353,9 @@ function! s:createTabLineLeft(lst, ch, seps) abort
 endfunction
 " }}}
 
-" FUNCTION: s:createTabLineRight(lst, ch, seps) abort {{{
-function! s:createTabLineRight(lst, ch, seps) abort
+" FUNCTION: s:createTabLineRight(lst, ch) abort {{{
+function! s:createTabLineRight(lst, ch) abort
     let l:list = a:lst
-    let l:spl  = a:seps.spl
-    let l:spr  = a:seps.spr
-    let l:sspl = a:seps.sspl
-    let l:sspr = a:seps.sspr
 
     if empty(l:list)
         let l:rhs = ''
@@ -375,20 +370,20 @@ function! s:createTabLineRight(lst, ch, seps) abort
             if k == 0
                 " blank -> separator -> title
                 let l:hisep = '%#PopcTlSepB' . l:id . '#'
-                let l:sep = l:spr
+                let l:sep = s:spr
             else
                 " title -> separator -> title
                 let ii = l:list[k-1]
                 let l:id = string(i.selected*8 + i.modified*4 + ii.selected*2 + ii.modified)
                 let l:hisep = '%#PopcTlSep' . l:id . '#'
-                let l:sep = (i.selected || ii.selected) ? l:spr : l:sspr
+                let l:sep = (i.selected || ii.selected) ? s:spr : s:sspr
             endif
             let l:rhs .= l:hisep . l:sep
             let l:rhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
         endfor
         " title -> separator -> lable
         let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
-        let l:rhs .= '%#PopcTlSepL' . l:id . '#' . l:spr
+        let l:rhs .= '%#PopcTlSepL' . l:id . '#' . s:spr
         let l:rhs .= '%#PopcTlLabel#' . a:ch
     endif
     return l:rhs
@@ -397,22 +392,6 @@ endfunction
 
 " FUNCTION: popc#stl#TabLine() abort {{{
 function! popc#stl#TabLine() abort
-    if s:conf.usePowerFont
-        let l:seps = {
-            \ 'spl'  : s:conf.separator.left,
-            \ 'spr'  : s:conf.separator.right,
-            \ 'sspl' : s:conf.subSeparator.left,
-            \ 'sspr' : s:conf.subSeparator.right
-            \ }
-    else
-        let l:seps = {
-            \ 'spl'  : '',
-            \ 'spr'  : '',
-            \ 'sspl' : '\',
-            \ 'sspr' : '/'
-            \ }
-    endif
-
     " init buf and tab list"
     let l:buflst = []
     let l:tablst = []
@@ -435,7 +414,7 @@ function! popc#stl#TabLine() abort
         let l:lst = []
         let l:ch = ''
     endif
-    let l:lhs = s:createTabLineLeft(l:lst, l:ch, l:seps)
+    let l:lhs = s:createTabLineLeft(l:lst, l:ch)
 
     " right side
     if s:conf.tabLineLayout.right ==# 'tab'
@@ -448,7 +427,7 @@ function! popc#stl#TabLine() abort
         let l:lst = []
         let l:ch = ''
     endif
-    let l:rhs = s:createTabLineRight(l:lst, l:ch, l:seps)
+    let l:rhs = s:createTabLineRight(l:lst, l:ch)
 
     return l:lhs . l:rhs
 endfunction
@@ -472,15 +451,8 @@ function! popc#stl#CreateContext(lyr, maxwidth, maxheight)
     let l:width = max(map(copy(l:list), {key, val -> strwidth(val)})) + 2   " text end with 2 spaces
 
     " title
-    if s:conf.usePowerFont
-        let l:spl  = s:conf.separator.left
-        let l:spr  = s:conf.separator.right
-    else
-        let l:spl  = ''
-        let l:spr  = ''
-    endif
     let l:rank = popc#stl#CreateRank(a:lyr, l:size, popc#ui#GetVal('line').cur)
-    let l:title = ['Popc', l:spl, ' ' . a:lyr.info.centerText . ' ', l:spr, l:rank]
+    let l:title = ['Popc', s:spl, ' ' . a:lyr.info.centerText . ' ', s:spr, l:rank]
     let l:wseg = 0
     for seg in l:title
         let l:wseg += strwidth(seg)
