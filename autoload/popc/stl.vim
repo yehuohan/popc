@@ -120,7 +120,7 @@ function! s:lst.calcRes(lst) dict
         if self.res[k] >= 1
             call add(l:out, a:lst[k])
         elseif self.res[k] <= -1
-            call add(l:out, {'index': len(l:out), 'title': '...', 'modified': 0, 'selected': 0})
+            call add(l:out, {'index': len(l:out), 'title': s:conf.symbols.Dots, 'modified': 0, 'selected': 0})
         endif
     endfor
     return l:out
