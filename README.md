@@ -4,25 +4,25 @@
 Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 
 <div align="center">
-<img alt="Popc" src="https://github.com/yehuohan/popc/blob/master/README/popc.gif"  width=75% height=75% />
+<img alt="Popc" src="README/popc.gif"  width=75% height=75% />
 </div>
 
  - buffer layer
 
 <div align="center">
-<img alt="Buffer" src="https://github.com/yehuohan/popc/blob/master/README/buf.png"  width=75% height=75% />
+<img alt="Buffer" src="README/buf.png"  width=75% height=75% />
 </div>
 
  - bookmark layer
 
 <div align="center">
-<img alt="Bookmark" src="https://github.com/yehuohan/popc/blob/master/README/bms.png"  width=75% height=75% />
+<img alt="Bookmark" src="README/bms.png"  width=75% height=75% />
 </div>
 
  - workspace layer
 
 <div align="center">
-<img alt="Workspace" src="https://github.com/yehuohan/popc/blob/master/README/wks.png"  width=75% height=75% />
+<img alt="Workspace" src="README/wks.png"  width=75% height=75% />
 </div>
 
  - floating
@@ -30,19 +30,19 @@ Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 Support floating window of neovim(0.4.3+) and popupwin of vim (version 802+) with `let g:Popc_useFloatingWin = 1`.
 
 <div align="center">
-<img alt="floating" src="https://github.com/yehuohan/popc/blob/master/README/floating.png"  width=75% height=75% />
+<img alt="floating" src="README/floating.png"  width=75% height=75% />
 </div>
 
 ## Search
 
 Use [LeaderF](https://github.com/Yggdroot/LeaderF) to search file or context in buffer, workspace or bookmark files.
 
-More usage help in [popc.txt](https://github.com/yehuohan/popc/blob/master/doc/popc.txt).
+More usage help in [popc.txt](doc/popc.txt).
 
 
 ## Add Customized layer
 
-All you need to do is implement one *layer* struct and add to *s:popc*. The [Example layer](https://github.com/yehuohan/popc/blob/master/autoload/popc/layer/exp.vim) can be a good example layer to start.
+All you need to do is implement one *layer* struct and add to *s:popc*. The [Example layer](autoload/popc/layer/exp.vim) can be a good example layer to start.
 
 Plugins using popc:
  - [popset](https://github.com/yehuohan/popset)
