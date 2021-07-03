@@ -3,35 +3,26 @@
 
 Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 
-<div align="center">
-<img alt="Popc" src="README/popc.gif"  width=75% height=75% />
-</div>
-
  - buffer layer
 
 <div align="center">
-<img alt="Buffer" src="README/buf.png"  width=75% height=75% />
+<img alt="Buffer" src="README/buf.gif"  width=75% height=75% />
 </div>
 
  - bookmark layer
 
 <div align="center">
-<img alt="Bookmark" src="README/bms.png"  width=75% height=75% />
+<img alt="Bookmark" src="README/bms.gif"  width=75% height=75% />
 </div>
 
  - workspace layer
 
 <div align="center">
-<img alt="Workspace" src="README/wks.png"  width=75% height=75% />
+<img alt="Workspace" src="README/wks.gif"  width=75% height=75% />
 </div>
 
- - floating
+> Support floating window of neovim(0.4.3+) and popupwin of vim (version 802+) with `let g:Popc_useFloatingWin = 1`.
 
-Support floating window of neovim(0.4.3+) and popupwin of vim (version 802+) with `let g:Popc_useFloatingWin = 1`.
-
-<div align="center">
-<img alt="floating" src="README/floating.png"  width=75% height=75% />
-</div>
 
 ## Search
 
