@@ -62,61 +62,71 @@ There some options start with `g:Popc_` used to config popc. The default value
 is below:
 
 >
-    jsonPath      = expand($VIM)
-    symbols       = {}
-    highlight     = {
-        'text'        : 'Pmenu',
-        'selected'    : 'PmenuSel',
-        'lineTxt'     : 'Pmenu',
-        'lineSel'     : 'PmenuSel',
-        'modifiedTxt' : '',
-        'modifiedSel' : 'DiffAdd',
-        'label'       : 'IncSearch',
-        'blankTxt'    : 'Normal'}
-    useUnicode    = 1
-    useTabline    = 1
-    useStatusline = 1
-    usePowerFont  = 0
-    separator     = {'left' : '', 'right' : ''}
-    subSeparator  = {'left' : '', 'right' : ''}
-    statusLine    = 'popc#stl#StatusLine()'
-    tabLine       = 'popc#stl#TabLine()'
-    tabLineLayout = {'left' : 'buffer', 'right': 'tab'}
-    maxHeight     = 0
-    useLayer      = {'Buffer' : 1, 'Bookmark' : 1, 'Workspace' : 1}
-    useLayerRoots = ['.root', '.git', '.svn']
-    useLayerPath  = 0
-    layerInit     = {}
-    layerComMaps  = {}
-    operationMaps = {
-        moveCursorDown   : ['j', 'C-j'],
-        moveCursorUp     : ['k', 'C-k'],
-        moveCursorBottom : ['J'],
-        moveCursorTop    : ['K'],
-        moveCursorPgDown : ['M-j'],
-        moveCursorPgUp   : ['M-k'],
-        quit             : ['q', 'Esc']}
+
+    let s:conf = {
+        \ 'jsonPath'       : $HOME,
+        \ 'useFloatingWin' : 0,
+        \ 'symbols'        : {},
+        \ 'useUnicode'     : 1,
+        \ 'highlight'      : {
+            \ 'text'        : 'Pmenu',
+            \ 'selected'    : 'PmenuSel',
+            \ 'lineTxt'     : 'Pmenu',
+            \ 'lineSel'     : 'PmenuSel',
+            \ 'modifiedTxt' : '',
+            \ 'modifiedSel' : 'DiffAdd',
+            \ 'labelTxt'    : 'IncSearch',
+            \ 'blankTxt'    : 'Normal',
+            \ },
+        \ 'useTabline'     : 1,
+        \ 'useStatusline'  : 1,
+        \ 'usePowerFont'   : 0,
+        \ 'selectPointer'  : '',
+        \ 'separator'      : {'left' : '', 'right': ''},
+        \ 'subSeparator'   : {'left' : '', 'right': ''},
+        \ 'statusLine'     : 'popc#stl#StatusLine()',
+        \ 'tabLine'        : 'popc#stl#TabLine()',
+        \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
+        \ 'maxHeight'      : 0,
+        \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
+        \ 'useLayerRoots'  : ['.popc', '.git', '.svn', '.hg'],
+        \ 'useLayerPath'   : 0,
+        \ 'operationMaps'  : {
+            \ 'moveCursorDown'   : ['j', 'C-j'],
+            \ 'moveCursorUp'     : ['k', 'C-k'],
+            \ 'moveCursorBottom' : ['J'],
+            \ 'moveCursorTop'    : ['K'],
+            \ 'moveCursorPgDown' : ['M-j'],
+            \ 'moveCursorPgUp'   : ['M-k'],
+            \ 'help'             : ['?'],
+            \ 'back'             : ['q'],
+            \ 'quit'             : ['Esc']
+            \ },
+        \ 'enableLog' : 0
+        \ }
 <
 default symbols:
 >
+
     let s:defaultSymbols = {
         \ 'unicode' : {
             \ 'Popc'   : '❖',
-            \ 'Buf'    : '•',
-            \ 'Wks'    : '፨',
-            \ 'Bms'    : '♥',
-            \ 'Tab'    : '▫',
-            \ 'CTab'   : '▪',
-            \ 'WIn'    : '★',
-            \ 'WOut'   : '☆',
+            \ 'Buf'    : '⌂',
+            \ 'Wks'    : '♥',
+            \ 'Bms'    : '★',
+            \ 'CTab'   : '●',
+            \ 'Tab'    : '○',
+            \ 'WIn'    : '▪',
+            \ 'WOut'   : '▫',
             \ 'Rank'   : '≡',
             \ 'Arr'    : '→',
             \ 'Dots'   : '…',
+            \ 'Ptr'    : '►',
             \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
             \ },
         \ 'ascii' : {
             \ 'Popc'   : '#',
-            \ 'Buf'    : '*',
+            \ 'Buf'    : '@',
             \ 'Wks'    : '&',
             \ 'Bms'    : '$',
             \ 'Tab'    : '~',
@@ -126,6 +136,7 @@ default symbols:
             \ 'Rank'   : '=',
             \ 'Arr'    : '->',
             \ 'Dots'   : '...',
+            \ 'Ptr'    : '>',
             \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
             \ },
         \ }
