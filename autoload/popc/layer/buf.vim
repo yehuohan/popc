@@ -33,16 +33,18 @@ let s:tab = {
 "   }
 "}
 " }}}
-let s:STATE = {
+const s:STATE = {
     \ 'Sigtab' : 'h',
     \ 'Alltab' : 'a',
     \ 'Listab' : 'l',
     \ }
 let s:rootBuf = ''
+let s:fullPath = v:false
 let s:mapsData = [
     \ ['popc#layer#buf#Pop'          , ['h','a','l'],             'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
     \ ['popc#layer#buf#Load'         , ['CR','Space'],            'Load buffers (Space to stay in popc)'],
     \ ['popc#layer#buf#SplitTab'     , ['s','S','v','V','t','T'], 'Split or tab buffers (SVT to stay in popc)'],
+    \ ['popc#layer#buf#ShowPath'     , ['p'],                     'Show/hide full path of buffers'],
     \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
     \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C to close all buffers of current tab)'],
     \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                 'Switch to left/right(i/o) tab'],
@@ -373,9 +375,10 @@ function! s:createTabBuffer(tidx)
             endfor
         endif
         " final line
+        let l:bufPath = fnamemodify(b.name, s:fullPath ? ':p' : ':.')
         let l:line = printf('  %s%s%s %s',
                     \ l:symTab, l:symWin, b.changed ? '+' : ' ',
-                    \ (empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : fnamemodify(b.name, ':.'))
+                    \ (empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : l:bufPath)
                     \ )
         "let l:root = escape(expand(s:lyr.info.rootDir), '\:')
         "if l:root =~# '[/\\]$'
@@ -560,6 +563,16 @@ function! popc#layer#buf#SplitTab(key, index)
             call s:pop(s:lyr.info.state)
         endif
     endif
+endfunction
+" }}}
+
+" FUNCTION: popc#layer#buf#ShowPath(key, index) {{{
+function! popc#layer#buf#ShowPath(key, index)
+    if s:tab.isTabEmpty()
+        return
+    endif
+    let s:fullPath = !s:fullPath
+    call s:pop(s:lyr.info.state)
 endfunction
 " }}}
 
