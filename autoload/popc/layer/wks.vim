@@ -207,7 +207,7 @@ function! s:saveWorkspace(name, root)
     call s:lyr.setInfo('rootDir', a:root)
     " set widget's title
     if &title
-        silent execute 'set titlestring=' . a:name
+        silent execute 'set titlestring=' . a:name . '(' . a:root . ')'
     endif
 
     call s:switchSettings('on')
@@ -235,7 +235,7 @@ function! s:loadWorkspace(name, root)
     call s:lyr.setInfo('rootDir', a:root)
     " set widget's title
     if &title
-        silent execute 'set titlestring=' . a:name
+        silent execute 'set titlestring=' . a:name . '(' . a:root . ')'
     endif
 
     call s:switchSettings('on')
@@ -460,7 +460,7 @@ function! popc#layer#wks#SetName(key, index)
     " save
     let s:wks[a:index].name = l:newName
     if &title
-        silent execute 'set titlestring=' . l:newName
+        silent execute 'set titlestring=' . l:newName . '(' . l:path . ')'
     endif
     call s:lyr.setInfo('wksName', l:newName)
     call popc#init#SaveJson()
@@ -495,6 +495,9 @@ function! popc#layer#wks#SetRoot(key, index)
         call delete(l:oldFile)
     endif
     " save
+    if &title
+        silent execute 'set titlestring=' . l:name . '(' . l:newPath . ')'
+    endif
     call popc#init#SaveJson()
     call popc#layer#wks#Pop()
     call popc#ui#Msg('Set root of workspace to ''' . l:newPath . ''' successful.')
