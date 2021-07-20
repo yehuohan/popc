@@ -856,7 +856,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
-" switch 'left' or 'right' tab in current tab.
+" switch 'left' or 'right' buffer in current tab.
 function! popc#layer#buf#SwitchBuffer(type)
     if s:tab.isTabEmpty()
         return
@@ -880,7 +880,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#JumpBuffer(type) {{{
-" jump 'prev' or 'next' in current buffer according to jumplist.
+" jump 'prev' or 'next' position in current buffer according to jumplist.
 function! popc#layer#buf#JumpBuffer(type)
     let [l:jumplist, l:jumpidx] = getjumplist()
     let l:bnr = bufnr('%')
@@ -934,7 +934,7 @@ function! popc#layer#buf#GetBufs(tabnr) abort
         let l:bnr = s:tab.idx[l:tidx][k]
         let b = getbufinfo(l:bnr)[0]
         call add(l:list, {
-                    \ 'index' : string(k+1),
+                    \ 'index' : l:bnr,
                     \ 'title' : empty(b.name) ? '[' . string(l:bnr) . '.NoName]' : fnamemodify(b.name, ':t'),
                     \ 'modified' : b.changed ? 1 : 0,
                     \ 'selected' : (k == l:curIdx) ? 1 : 0,

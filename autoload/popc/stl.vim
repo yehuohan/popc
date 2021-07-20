@@ -175,12 +175,12 @@ endfunction
 
 " FUNCTION: s:createHiSep(hifg, hibg, hinew) {{{
 function! s:createHiSep(hifg, hibg, hinew)
-    let r = range(4)
+    let r = ['', '', '', '']
     let r[0] = synIDattr(synIDtrans(hlID(a:hifg)), 'reverse', 'gui') ? 'fg' : 'bg'
     let r[1] = synIDattr(synIDtrans(hlID(a:hibg)), 'reverse', 'gui') ? 'fg' : 'bg'
     let r[2] = synIDattr(synIDtrans(hlID(a:hifg)), 'reverse', 'cterm') ? 'fg' : 'bg'
     let r[3] = synIDattr(synIDtrans(hlID(a:hibg)), 'reverse', 'cterm') ? 'fg' : 'bg'
-    let c = range(4)
+    let c = ['', '', '', '']
     let c[0] = synIDattr(synIDtrans(hlID(a:hifg)), r[0], 'gui')      " separator guifg
     let c[1] = synIDattr(synIDtrans(hlID(a:hibg)), r[1], 'gui')      " separator guibf
     let c[2] = synIDattr(synIDtrans(hlID(a:hifg)), r[2], 'cterm')    " separator ctermfg
@@ -316,8 +316,24 @@ function! popc#stl#TabLineSetLayout(lhs, rhs) abort
 endfunction
 " }}}
 
-" FUNCTION: s:createTabLineLeft(lst, ch) abort {{{
-function! s:createTabLineLeft(lst, ch) abort
+" has('tablineat') {{{
+if has('tablineat')
+function! popc#stl#SwitchBuffer(minwid, clicks, button, modifiers)
+    if a:clicks == 1 && a:button ==# 'l'
+        silent execute 'buffer ' . string(a:minwid)
+    endif
+endfunction
+
+function! popc#stl#SwitchTab(minwid, clicks, button, modifiers)
+    if a:clicks == 1 && a:button ==# 'l'
+        silent execute string(a:minwid) . 'tabnext'
+    endif
+endfunction
+endif
+" }}}
+
+" FUNCTION: s:createTabLineLeft(lst, ch, fn) abort {{{
+function! s:createTabLineLeft(lst, ch, fn) abort
     let l:list = a:lst
 
     if empty(l:list)
@@ -344,8 +360,23 @@ function! s:createTabLineLeft(lst, ch) abort
                 let l:hisep = '%#PopcTlSepB' . l:id . '#'
                 let l:sep = s:spl
             endif
-            let l:lhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
-            let l:lhs .= l:hisep . l:sep
+            " append item of with separator
+            if has('tablineat')
+                " <highlight>%<nr>@<func>@ <item>%T<sep-item>
+                let l:lhs .= printf("%s%%%d@%s@ %s%%T%s",
+                            \ l:hi,
+                            \ i.index,
+                            \ a:fn,
+                            \ (i.title) . (i.modified?'+':' '),
+                            \ l:hisep . l:sep)
+            else
+                " <highlight>%<nr>T <item>%T<sep-item>
+                let l:lhs .= printf("%s%%%dT %s%%T%s",
+                            \ l:hi,
+                            \ i.index,
+                            \ (i.title) . (i.modified?'+':' '),
+                            \ l:hisep . l:sep)
+            endif
         endfor
         let l:lhs .= '%#PopcTlBlank#%='
     endif
@@ -353,8 +384,8 @@ function! s:createTabLineLeft(lst, ch) abort
 endfunction
 " }}}
 
-" FUNCTION: s:createTabLineRight(lst, ch) abort {{{
-function! s:createTabLineRight(lst, ch) abort
+" FUNCTION: s:createTabLineRight(lst, ch, fn) abort {{{
+function! s:createTabLineRight(lst, ch, fn) abort
     let l:list = a:lst
 
     if empty(l:list)
@@ -378,8 +409,23 @@ function! s:createTabLineRight(lst, ch) abort
                 let l:hisep = '%#PopcTlSep' . l:id . '#'
                 let l:sep = (i.selected || ii.selected) ? s:spr : s:sspr
             endif
-            let l:rhs .= l:hisep . l:sep
-            let l:rhs .= (l:hi) . ('%'.(i.index).'T ' .(i.title).(i.modified?'+':' '). '%T')
+            " append item of with separator
+            if has('tablineat')
+                " <sep-item><highlight>%<nr>@<func>@ <item>%T
+                let l:rhs .= printf("%s%s%%%d@%s@ %s%%T",
+                            \ l:hisep . l:sep,
+                            \ l:hi,
+                            \ i.index,
+                            \ a:fn,
+                            \ (i.title) . (i.modified?'+':' '))
+            else
+                " <sep-item><highlight>%<nr>T <item>%T
+                let l:rhs .= printf("%s%s%%%dT %s%%T",
+                            \ l:hisep . l:sep,
+                            \ l:hi,
+                            \ i.index,
+                            \ (i.title) . (i.modified?'+':' '))
+            endif
         endfor
         " title -> separator -> lable
         let l:id = (l:len > 0) ? string(l:list[-1].selected*2 + l:list[-1].modified) : '4'
@@ -407,27 +453,31 @@ function! popc#stl#TabLine() abort
     if s:conf.tabLineLayout.left ==# 'tab'
         let l:lst = l:tablst
         let l:ch = 'T'
+        let l:fn = 'popc#stl#SwitchTab'
     elseif s:conf.tabLineLayout.left ==# 'buffer'
         let l:lst = l:buflst
         let l:ch = 'B'
+        let l:fn = 'popc#stl#SwitchBuffer'
     else
         let l:lst = []
         let l:ch = ''
     endif
-    let l:lhs = s:createTabLineLeft(l:lst, l:ch)
+    let l:lhs = s:createTabLineLeft(l:lst, l:ch, l:fn)
 
     " right side
     if s:conf.tabLineLayout.right ==# 'tab'
         let l:lst = l:tablst
         let l:ch = 'T'
+        let l:fn = 'popc#stl#SwitchTab'
     elseif s:conf.tabLineLayout.right ==# 'buffer'
         let l:lst = l:buflst
         let l:ch = 'B'
+        let l:fn = 'popc#stl#SwitchBuffer'
     else
         let l:lst = []
         let l:ch = ''
     endif
-    let l:rhs = s:createTabLineRight(l:lst, l:ch)
+    let l:rhs = s:createTabLineRight(l:lst, l:ch, l:fn)
 
     return l:lhs . l:rhs
 endfunction
