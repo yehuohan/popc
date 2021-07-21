@@ -120,7 +120,13 @@ function! s:lst.calcRes(lst) dict
         if self.res[k] >= 1
             call add(l:out, a:lst[k])
         elseif self.res[k] <= -1
-            call add(l:out, {'index': len(l:out), 'title': s:conf.symbols.Dots, 'modified': 0, 'selected': 0})
+            call add(l:out,
+                \ {
+                    \ 'index': empty(l:out) ? 0 : v:numbermax,
+                    \ 'title': s:conf.symbols.Dots,
+                    \ 'modified': 0,
+                    \ 'selected': 0
+                \ })
         endif
     endfor
     return l:out
@@ -319,14 +325,28 @@ endfunction
 " has('tablineat') {{{
 if has('tablineat')
 function! popc#stl#SwitchBuffer(minwid, clicks, button, modifiers)
+    " BUG: v:numbermax becomes -1 from statusline '@'
     if a:clicks == 1 && a:button ==# 'l'
-        silent execute 'buffer ' . string(a:minwid)
+        if a:minwid == 0
+            call popc#layer#buf#SwitchBuffer('left', 0)
+        elseif a:minwid == -1
+            call popc#layer#buf#SwitchBuffer('right', 0)
+        else
+            silent! execute 'buffer ' . string(a:minwid)
+        endif
     endif
 endfunction
 
 function! popc#stl#SwitchTab(minwid, clicks, button, modifiers)
+    " BUG: v:numbermax becomes -1 from statusline '@'
     if a:clicks == 1 && a:button ==# 'l'
-        silent execute string(a:minwid) . 'tabnext'
+        if a:minwid == 0
+            call popc#layer#buf#SwitchTab('left', 0)
+        elseif a:minwid == -1
+            call popc#layer#buf#SwitchTab('right', 0)
+        else
+            silent! execute string(a:minwid) . 'tabnext'
+        endif
     endif
 endfunction
 endif

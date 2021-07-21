@@ -43,13 +43,13 @@ let s:fullPath = v:false
 let s:mapsData = [
     \ ['popc#layer#buf#Pop'          , ['h','a','l'],             'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
     \ ['popc#layer#buf#Load'         , ['CR','Space'],            'Load buffers (Space to stay in popc)'],
-    \ ['popc#layer#buf#SplitTab'     , ['s','S','v','V','t','T'], 'Split or tab buffers (SVT to stay in popc)'],
-    \ ['popc#layer#buf#ShowPath'     , ['p'],                     'Show/hide full path of buffers'],
+    \ ['popc#layer#buf#Split'        , ['s','S','v','V','t','T'], 'Split or tabnew buffers (SVT to stay in popc)'],
+    \ ['popc#layer#buf#Show'         , ['p'],                     'Show/hide full path of buffers'],
     \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
     \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C to close all buffers of current tab)'],
-    \ ['popc#layer#buf#SwitchTab'    , ['i','o'],                 'Switch to left/right(i/o) tab'],
+    \ ['popc#layer#buf#Switch'       , ['i','o'],                 'Switch to left/right(i/o) tab'],
     \ ['popc#layer#buf#Move'         , ['I','O'],                 'Move buffer or tab to the left/right(I/O)'],
-    \ ['popc#layer#buf#SetTabName'   , ['n'],                     'Set current tab name'],
+    \ ['popc#layer#buf#ReName'       , ['n'],                     'Set current tab name'],
     \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
     \ ]
 
@@ -533,8 +533,8 @@ function! popc#layer#buf#Load(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SplitTab(key, index) {{{
-function! popc#layer#buf#SplitTab(key, index)
+" FUNCTION: popc#layer#buf#Split(key, index) {{{
+function! popc#layer#buf#Split(key, index)
     if s:tab.isTabEmpty()
         return
     endif
@@ -566,8 +566,8 @@ function! popc#layer#buf#SplitTab(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#ShowPath(key, index) {{{
-function! popc#layer#buf#ShowPath(key, index)
+" FUNCTION: popc#layer#buf#Show(key, index) {{{
+function! popc#layer#buf#Show(key, index)
     if s:tab.isTabEmpty()
         return
     endif
@@ -669,8 +669,8 @@ function! popc#layer#buf#Close(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SwitchTab(key, index) {{{
-function! popc#layer#buf#SwitchTab(key, index)
+" FUNCTION: popc#layer#buf#Switch(key, index) {{{
+function! popc#layer#buf#Switch(key, index)
     call popc#ui#Destroy()
     if a:key ==# 'i'
         silent normal! gT
@@ -751,8 +751,8 @@ function! popc#layer#buf#Move(key, index)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#SetTabName(key, index) {{{
-function! popc#layer#buf#SetTabName(key, index)
+" FUNCTION: popc#layer#buf#ReName(key, index) {{{
+function! popc#layer#buf#ReName(key, index)
     let l:tidx = s:getIndexs(a:index)[0]
     let l:name = popc#ui#Input('Input tab name: ', gettabvar(l:tidx + 1, 'PopcLayerBuf_TabName'))
     if empty(l:name)
@@ -855,9 +855,20 @@ function! popc#layer#buf#CloseBuffer(bang)
 endfunction
 " }}}
 
+" FUNCTION: popc#layer#buf#SwitchTab(type) {{{
+" switch 'left' or 'right' tab in cycle when bang is enabled
+function! popc#layer#buf#SwitchTab(type, bang)
+    if (a:type ==# 'left') && (a:bang || (!a:bang && tabpagenr() > 1))
+        silent normal! gT
+    elseif (a:type ==# 'right') && (a:bang || (!a:bang && tabpagenr() < tabpagenr('$')))
+        silent normal! gt
+    endif
+endfunction
+" }}}
+
 " FUNCTION: popc#layer#buf#SwitchBuffer(type) {{{
-" switch 'left' or 'right' buffer in current tab.
-function! popc#layer#buf#SwitchBuffer(type)
+" switch 'left' or 'right' buffer of current tab in cycle when bang is enabled
+function! popc#layer#buf#SwitchBuffer(type, bang)
     if s:tab.isTabEmpty()
         return
     endif
@@ -865,17 +876,24 @@ function! popc#layer#buf#SwitchBuffer(type)
     let l:tidx = tabpagenr() - 1
     let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
 
+    let l:cycle = 0
     if a:type == 'left'
         let l:bidx -= 1 " vim support -1 index
+        if l:bidx == -1
+            let l:cycle = 1
+        endif
     elseif a:type == 'right'
         let l:bidx += 1
         if l:bidx == s:tab.num(l:tidx)
             let l:bidx = 0
+            let l:cycle = 1
         endif
     endif
-    let l:bnr = s:tab.idx[l:tidx][l:bidx]
-    let s:tab.sel[l:tidx] = l:bidx
-    silent execute 'buffer ' . string(l:bnr)
+    if a:bang || (!a:bang && !l:cycle)
+        let l:bnr = s:tab.idx[l:tidx][l:bidx]
+        let s:tab.sel[l:tidx] = l:bidx
+        silent execute 'buffer ' . string(l:bnr)
+    endif
 endfunction
 " }}}
 
