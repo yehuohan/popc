@@ -456,7 +456,7 @@ function! s:createTabLineRight(lst, ch, fn) abort
 endfunction
 " }}}
 
-" FUNCTION: popc#stl#TabLine() abort {{{
+" FUNCTION: popc#stl#TabLine() abort
 function! popc#stl#TabLine() abort
     " init buf and tab list"
     let l:buflst = []
@@ -470,38 +470,24 @@ function! popc#stl#TabLine() abort
     let [l:buflst, l:tablst] = s:tabLineShorten(l:buflst, l:tablst)
 
     " left side
+    let l:lhs = '%#PopcTlBlank#%='
     if s:conf.tabLineLayout.left ==# 'tab'
-        let l:lst = l:tablst
-        let l:ch = 'T'
-        let l:fn = 'popc#stl#SwitchTab'
+        let l:lhs = s:createTabLineLeft(l:tablst, 'T', 'popc#stl#SwitchTab')
     elseif s:conf.tabLineLayout.left ==# 'buffer'
-        let l:lst = l:buflst
-        let l:ch = 'B'
-        let l:fn = 'popc#stl#SwitchBuffer'
-    else
-        let l:lst = []
-        let l:ch = ''
+        let l:lhs = s:createTabLineLeft(l:buflst, 'B', 'popc#stl#SwitchBuffer')
     endif
-    let l:lhs = s:createTabLineLeft(l:lst, l:ch, l:fn)
 
     " right side
+    let l:rhs = ''
     if s:conf.tabLineLayout.right ==# 'tab'
-        let l:lst = l:tablst
-        let l:ch = 'T'
-        let l:fn = 'popc#stl#SwitchTab'
+        let l:rhs = s:createTabLineRight(l:tablst, 'T', 'popc#stl#SwitchTab')
     elseif s:conf.tabLineLayout.right ==# 'buffer'
-        let l:lst = l:buflst
-        let l:ch = 'B'
-        let l:fn = 'popc#stl#SwitchBuffer'
-    else
-        let l:lst = []
-        let l:ch = ''
+        let l:rhs = s:createTabLineRight(l:buflst, 'B', 'popc#stl#SwitchBuffer')
     endif
-    let l:rhs = s:createTabLineRight(l:lst, l:ch, l:fn)
 
     return l:lhs . l:rhs
 endfunction
-" }}}
+"
 
 " FUNCTION: popc#stl#CreateRank(lyr, cnt, cur) {{{
 function! popc#stl#CreateRank(lyr, cnt, cur)
