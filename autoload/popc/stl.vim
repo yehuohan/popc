@@ -120,9 +120,14 @@ function! s:lst.calcRes(lst) dict
         if self.res[k] >= 1
             call add(l:out, a:lst[k])
         elseif self.res[k] <= -1
+            if has('nvim')
+                let l:maxnr = v:numbermax
+            else
+                let l:maxnr = 9223372036854775807
+            endif
             call add(l:out,
                 \ {
-                    \ 'index': empty(l:out) ? 0 : v:numbermax,
+                    \ 'index': empty(l:out) ? 0 : l:maxnr,
                     \ 'title': s:conf.symbols.Dots,
                     \ 'modified': 0,
                     \ 'selected': 0
