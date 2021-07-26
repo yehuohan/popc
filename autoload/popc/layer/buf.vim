@@ -633,8 +633,11 @@ function! s:closeBuffer(tidx, bidx)
         enew
     else
         if l:bnr == bufnr('%')
-            silent execute 'buffer ' . s:tab.idx[a:tidx][
-                        \ (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1]
+            let l:newbidx = index(s:tab.idx[a:tidx], bufnr('#'))
+            if -1 == l:newbidx
+                let l:newbidx = (a:bidx < s:tab.num(a:tidx)) ? a:bidx : a:bidx - 1
+            endif
+            silent execute 'buffer ' . s:tab.idx[a:tidx][l:newbidx]
         endif
     endif
     if !has_key(s:tab.cnt, l:bnr)
