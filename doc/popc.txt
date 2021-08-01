@@ -49,7 +49,7 @@ Example for vim-plug:
 <
 You should meet the requirements below:
 >
-    vim8.0 or higher
+    vim8.0+ or neovim
     enable hidden option
 <
 
@@ -267,13 +267,13 @@ In buffer layer, press '?' to see all command help:
     h,a,l       | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
     CR,Space    | Load buffers (Space to stay in popc)
     s,S,v,V,t,T | Split or tab buffers (SVT to stay in popc)
+    p           | Show/hide full path of buffers
     g,G         | Goto window contain the current buffer(G to stay in popc)
     c,C         | Close one buffer (C-Close tab's all buffer)
     i,o         | Switch to left/right(i/o) tab
     I,O         | Move buffer to left/right(I/O) tab
     n           | Set current tab name
     e           | Edit a new file
-    ?           | Show help of buffers layer
 <
 
                                                                       |popc-toc|
@@ -305,7 +305,6 @@ In bookmark layer, press '?' to see all command help:
     a                    | Add file as bookmark
     d                    | Delete one bookmark
     g                    | Display sorted bookmaks
-    ?                    | Show help of bookmarks layer
 <
 
                                                                       |popc-toc|
@@ -356,7 +355,6 @@ In workspace layer, press '?' to see all command help:
     n            | Set name of workspace
     r            | Set root of workspace
     g            | Display sorted workspaces
-    ?            | Show help of workspaces layer
 <
 
                                                                       |popc-toc|
@@ -385,7 +383,7 @@ All you need to do is implement one layer struct and add to s:popc. The file
 
 MIT License
 
-Copyright (c) 2019 lrx
+Copyright (c) 2019 yehuohan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
