@@ -91,7 +91,7 @@ function! s:layer.createHelp() dict
     let l:fmt = printf('  %%-%ds | %%s', l:max)
 
     " add help-context
-    let l:text = ['  ~~~~~ ' . g:popc_version . ' (In layer ' . self.name . ') ~~~~~']
+    let l:text = []
     for md in self.help
         call add(l:text, printf(l:fmt, join(md[0], ','), md[1]))
     endfor
