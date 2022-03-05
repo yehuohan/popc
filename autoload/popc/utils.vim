@@ -41,7 +41,14 @@ function! popc#utils#GetKeys()
                  \ 'LeftDrag LeftRelease LeftMouse 2-LeftMouse 3-LeftMouse 4-LeftMouse ' .
                  \ 'RightDrag RightRelease RightMouse 2-RightMouse 3-RightMouse 4-RightMouse ' .
                  \ 'MiddleDrag MiddleRelease MiddleMouse 2-MiddleMouse 3-MiddleMouse 4-MiddleMouse ' .
-                 \ 'ScrollWheelUp ScrollWheelDown ScrollWheelLeft ScrollWheelRight', ' ')
+                 \ 'ScrollWheelUp 2-ScrollWheelUp 3-ScrollWheelUp 4-ScrollWheelUp ' .
+                 \ 'S-ScrollWheelUp 2-S-ScrollWheelUp 3-S-ScrollWheelUp 4-S-ScrollWheelUp ' .
+                 \ 'C-ScrollWheelUp 2-C-ScrollWheelUp 3-C-ScrollWheelUp 4-C-ScrollWheelUp ' .
+                 \ 'ScrollWheelDown 2-ScrollWheelDown 3-ScrollWheelDown 4-ScrollWheelDown ' .
+                 \ 'S-ScrollWheelDown 2-S-ScrollWheelDown 3-S-ScrollWheelDown 4-S-ScrollWheelDown ' .
+                 \ 'C-ScrollWheelDown 2-C-ScrollWheelDown 3-C-ScrollWheelDown 4-C-ScrollWheelDown ' .
+                 \ 'ScrollWheelLeft M-ScrollWheelLeft M-2-ScrollWheelLeft M-3-ScrollWheelLeft M-4-ScrollWheelLeft ' .
+                 \ 'ScrollWheelRight M-ScrollWheelRight M-2-ScrollWheelRight M-3-ScrollWheelRight M-4-ScrollWheelRight', ' ')
 
     return {
         \ 'lowercase' : lowercase,
