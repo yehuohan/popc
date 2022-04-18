@@ -138,14 +138,14 @@ function! s:makeSession(filename, root)
     let l:root = escape(fnameescape(a:root), '\')   " <Space> must convert to '\\ '
     let l:tabnr = 1
     for l:cmd in readfile(a:filename)
-        if l:cmd =~# '^cd'
+        if l:cmd =~# '^cd '
             call extend(l:lines, [
                 \ 'try',
                 \ '  exe "cd " . s:session_root',
                 \ 'catch',
                 \ 'endtry',
                 \ ])
-        elseif l:cmd =~# '^lcd'
+        elseif l:cmd =~# '^lcd '
             call extend(l:lines, [
                 \ 'try',
                 \ '  exe "lcd " . s:session_root',
@@ -162,7 +162,7 @@ function! s:makeSession(filename, root)
                 call add(l:lines, printf('edit +%d %s', b.lnum, l:file))
             endfor
             " switch to current buffer of tab
-            if l:tabnr > 1
+            if l:tabnr > 1 && l:cmd !~# 'bufhidden=wipe'
                 call add(l:lines, 'edit' . substitute(l:cmd, '\v^tabnew|^tabedit', '', ''))
             endif
             " add name variables of tabs
