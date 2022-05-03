@@ -4,43 +4,43 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'jsonPath'       : $HOME,
-    \ 'useFloatingWin' : 0,
-    \ 'symbols'        : {},
-    \ 'useUnicode'     : 1,
-    \ 'highlight'      : {
-        \ 'text'        : 'Pmenu',
-        \ 'selected'    : 'PmenuSel',
-        \ 'lineTxt'     : 'Pmenu',
-        \ 'lineSel'     : 'PmenuSel',
-        \ 'modifiedTxt' : '',
-        \ 'modifiedSel' : 'DiffAdd',
-        \ 'labelTxt'    : 'IncSearch',
-        \ 'blankTxt'    : 'Normal',
+    \ 'jsonPath'                        : $HOME,
+    \ 'useFloatingWin'                  : 0,
+    \ 'symbols'                         : {},
+    \ 'useUnicode'                      : 1,
+    \ 'highlight' : {
+        \ 'text'                        : 'Pmenu',
+        \ 'selected'                    : 'PmenuSel',
+        \ 'lineTxt'                     : 'Pmenu',
+        \ 'lineSel'                     : 'PmenuSel',
+        \ 'modifiedTxt'                 : '',
+        \ 'modifiedSel'                 : 'DiffAdd',
+        \ 'labelTxt'                    : 'IncSearch',
+        \ 'blankTxt'                    : 'Normal',
         \ },
-    \ 'useTabline'     : 1,
-    \ 'useStatusline'  : 1,
-    \ 'usePowerFont'   : 0,
-    \ 'selectPointer'  : '',
-    \ 'separator'      : {'left' : '', 'right': ''},
-    \ 'subSeparator'   : {'left' : '', 'right': ''},
-    \ 'statusLine'     : 'popc#stl#StatusLine()',
-    \ 'tabLine'        : 'popc#stl#TabLine()',
-    \ 'tabLineLayout'  : {'left' : 'buffer', 'right': 'tab'},
-    \ 'maxHeight'      : 0,
-    \ 'useLayer'       : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
-    \ 'useLayerRoots'  : ['.popc', '.git', '.svn', '.hg'],
-    \ 'useLayerPath'   : 0,
+    \ 'useTabline'                      : 1,
+    \ 'useStatusline'                   : 1,
+    \ 'usePowerFont'                    : 0,
+    \ 'selectPointer'                   : '',
+    \ 'separator'                       : {'left' : '', 'right': ''},
+    \ 'subSeparator'                    : {'left' : '', 'right': ''},
+    \ 'statusLine'                      : 'popc#stl#StatusLine()',
+    \ 'tabLine'                         : 'popc#stl#TabLine()',
+    \ 'tabLineLayout'                   : {'left' : 'buffer', 'right': 'tab'},
+    \ 'maxHeight'                       : 0,
+    \ 'useLayer'                        : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
+    \ 'wksRootPatterns'                 : ['.popc', '.git', '.svn', '.hg'],
+    \ 'wksSaveUnderRoot'                : 0,
     \ 'operationMaps'  : {
-        \ 'moveCursorDown'   : ['j', 'C-j'],
-        \ 'moveCursorUp'     : ['k', 'C-k'],
-        \ 'moveCursorBottom' : ['J'],
-        \ 'moveCursorTop'    : ['K'],
-        \ 'moveCursorPgDown' : ['M-j'],
-        \ 'moveCursorPgUp'   : ['M-k'],
-        \ 'help'             : ['?'],
-        \ 'back'             : ['q'],
-        \ 'quit'             : ['Esc']
+        \ 'moveCursorDown'              : ['j', 'C-j'],
+        \ 'moveCursorUp'                : ['k', 'C-k'],
+        \ 'moveCursorBottom'            : ['J'],
+        \ 'moveCursorTop'               : ['K'],
+        \ 'moveCursorPgDown'            : ['M-j'],
+        \ 'moveCursorPgUp'              : ['M-k'],
+        \ 'help'                        : ['?'],
+        \ 'back'                        : ['q'],
+        \ 'quit'                        : ['Esc']
         \ },
     \ 'enableLog' : 0
     \ }
@@ -171,11 +171,31 @@ endfunction
 
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
+    " check deprecated configs
+    let l:msg = []
+    if exists('g:Popc_useLayerRoots')
+        let g:Popc_wksRootPatterns = g:Popc_useLayerRoots
+        call add(l:msg, 'Popc_useLayerRoots is deprecated, and use Popc_wksRootPatterns instead.')
+    endif
+    if exists('g:Popc_useLayerPath')
+        let g:Popc_wksSaveUnderRoot = g:Popc_useLayerPath
+        call add(l:msg, 'Popc_useLayerPath is deprecated, and use Popc_wksSaveUnderRoot instead.')
+    endif
+    if !empty(l:msg)
+        echohl WarningMsg
+        echomsg '[Popc] Deprecated configs:'
+        for msg in l:msg
+            echomsg msg
+        endfor
+        echohl None
+    endif
+
     " set confiuration's value and list
     for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
             \ 'useTabline', 'useStatusline', 'usePowerFont', 'selectPointer',
             \ 'statusLine', 'tabLine', 'maxHeight',
-            \ 'useLayerRoots', 'useLayerPath', 'enableLog']
+            \ 'wksRootPatterns', 'wksSaveUnderRoot',
+            \ 'enableLog']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
         endif

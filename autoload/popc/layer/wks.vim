@@ -255,7 +255,7 @@ endfunction
 
 " FUNCTION: s:checkWksFile(name, path) {{{
 function! s:checkWksFile(name, path)
-    if s:conf.useLayerPath
+    if s:conf.wksSaveUnderRoot
         for item in s:wks
             if a:name ==# item.name && a:path ==# item.path
                 return 0
@@ -274,7 +274,7 @@ endfunction
 
 " FUNCTION: s:getWksFilePath(root) {{{
 function! s:getWksFilePath(root)
-    if s:conf.useLayerPath
+    if s:conf.wksSaveUnderRoot
         let l:path = a:root . '.popc'
         if !isdirectory(l:path)
             call mkdir(l:path, 'p')
