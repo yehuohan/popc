@@ -34,20 +34,21 @@ if exists('g:popc_loaded')
     finish
 endif
 
-let s:errors = []
+let s:err = []
 if v:version < 800
-    call add(s:errors, 'Popc: Vim8.0 or higher is required.')
+    call add(s:err, 'Vim8.0 or higher is required.')
 endif
 if &hidden == 0
-    call add(s:errors, 'Popc: requires "hidden" option enabled.')
+    call add(s:err, 'Requires "hidden" option enabled.')
 endif
 if &compatible
-    call add(s:errors, 'Popc: requires "nocompatible" option enabled.')
+    call add(s:err, 'Requires "nocompatible" option enabled.')
 endif
 
-if !empty(s:errors)
+if !empty(s:err)
     echohl WarningMsg
-    for msg in s:errors
+    echomsg '[Popc] Error settings:'
+    for msg in s:err
         echomsg msg
     endfor
     echohl None
@@ -55,5 +56,5 @@ if !empty(s:errors)
 endif
 
 call popc#popc#Init()
-let g:popc_version = 'Popc 3.7.34'
+let g:popc_version = 'Popc 3.7.35'
 let g:popc_loaded = 1
