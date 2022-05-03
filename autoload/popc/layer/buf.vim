@@ -132,7 +132,7 @@ function! s:tab.isBufferValid(bnr) dict
         let l:ft = getbufvar(a:bnr, '&filetype')
         if    (!b.loaded) ||
             \ (!s:conf.bufShowUnlisted && !b.listed) ||
-            \ (l:ft ==# 'Popc' || l:ft ==# 'qf') ||
+            \ (index(s:conf.bufIgnoredType, l:ft) >= 0) ||
             \ (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
             return 0
         endif

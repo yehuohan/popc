@@ -90,6 +90,7 @@ is below:
         \ 'maxHeight'       : 0,
         \ 'useLayer'        : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
         \ 'bufShowUnlisted' : 1,
+        \ 'bufIgnoredType'  : ['Popc', 'qf'],
         \ 'wksRootPatterns' : ['.popc', '.git', '.svn', '.hg'],
         \ 'wksSaveUnderRoot': 0,
         \ 'operationMaps'   : {
