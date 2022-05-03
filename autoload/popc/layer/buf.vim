@@ -130,9 +130,10 @@ function! s:tab.isBufferValid(bnr) dict
     else
         let b = getbufinfo(a:bnr)[0]
         let l:ft = getbufvar(a:bnr, '&filetype')
-        if       (!b.loaded || !b.listed)
-            \ || (l:ft ==# 'Popc' || l:ft ==# 'qf')
-            \ || (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
+        if    (!b.loaded) ||
+            \ (!s:conf.bufShowUnlisted && !b.listed) ||
+            \ (l:ft ==# 'Popc' || l:ft ==# 'qf') ||
+            \ (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
             return 0
         endif
     endif

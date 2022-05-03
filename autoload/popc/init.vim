@@ -29,6 +29,7 @@ let s:conf = {
     \ 'tabLineLayout'                   : {'left' : 'buffer', 'right': 'tab'},
     \ 'maxHeight'                       : 0,
     \ 'useLayer'                        : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
+    \ 'bufShowUnlisted'                 : 0,
     \ 'wksRootPatterns'                 : ['.popc', '.git', '.svn', '.hg'],
     \ 'wksSaveUnderRoot'                : 0,
     \ 'operationMaps'  : {
@@ -194,7 +195,7 @@ function! s:initConfig()
     for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
             \ 'useTabline', 'useStatusline', 'usePowerFont', 'selectPointer',
             \ 'statusLine', 'tabLine', 'maxHeight',
-            \ 'wksRootPatterns', 'wksSaveUnderRoot',
+            \ 'bufShowUnlisted', 'wksRootPatterns', 'wksSaveUnderRoot',
             \ 'enableLog']
         if exists('g:Popc_' . k)
             let s:conf[k] = g:{'Popc_' . k}
