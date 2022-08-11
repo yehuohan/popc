@@ -78,6 +78,16 @@ function! s:layer.createHelp() dict
         return self.help
     endif
 
+    " get help-operation keys
+    let l:optkeys = [
+        \ join(s:conf.operationMaps['moveCursorUp']  , ',') .. '/' .. join(s:conf.operationMaps['moveCursorDown']  , ','),
+        \ join(s:conf.operationMaps['moveCursorPgUp'], ',') .. '/' .. join(s:conf.operationMaps['moveCursorPgDown'], ','),
+        \ join(s:conf.operationMaps['moveCursorTop'] , ',') .. '/' .. join(s:conf.operationMaps['moveCursorBottom'], ','),
+        \ join(s:conf.operationMaps['back']          , ',') .. '/' .. join(s:conf.operationMaps['quit']            , ','),
+        \ join(s:conf.operationMaps['help']          , ','),
+        \ ]
+    let l:optmax = max(map(copy(l:optkeys), {-> len(v:val)}))
+
     " get line-format
     let l:max = 0
     for md in self.help
@@ -88,6 +98,7 @@ function! s:layer.createHelp() dict
         let l:wid = strwidth(join(md, ','))
         let l:max = (l:wid > l:max) ? l:wid : l:max
     endfor
+    let l:max = (l:optmax > l:max) ? l:optmax : l:max
     let l:fmt = printf('  %%-%ds | %%s', l:max)
 
     " add help-context
@@ -97,15 +108,11 @@ function! s:layer.createHelp() dict
     endfor
 
     " add help-operation
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorUp']     , ','), 'Operation up'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorDown']   , ','), 'Operation down'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorPgUp']   , ','), 'Operation page up'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorPgDown'] , ','), 'Operation page down'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorTop']    , ','), 'Operation top'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['moveCursorBottom'] , ','), 'Operation bottom'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['help']             , ','), 'Operation help'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['back']             , ','), 'Operation back'))
-    call add(l:text, printf(l:fmt, join(s:conf.operationMaps['quit']             , ','), 'Operation quit'))
+    call add(l:text, printf(l:fmt, l:optkeys[0], 'Operation up/down'))
+    call add(l:text, printf(l:fmt, l:optkeys[1], 'Operation page up/down'))
+    call add(l:text, printf(l:fmt, l:optkeys[2], 'Operation top/bottom'))
+    call add(l:text, printf(l:fmt, l:optkeys[3], 'Operation back/quit'))
+    call add(l:text, printf(l:fmt, l:optkeys[4], 'Operation help'))
 
     let self.help = l:text
     return self.help

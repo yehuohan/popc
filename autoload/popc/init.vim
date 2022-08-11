@@ -34,15 +34,15 @@ let s:conf = {
     \ 'wksRootPatterns'                 : ['.popc', '.git', '.svn', '.hg'],
     \ 'wksSaveUnderRoot'                : 0,
     \ 'operationMaps'  : {
-        \ 'moveCursorDown'              : ['j', 'C-j'],
-        \ 'moveCursorUp'                : ['k', 'C-k'],
+        \ 'moveCursorDown'              : ['j'],
+        \ 'moveCursorUp'                : ['k'],
+        \ 'moveCursorPgDown'            : ['M-j', 'C-j'],
+        \ 'moveCursorPgUp'              : ['M-k', 'C-k'],
         \ 'moveCursorBottom'            : ['J'],
         \ 'moveCursorTop'               : ['K'],
-        \ 'moveCursorPgDown'            : ['M-j'],
-        \ 'moveCursorPgUp'              : ['M-k'],
-        \ 'help'                        : ['?'],
         \ 'back'                        : ['q'],
-        \ 'quit'                        : ['Esc']
+        \ 'quit'                        : ['Esc'],
+        \ 'help'                        : ['?']
         \ },
     \ 'enableLog' : 0
     \ }
