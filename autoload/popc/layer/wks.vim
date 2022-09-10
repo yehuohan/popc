@@ -139,18 +139,14 @@ function! s:makeSession(filename, root)
     let l:tabnr = 1
     for l:cmd in readfile(a:filename)
         if l:cmd =~# '^cd '
-            call extend(l:lines, [
-                \ 'try',
-                \ '  exe "cd " . s:session_root',
-                \ 'catch',
-                \ 'endtry',
-                \ ])
+            call add(l:lines, 'silent! exe "cd " . s:session_root')
         elseif l:cmd =~# '^lcd '
+            call add(l:lines, 'silent! exe "lcd " . s:session_root')
+        elseif l:cmd =~# 'exists('':tcd'')'
             call extend(l:lines, [
-                \ 'try',
-                \ '  exe "lcd " . s:session_root',
-                \ 'catch',
-                \ 'endtry',
+                \ 'if exists('':tcd'') == 2',
+                \ '  silent! exe "tcd " . s:session_root',
+                \ 'endif',
                 \ ])
         elseif ((l:cmd =~# '^%argdel') && (l:tabnr == 1)) ||
              \ ((l:cmd =~# '\v^tabnew|^tabedit') && (l:tabnr > 1))
