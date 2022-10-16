@@ -159,7 +159,12 @@ endfunction
 function! popc#ui#Msg(msg, ...)
     redraw
     let l:msg = (a:0 > 0) ? call('printf', [a:msg] + a:000) : a:msg
-    echo ' ' . s:conf.symbols.Popc . ' ' . substitute(l:msg, '\M\n', '\n   ', 'g')
+    let l:msg = ' ' . s:conf.symbols.Popc . ' ' . substitute(l:msg, '\M\n', '\n   ', 'g')
+    if has('nvim')
+        call v:lua.vim.notify(l:msg, luaeval('vim.log.levels.INFO'))
+    else
+        echo l:msg
+    endif
 endfunction
 " }}}
 
