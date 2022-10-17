@@ -319,7 +319,6 @@ function! popc#layer#wks#Load(key, index)
     endif
 
     call popc#ui#Destroy()
-    call popc#ui#Msg('Loading workspace ''' . l:name . ''' ......')
     if a:key ==# 'CR' || a:key ==# 'Space'
         call popc#layer#buf#CloseAll()
     elseif a:key ==? 't'
