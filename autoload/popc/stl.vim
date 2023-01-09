@@ -36,15 +36,15 @@ endif
 
 " SECTION: dictionary function {{{1
 
-" FUNCTION: s:lst.calcLen(lst) dict {{{
-function! s:lst.calcLen(lst) dict
+" FUNCTION: s:lst.calcLen(lst, extwid) dict {{{
+function! s:lst.calcLen(lst, extwid) dict
     let self.sum = 0
     let self.idx = 0
     let self.len = []
     if !empty(a:lst)
         let self.sum += 2
         for k in range(len(a:lst))
-            call add(self.len, strwidth(a:lst[k].title) + 3)
+            call add(self.len, strwidth(a:lst[k].title) + a:extwid)
             let self.sum += self.len[-1]
             if a:lst[k].selected
                 let self.idx = k
@@ -138,14 +138,15 @@ function! s:lst.calcRes(lst) dict
 endfunction
 " }}}
 
-" FUNCTION: s:tabLineShorten(buflst, tablst) abort {{{
+" FUNCTION: popc#stl#ShortenTabsBufs(buflst, tablst, ele_extwid) abort {{{
 " @param *lst [{'index': 0, 'title': '', 'modified': 0, 'selected': 0}, ...]
-function! s:tabLineShorten(buflst, tablst) abort
+" @param ele_extwid extend width of each tab or buf element
+function! popc#stl#ShortenTabsBufs(buflst, tablst, ele_extwid) abort
     let l:buf = copy(s:lst)
     let l:tab = copy(s:lst)
 
-    call l:buf.calcLen(a:buflst)
-    call l:tab.calcLen(a:tablst)
+    call l:buf.calcLen(a:buflst, a:ele_extwid)
+    call l:tab.calcLen(a:tablst, a:ele_extwid)
 
     " columns is enough
     if l:buf.sum + l:tab.sum <= &columns
@@ -461,7 +462,7 @@ function! s:createTabLineRight(lst, ch, fn) abort
 endfunction
 " }}}
 
-" FUNCTION: popc#stl#TabLine() abort
+" FUNCTION: popc#stl#TabLine() abort {{{
 function! popc#stl#TabLine() abort
     " init buf and tab list"
     let l:buflst = []
@@ -472,7 +473,7 @@ function! popc#stl#TabLine() abort
     if s:conf.tabLineLayout.left ==# 'buffer' || s:conf.tabLineLayout.right ==# 'buffer'
         let l:buflst = popc#layer#buf#GetBufs(tabpagenr())
     endif
-    let [l:buflst, l:tablst] = s:tabLineShorten(l:buflst, l:tablst)
+    let [l:buflst, l:tablst] = popc#stl#ShortenTabsBufs(l:buflst, l:tablst, 3)
 
     " left side
     let l:lhs = '%#PopcTlBlank#%='
@@ -492,7 +493,7 @@ function! popc#stl#TabLine() abort
 
     return l:lhs . l:rhs
 endfunction
-"
+" }}}
 
 " FUNCTION: popc#stl#CreateRank(lyr, cnt, cur) {{{
 function! popc#stl#CreateRank(lyr, cnt, cur)
