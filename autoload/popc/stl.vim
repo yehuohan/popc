@@ -120,11 +120,7 @@ function! s:lst.calcRes(lst) dict
         if self.res[k] >= 1
             call add(l:out, a:lst[k])
         elseif self.res[k] <= -1
-            if has('nvim')
-                let l:maxnr = v:numbermax
-            else
-                let l:maxnr = 9223372036854775807
-            endif
+            let l:maxnr = 0xfffffff
             call add(l:out,
                 \ {
                     \ 'index': empty(l:out) ? 0 : l:maxnr,
@@ -331,11 +327,10 @@ endfunction
 " has('tablineat') {{{
 if has('tablineat')
 function! popc#stl#SwitchBuffer(minwid, clicks, button, modifiers)
-    " BUG: v:numbermax becomes -1 from statusline '@'
     if a:clicks == 1 && a:button ==# 'l'
         if a:minwid == 0
             call popc#layer#buf#SwitchBuffer('left', 0)
-        elseif a:minwid == -1
+        elseif a:minwid == 0xfffffff
             call popc#layer#buf#SwitchBuffer('right', 0)
         else
             silent! execute 'buffer ' . string(a:minwid)
@@ -344,11 +339,10 @@ function! popc#stl#SwitchBuffer(minwid, clicks, button, modifiers)
 endfunction
 
 function! popc#stl#SwitchTab(minwid, clicks, button, modifiers)
-    " BUG: v:numbermax becomes -1 from statusline '@'
     if a:clicks == 1 && a:button ==# 'l'
         if a:minwid == 0
             call popc#layer#buf#SwitchTab('left', 0)
-        elseif a:minwid == -1
+        elseif a:minwid == 0xfffffff
             call popc#layer#buf#SwitchTab('right', 0)
         else
             silent! execute string(a:minwid) . 'tabnext'
