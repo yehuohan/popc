@@ -86,7 +86,6 @@ function! s:create(layer)
         call popup_show(s:id_title)
     endif
     call setbufvar(winbufnr(s:id), '&filetype', 'Popc')
-    set guicursor+=n:block--blinkon0
     call s:dispPopup(1)
 endfunction
 " }}}
@@ -115,7 +114,6 @@ function! s:destroy()
     endif
     call popup_hide(s:id)
     call popup_hide(s:id_title)
-    set guicursor-=n:block--blinkon0
     let s:flag = 0
 endfunction
 " }}}
