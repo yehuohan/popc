@@ -87,7 +87,7 @@ function! s:destroy()
     if !(exists('s:flag') && s:flag)
         return
     endif
-    set guicursor-=n:ver100-PopcSel-blinkon0
+    set guicursor-=n:ver1-PopcSel-blinkon0
     if &timeout
         silent execute 'set timeoutlen=' . s:recover.timeoutlen
     endif
@@ -168,7 +168,7 @@ function! s:setFloat()
     call win_gotoid(s:hwin)
 
     " focus on buffer window
-    set guicursor+=n:ver100-PopcSel-blinkon0
+    set guicursor+=n:ver1-PopcSel-blinkon0
 endfunction
 " }}}
 

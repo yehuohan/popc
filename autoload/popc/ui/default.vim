@@ -84,7 +84,7 @@ function! s:destroy()
     if &timeout
         silent execute 'set timeoutlen=' . s:recover.timeoutlen
     endif
-    set guicursor-=n:ver100-PopcSel-blinkon0
+    set guicursor-=n:ver1-PopcSel-blinkon0
     bwipeout
     " before the line below, all command is executed in Popc-buffer
     " after the line below, all command is executed in recover-buffer
@@ -144,7 +144,7 @@ function! s:setBuffer()
         syntax match PopcTxt /  .*/
         syntax match PopcSel /> .*/hs=s+1
     endif
-    set guicursor+=n:ver100-PopcSel-blinkon0
+    set guicursor+=n:ver1-PopcSel-blinkon0
 
     " set statusline
     if s:conf.useStatusline
