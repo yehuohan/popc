@@ -62,7 +62,7 @@ function! s:tab.insertTab(tidx) dict
     call insert(self.pos, 0,  a:tidx)
     call insert(self.sel, 0,  a:tidx)
     call insert(self.lbl, '', a:tidx)
-    call popc#utils#Log('buf', 'add tab: %s', a:tidx)
+    call popc#utils#Log('buf', 'add tab: %d', a:tidx)
 endfunction
 " }}}
 
@@ -78,7 +78,7 @@ function! s:tab.removeTab(tidx) dict
     call remove(self.pos, a:tidx)
     call remove(self.sel, a:tidx)
     call remove(self.lbl, a:tidx)
-    call popc#utils#Log('buf', 'remove tab: %s', a:tidx)
+    call popc#utils#Log('buf', 'remove tab: %d', a:tidx)
 endfunction
 " }}}
 
@@ -158,7 +158,7 @@ function! s:tab.insertBuffer(tidx, bnr) dict
             let self.sel[a:tidx] = self.num(a:tidx) - 1
             " count reference to s:tab.cnt
             let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
-            call popc#utils#Log('buf', 'tab %s add buffer nr: %s, filetype: %s', a:tidx, l:bnr, l:ft)
+            call popc#utils#Log('buf', 'tab %d add buffer nr: %d, filetype: %s, name: %s', a:tidx, l:bnr, l:ft, b.name)
         else
             let self.sel[a:tidx] = l:bidx
         endif
@@ -191,7 +191,7 @@ function! s:tab.removeBuffer(tidx, bnr) dict
     if self.cnt[l:bnr] == 0
         call remove(self.cnt, l:bnr)
     endif
-    call popc#utils#Log('buf', 'tab %s remove buffer nr: %s, filetype: %s', a:tidx, l:bnr, getbufvar(l:bnr, '&filetype'))
+    call popc#utils#Log('buf', 'tab %d remove buffer nr: %d, filetype: %s', a:tidx, l:bnr, getbufvar(l:bnr, '&filetype'))
 endfunction
 " }}}
 
@@ -210,7 +210,7 @@ function! s:tab.checkBuffer(tidx) dict
         let l:bnr = self.idx[a:tidx][k]
         if !self.isBufferValid(l:bnr)
             if l:bnr == self.idx[a:tidx][self.sel[a:tidx]]
-                call popc#utils#Log('buf', 'backup sel from %s to %s', self.sel[a:tidx], s:selSave)
+                call popc#utils#Log('buf', 'backup sel from %d to %d', self.sel[a:tidx], s:selSave)
                 let self.sel[a:tidx] = s:selSave
             endif
             call s:tab.removeBuffer(a:tidx, l:bnr)
@@ -835,7 +835,7 @@ function! popc#layer#buf#CloseBuffer(bang)
 
     if a:bang
         call s:closeBuffer(l:tidx, l:curIdx)
-        call popc#utils#Log('buf', 'buf num: %s, cur idx: %s', s:tab.num(l:tidx), l:curIdx)
+        call popc#utils#Log('buf', 'buf num: %d, cur idx: %d', s:tab.num(l:tidx), l:curIdx)
     else
         let l:winNum = 0
         for k in range(1, winnr('$'))
@@ -846,7 +846,7 @@ function! popc#layer#buf#CloseBuffer(bang)
                 endif
             endif
         endfor
-        call popc#utils#Log('buf', 'buf num: %s, win num: %s, cur idx: %s', s:tab.num(l:tidx), l:winNum, l:curIdx)
+        call popc#utils#Log('buf', 'buf num: %d, win num: %d, cur idx: %d', s:tab.num(l:tidx), l:winNum, l:curIdx)
 
         " close buffer only there's only one 'valid win' and more than one buffer of current tab.
         " 'valid win' means one win contains a buffer that was managed by popc-buffer layer.
