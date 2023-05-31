@@ -14,7 +14,7 @@ let s:layer = {
     \ 'info' : {
         \ 'bindCom'    : 0,
         \ 'fnCom'      : [],
-        \ 'fnPop'      : '',
+        \ 'fnPop'      : v:null,
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
         \ 'userCmd'    : 0,
@@ -194,7 +194,7 @@ endfunction
 " FUNCTION: popc#popc#Popc(layername) {{{
 function! popc#popc#Popc(layername)
     if has_key(s:popc, a:layername)
-        if empty(s:popc[a:layername].info.fnPop)
+        if type(s:popc[a:layername].info.fnPop) != v:t_func
             call popc#ui#Msg('Layer ''%s'' doesn''t provide fnPop.', a:layername)
         else
             call s:popc[a:layername].info.fnPop()
