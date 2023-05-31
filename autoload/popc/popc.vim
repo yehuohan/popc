@@ -19,6 +19,7 @@ let s:layer = {
         \ 'centerText' : '',
         \ 'events'     : {
             \ 'onUiIndexChanged' : v:null,
+            \ 'onQuit'           : v:null,
             \ },
         \ },
     \ }
@@ -36,7 +37,8 @@ let s:layer = {
 "   - lastIndex: last index of item of `layer`
 "   - centerText: text about `layer` to display
 "   - events: layer events callback functions
-"       - onUiIndexChanged(index): ui index (just the lastIndex) changed
+"       - onUiIndexChanged(index): layer ui index (just the lastIndex) changed
+"       - onQuit(): quit layer
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer

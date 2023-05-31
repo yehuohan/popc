@@ -87,6 +87,9 @@ function! s:switchMode(mode)
         if s:lyr.mode !=# 'normal'
             call s:switchMode('normal')
         else
+            if type(get(s:lyr.info.events, 'onQuit')) == v:t_func
+                call s:lyr.info.events.onQuit()
+            endif
             call s:ui.api.destroy()
         endif
     else
@@ -173,6 +176,9 @@ function! popc#ui#Trigger(key, index)
     " key response priority： operation > common > layer > default
     if has_key(s:ui.maps.operation, a:key)
         call s:ui.maps.operation[a:key]()
+        if (type(get(s:lyr.info.events, 'onQuit')) == v:t_func) && (index(s:conf.operationMaps.quit, a:key) >= 0)
+            call s:lyr.info.events.onQuit()
+        endif
     elseif s:lyr.info.bindCom && has_key(s:ui.maps.common, a:key)
         call s:ui.maps.common[a:key](a:index)
     elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
