@@ -229,7 +229,9 @@ function! popc#layer#buf#Init()
                 \ 'fnCom' : ['popc#layer#buf#Pop', 'h'],
                 \ 'fnPop' : function('popc#layer#buf#Pop', ['h', 0]),
                 \ 'centerText' : s:conf.symbols.Buf,
-                \ 'userCmd' : 1,
+                \ 'events': {
+                    \ 'onUiIndexChanged': function('popc#layer#buf#OnIndexChanged'),
+                \ },
                 \ 'state' : s:STATE.Sigtab,
                 \ 'rootDir' : ''
                 \ })
@@ -242,7 +244,6 @@ function! popc#layer#buf#Init()
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
         autocmd BufNew    * let s:rootBuf=popc#utils#FindRoot()
-        autocmd User PopcUiIndexChanged call s:indexChanged(s:lyr.info.lastIndex)
     augroup END
 
     for md in s:mapsData
@@ -440,8 +441,8 @@ function! s:getIndexs(index)
 endfunction
 " }}}
 
-" FUNCTION: s:indexChanged(index) {{{
-function! s:indexChanged(index)
+" FUNCTION: popc#layer#buf#OnIndexChanged(index) {{{
+function! popc#layer#buf#OnIndexChanged(index)
     if (s:lyr.info.state ==# s:STATE.Sigtab) || (s:lyr.info.state ==# s:STATE.Alltab)
         let [l:tidx, l:bidx] = s:getIndexs(a:index)[0:1]
         let s:tab.pos[l:tidx] = l:bidx

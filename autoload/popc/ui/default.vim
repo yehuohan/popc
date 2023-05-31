@@ -236,9 +236,10 @@ function! s:operate(dir, ...)
     let s:recover.line.old = l:oldLine
     let s:recover.line.cur = l:newLine
     if s:lyr.mode == 'normal'
-        call s:lyr.setInfo('lastIndex', line('.') - 1)
-        if s:lyr.info.userCmd
-            doautocmd User PopcUiIndexChanged
+        let li = line('.') - 1
+        call s:lyr.setInfo('lastIndex', li)
+        if type(get(s:lyr.info.events, 'onUiIndexChanged')) == v:t_func
+            call s:lyr.info.events.onUiIndexChanged(li)
         endif
     endif
 endfunction

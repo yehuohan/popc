@@ -17,8 +17,10 @@ let s:layer = {
         \ 'fnPop'      : v:null,
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
-        \ 'userCmd'    : 0,
-        \ }
+        \ 'events'     : {
+            \ 'onUiIndexChanged' : v:null,
+            \ },
+        \ },
     \ }
 
 
@@ -33,7 +35,8 @@ let s:layer = {
 "   - fnPop: pop function of the `layer` in type v:t_func, which used by `popc#popc#Popc`
 "   - lastIndex: last index of item of `layer`
 "   - centerText: text about `layer` to display
-"   - userCmd: command executed when index changed(`autocmd User PopcUiIndexChanged`)
+"   - events: layer events callback functions
+"       - onUiIndexChanged(index): ui index (just the lastIndex) changed
 function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer

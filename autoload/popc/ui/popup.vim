@@ -179,8 +179,8 @@ function! s:operate(dir, ...)
 
     " do user command
     if s:lyr.mode == 'normal'
-        if s:lyr.info.userCmd
-            doautocmd User PopcUiIndexChanged
+        if type(get(s:lyr.info.events, 'onUiIndexChanged')) == v:t_func
+            call s:lyr.info.events.onUiIndexChanged(s:lyr.info.lastIndex)
         endif
     endif
 
