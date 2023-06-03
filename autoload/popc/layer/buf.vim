@@ -644,7 +644,7 @@ function! s:closeBuffer(tidx, bidx)
     endif
     if !has_key(s:tab.cnt, l:bnr)
         " delete bnr if no tab contain bnr
-        silent execute 'noautocmd bdelete! ' . string(l:bnr)
+        silent! execute 'noautocmd bdelete! ' . string(l:bnr)
     endif
     silent execute 'noautocmd' . string(l:tnr) . 'tabnext'
 
