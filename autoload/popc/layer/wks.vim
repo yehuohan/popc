@@ -132,7 +132,7 @@ function! s:makeSession(filename, root)
     let l:lines = [
             \ 'let s:session_root = popc#layer#wks#GetCurrentWks("root")',
             \ 'let s:session_tabbase = tabpagenr()',
-            \ 'let s:session_json = ' . json_encode(s:settings),
+            \ 'let s:session_json = ' . printf('''%s''', json_encode(s:settings)),
             \ 'call popc#layer#wks#SetSettings(s:session_json)',
             \ ]
     let l:root = escape(fnameescape(a:root), '\')   " <Space> must convert to '\\ '
@@ -552,7 +552,7 @@ function! popc#layer#wks#SetSettings(dict)
     if type(a:dict) == v:t_dict
         let s:settings = a:dict
     elseif type(a:dict) == v:t_string
-        let s:setting = json_decode(dict)
+        let s:settings = json_decode(a:dict)
     endif
 endfunction
 " }}}
