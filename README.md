@@ -9,17 +9,23 @@ Popc in *layer manager*, including layers of buffer, bookmark, worksapce.....
 <img alt="Buffer" src="README/buf.gif"  width=75% height=75% />
 </div>
 
+Buffer layer can keep buffers scooped under tabpages.
+
  - bookmark layer
 
 <div align="center">
 <img alt="Bookmark" src="README/bms.gif"  width=75% height=75% />
 </div>
 
+Bookmark layer can manage you own bookmark files. 
+
  - workspace layer
 
 <div align="center">
 <img alt="Workspace" src="README/wks.gif"  width=75% height=75% />
 </div>
+
+Workspace layer can save sessions, including buffer layer layout.
 
 > Support floating window of neovim(0.4.3+) and popupwin of vim (version 802+) with `let g:Popc_useFloatingWin = 1`.
 
