@@ -29,21 +29,6 @@ let s:ptr = s:conf.usePowerFont ? s:conf.selectPointer : s:conf.symbols.Ptr
 
 " FUNCTION: popc#ui#float#Init() {{{
 function! popc#ui#float#Init()
-    " init keys
-    let l:keys = popc#utils#GetKeys()
-    let s:keys = {}
-    for k in l:keys.lowercase + l:keys.uppercase + l:keys.numbers + l:keys.specials1
-        let s:keys[(k == '"') ? '\"' : k] = k
-    endfor
-    for k in l:keys.controls + l:keys.alts + l:keys.specials2
-        if k == 'C-m' || k == 'C-i'
-            " <C-m> is same as <CR>
-            " <C-i> is same as <Tab>
-            continue
-        endif
-        let s:keys[k] = '<' . k . '>'
-    endfor
-
     " namespace
     let s:nsid = nvim_create_namespace('')
     let s:nsid_title = nvim_create_namespace('')
@@ -118,12 +103,14 @@ endfunction
 " FUNCTION: s:setFloat() {{{
 function! s:setFloat()
     " title
-    let s:hbuf_title = nvim_create_buf(v:false, v:true)
-    call nvim_buf_set_option(s:hbuf_title, 'swapfile', v:false)
-    call nvim_buf_set_option(s:hbuf_title, 'buftype', 'nofile')
-    call nvim_buf_set_option(s:hbuf_title, 'bufhidden', 'delete')
-    call nvim_buf_set_option(s:hbuf_title, 'buflisted', v:false)
-    call nvim_buf_set_option(s:hbuf_title, 'filetype', 'Popc')
+    if s:hbuf_title < 0 || !nvim_buf_is_valid(s:hbuf_title)
+        let s:hbuf_title = nvim_create_buf(v:false, v:true)
+        call nvim_buf_set_option(s:hbuf_title, 'swapfile', v:false)
+        call nvim_buf_set_option(s:hbuf_title, 'buftype', 'nofile')
+        call nvim_buf_set_option(s:hbuf_title, 'bufhidden', 'hide')
+        call nvim_buf_set_option(s:hbuf_title, 'buflisted', v:false)
+        call nvim_buf_set_option(s:hbuf_title, 'filetype', 'Popc')
+    endif
     let s:hwin_title = nvim_open_win(s:hbuf_title, v:true, {
             \ 'relative': 'editor',
             \ 'width': 1,
@@ -136,23 +123,38 @@ function! s:setFloat()
     call nvim_win_set_option(s:hwin_title, 'foldenable', v:false)
 
     " buffer
-    let s:hbuf = nvim_create_buf(v:false, v:true)
-    call nvim_buf_set_option(s:hbuf, 'swapfile', v:false)
-    call nvim_buf_set_option(s:hbuf, 'buftype', 'nofile')
-    call nvim_buf_set_option(s:hbuf, 'bufhidden', 'delete')
-    call nvim_buf_set_option(s:hbuf, 'buflisted', v:false)
-    call nvim_buf_set_option(s:hbuf, 'filetype', 'Popc')
+    if s:hbuf < 0 || !nvim_buf_is_valid(s:hbuf)
+        let s:hbuf = nvim_create_buf(v:false, v:true)
+        call nvim_buf_set_option(s:hbuf, 'swapfile', v:false)
+        call nvim_buf_set_option(s:hbuf, 'buftype', 'nofile')
+        call nvim_buf_set_option(s:hbuf, 'bufhidden', 'hide')
+        call nvim_buf_set_option(s:hbuf, 'buflisted', v:false)
+        call nvim_buf_set_option(s:hbuf, 'filetype', 'Popc')
+        " buffer-key
+
+        let l:ver = !has('nvim-0.7')
+        let l:all = popc#utils#GetKeys()
+        let l:keys = {}
+        for k in l:all.lowercase + l:all.uppercase + l:all.numbers + l:all.specials1
+            let l:keys[(k == '"') ? '\"' : k] = k
+        endfor
+        for k in l:all.controls + l:all.alts + l:all.specials2
+            if l:ver && (k == 'C-m' || k == 'C-i')
+                " <C-m> == <CR>, <C-i> == <Tab>
+                continue
+            endif
+            let l:keys[k] = '<' . k . '>'
+        endfor
+        for [key, val] in items(l:keys)
+            call nvim_buf_set_keymap(s:hbuf,
+                    \ 'n',
+                    \ val, ':call popc#ui#float#Trigger("' . key . '")<CR>',
+                    \ {'noremap': v:true, 'silent': v:true})
+        endfor
+    endif
     if &timeout
         set timeoutlen=10
     endif
-
-    " buffer-key
-    for [key, val] in items(s:keys)
-        call nvim_buf_set_keymap(s:hbuf,
-                \ 'n',
-                \ val, ':call popc#ui#float#Trigger("' . key . '")<CR>',
-                \ {'noremap': v:true, 'silent': v:true})
-    endfor
 
     " buffer-window
     let s:hwin = nvim_open_win(s:hbuf, v:true, {
@@ -199,6 +201,7 @@ if a:updateall
             \ 'row': (&lines - s:ctx.hei) / 2 + 1,
             \ 'col': (&columns - s:ctx.wid) / 2,
             \ })
+    call winrestview({ 'topline': 1 })
 
     " set title
     call nvim_win_set_config(s:hwin_title, {
