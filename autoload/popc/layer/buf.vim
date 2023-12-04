@@ -134,6 +134,7 @@ function! s:tab.isBufferValid(bnr) dict
             \ (!s:conf.bufShowUnlisted && !b.listed) ||
             \ (index(s:conf.bufIgnoredType, l:ft) >= 0) ||
             \ (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
+            call popc#utils#Log('buf', 'catch a invalid buffer nr: %d, filetype: %s', a:bnr, l:ft)
             return 0
         endif
     endif
