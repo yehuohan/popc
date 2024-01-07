@@ -130,8 +130,8 @@ function! s:tab.isBufferValid(bnr) dict
     else
         let b = getbufinfo(a:bnr)[0]
         let l:ft = getbufvar(a:bnr, '&filetype')
-        if    (!b.loaded) ||
-            \ (!s:conf.bufShowUnlisted && !b.listed) ||
+        " Seemed b.loaded is not required to check
+        if    (!s:conf.bufShowUnlisted && !b.listed) ||
             \ (index(s:conf.bufIgnoredType, l:ft) >= 0) ||
             \ (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
             call popc#utils#Log('buf', 'catch a invalid buffer nr: %d, filetype: %s', a:bnr, l:ft)
@@ -244,6 +244,7 @@ function! popc#layer#buf#Init()
         autocmd TabNew    * call s:tabCallback('new')
         autocmd TabClosed * call s:tabCallback('close')
         autocmd BufEnter  * call s:bufCallback('enter')
+        autocmd VimEnter  * call s:bufCallback('vim_enter')
         autocmd BufNew    * let s:rootBuf=popc#utils#FindRoot()
     augroup END
 
@@ -315,6 +316,12 @@ function! s:bufCallback(type)
             call s:tab.insertTab(l:tidx)
         endif
         call s:tab.insertBuffer(l:tidx, bufnr('%'))
+    elseif a:type ==# 'vim_enter'
+        " Append buffers from vim start arglist
+        for l:arg in argv()[1:]
+            call popc#utils#Log('buf', 'add arg file: ' . l:arg)
+            call s:tab.insertBuffer(l:tidx, bufnr(l:arg))
+        endfor
     endif
 endfunction
 " }}}
