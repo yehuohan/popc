@@ -17,7 +17,7 @@
 `Workspace layer` is mainly for saving/loading specified vim session along with user's settings required for workspace and layout of `buffer layer`.
 
 <div align="center">
-<img alt="Workspace" src="README/wks.gif"  width=75% height=75% />
+<img alt="Workspace" src="README/wks.gif"  width=80% height=80% />
 </div>
 
 
@@ -26,7 +26,7 @@
 `Bookmark layer` is a convenient manager for bookmark files. 
 
 <div align="center">
-<img alt="Bookmark" src="README/bms.gif"  width=75% height=75% />
+<img alt="Bookmark" src="README/bms.gif"  width=80% height=80% />
 </div>
 
 
