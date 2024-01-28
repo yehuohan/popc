@@ -1,4 +1,4 @@
-*popc.txt* Popc manager for vim.
+*popc.txt* A layer based context manager for buffers, bookmarks and worksapces.
 *popc*
 
 
@@ -25,7 +25,7 @@ Table of Contents                                                     *popc-toc*
  3.1 Buffer layer                                                  |popc-buffer|
  3.2 Bookmark layer                                              |popc-bookmark|
  3.3 Workspace layer                                            |popc-workspace|
- 3.4 Common maps for layer                                         |popc-common|
+ 3.4 Common mapping for layer                                      |popc-common|
 4. Add customized layer                                         |popc-add-layer|
 5. License                                                        |popc-license|
 
@@ -33,7 +33,8 @@ Table of Contents                                                     *popc-toc*
 ================================================================================
 1. Overview                                                      *popc-overview*
 
-Popc in layer manager, including layer buffer, bookmark.....
+Popc is a layer based context manager, including layer for buffers, bookmarks
+and worksapces.....
 
                                                                       |popc-toc|
 
@@ -58,13 +59,11 @@ You should meet the requirements below:
 --------------------------------------------------------------------------------
  2.2 Configuration                                          *popc-configuration*
 
-There some options start with `g:Popc_` used to config popc. The default value
-is below:
-
+There are some options start with `g:Popc_` (like `g:Popc_jsonPath`) used to
+config popc. The default is listed below:
 >
-
     let s:conf = {
-        \ 'jsonPath'        : $HOME,
+        \ 'jsonPath'        : $HOME, " where to store popc's json configuration
         \ 'useFloatingWin'  : 0,
         \ 'symbols'         : {},
         \ 'useUnicode'      : 1,
@@ -92,7 +91,7 @@ is below:
         \ 'bufShowUnlisted' : 1,
         \ 'bufIgnoredType'  : ['Popc', 'qf'],
         \ 'wksRootPatterns' : ['.popc', '.git', '.svn', '.hg'],
-        \ 'wksSaveUnderRoot': 0,
+        \ 'wksSaveUnderRoot': 0, " Store workspace under current root or global `jsonPath`
         \ 'operationMaps'   : {
             \ 'moveCursorDown'   : ['j', 'C-j'],
             \ 'moveCursorUp'     : ['k', 'C-k'],
@@ -109,7 +108,6 @@ is below:
 <
 default symbols:
 >
-
     let s:defaultSymbols = {
         \ 'unicode' : {
             \ 'Popc'   : '❖',
@@ -149,8 +147,7 @@ default symbols:
 --------------------------------------------------------------------------------
  2.3 Statusline                                                *popc-statusline*
 
-Set your own statusline by provide a function to `g:Popc_statusLine`, and set
-`g:Popc_useStatusline` to 1 which means use the statusline for popc. Function
+Set your own statusline with `g:Popc_statusLine` and `g:Popc_useStatusline`.
 `popc#stl#StatusLineGetSegments()` can get the content for statusline.
 
 An example with airline:
@@ -166,6 +163,7 @@ An example with airline:
         call b.add_section('airline_z', l:right)
         return b.build()
     endfunction
+    let g:Popc_useStatusline=1
     let g:Popc_statusLine='StatusLine()'
 <
 
@@ -174,16 +172,14 @@ An example with airline:
 --------------------------------------------------------------------------------
  2.4 Tabline                                                      *popc-tabline*
 
-Set your own tabline by provide a function to `g:Popc_tabLine`, and set
-`g:Popc_useTabline` to 1 which means use the tabline for popc. Function
-`popc#layer#buf#GetTabs()` and `popc#layer#buf#GetBufs()` can get the
-information of tabs and buffers of each tab for tabline.
+Set your own tabline with `g:Popc_tabLine` and `g:Popc_useTabline`.
+`popc#layer#buf#GetTabs()` and `popc#layer#buf#GetBufs()` can get buffer and
+tabpages context from buffer layer.
 
 Attention: the tabline of popc is used for buffer layer. So if `useTabLine` is
-set to 1, `useLayer.Buffer` will be set to 1 automatically.
+enabled, `useLayer.Buffer` will be enabled automatically.
 
-Set your own tabline layout with `popc#stl#TabLineSetLayout()`:
-
+Switch your tabline layout with `popc#stl#TabLineSetLayout()`:
 >
     function! PopcTablineToggleLayout(lyt)
         if a:lyt == 0
@@ -203,7 +199,7 @@ Set your own tabline layout with `popc#stl#TabLineSetLayout()`:
 --------------------------------------------------------------------------------
  2.5 Highlight                                                  *popc-highlight*
 
-Customize highlight use `g:Popc_highlight` or `popc#stl#InitHighLight()`:
+Customize highlight with `g:Popc_highlight` and `popc#stl#InitHighLight()`:
 >
     let g:hi = {
         \ 'text'        : 'Pmenu',
@@ -217,8 +213,8 @@ Customize highlight use `g:Popc_highlight` or `popc#stl#InitHighLight()`:
         \ }
     call popc#stl#InitHighLight(g:hi)
 <
-`g:hi` is a dictionary to save highlight name, and `g:hi.text` and
-`g:hi.selected` is necessary at least.
+`g:hi` is a dictionary to save highlight name. `g:hi.text` and `g:hi.selected`
+are required for `g:hi` at least.
 
                                                                       |popc-toc|
 
@@ -228,26 +224,27 @@ Customize highlight use `g:Popc_highlight` or `popc#stl#InitHighLight()`:
 --------------------------------------------------------------------------------
  3.1 Buffer layer                                                  *popc-buffer*
 
-Buffer layer is used to manager all tab and buffers of each tab. In buffer layer
-you can switch to one tab or buffer easily.
+`Buffer layer` will track all buffers and tabpages automatically, and displays
+buffers scooped under tabpages at the tabline.
+In buffer layer you can switch buffers and tabpaes easily.
 
-Use the following example maps to open buffer layer:
+An example mapping to open buffer layer:
 >
     nnoremap <leader><leader>h :PopcBuffer<CR>
 <
-And use the following example maps for switching tabs and buffers, which can be
-very convenient with tabline.
+Example mappings to switch buffers and tabpages, which is very convenient with
+tabline.
 >
-    nnoremap <M-i> gT                           " switch to left tab
-    nnoremap <M-o> gt                           " switch to right tab
-    nnoremap <M-u> :PopcBufferSwitchLeft<CR>    " switch to left buffer
-    nnoremap <M-p> :PopcBufferSwitchRight<CR>   " switch to right buffer
-    nnoremap <C-u> :PopcBufferJumpPrev<CR>      " jump to prev buffer location
-    nnoremap <C-p> :PopcBufferJumpNext<CR>      " jump to next buffer location
-    cnoremap q<CR> :PopcBufferClose<CR>         " close current buffer NOT keep window when buffer number > 1 of current tab
-    cnoremap Q<CR> :PopcBufferClose!<CR>        " close current buffer but keep window
+    nnoremap <M-i> :PopcBufferSwitchTabLeft<CR>  " switch to left tab
+    nnoremap <M-o> :PopcBufferSwitchTabRight<CR> " switch to right tab
+    nnoremap <M-u> :PopcBufferSwitchLeft<CR>     " switch to left buffer
+    nnoremap <M-p> :PopcBufferSwitchRight<CR>    " switch to right buffer
+    nnoremap <C-u> :PopcBufferJumpPrev<CR>       " jump to prev buffer location
+    nnoremap <C-p> :PopcBufferJumpNext<CR>       " jump to next buffer location
+    cnoremap q<CR> :PopcBufferClose<CR>          " close current buffer NOT keep window when buffer number > 1 of current tab
+    cnoremap Q<CR> :PopcBufferClose!<CR>         " close current buffer but keep window
 <
-Search context in buffers with LeaderF(or fzf if you want):
+An example to search all buffer contents with LeaderF:
 >
     " a:type = 'sigtab' search text in buffers of current tab
     " a:type = 'alltab' search text in buffers of all tab
@@ -264,7 +261,7 @@ Search context in buffers with LeaderF(or fzf if you want):
     :call PopcBufSearch(<string-to-search>, 'sigtab')
     :call PopcBufSearch(<string-to-search>, 'alltab')
 <
-In buffer layer, press '?' to see all command help:
+In buffer layer, press '?' to see all operations:
 >
     h,a,l       | Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)
     CR,Space    | Load buffers (Space to stay in popc)
@@ -283,14 +280,14 @@ In buffer layer, press '?' to see all command help:
 --------------------------------------------------------------------------------
  3.2 Bookmark layer                                              *popc-bookmark*
 
-Bookmark layer is used to manager all bookmark file. All bookmark data is saved
-in `<jsonPath>/.popc.json`.
+`Bookmark layer` is a convenient manager for bookmark files. All bookmark layer
+data is saved to `<jsonPath>/.popc.json`.
 
-Use the following example maps to open buffer layer:
+An Example mapping to open bookmark layer:
 >
     nnoremap <leader><leader>b :PopcBookmark<CR>
 <
-Search file or context in bookmarked files with LeaderF(or fzf if you want):
+An example to search contexts of all bookmarked files with LeaderF:
 >
     function! PopcBmsSearch(pat)
         let l:files = popc#layer#bms#GetBmsFiles()
@@ -300,7 +297,7 @@ Search file or context in bookmarked files with LeaderF(or fzf if you want):
     endfunction
     nnoremap <leader>bs :call PopcBmsSearch()<CR>
 <
-In bookmark layer, press '?' to see all command help:
+In bookmark layer, press '?' to see all operations:
 >
     b                    | Pop bookmarks layer
     CR,Space,s,S,v,V,t,T | Load bookmark (CR-Open, Space-Stay, sSvV-Split, tT-Tab)
@@ -314,16 +311,17 @@ In bookmark layer, press '?' to see all command help:
 --------------------------------------------------------------------------------
  3.3 Workspace layer                                            *popc-workspace*
 
-Workspace layer is used to manager all working session. All workspace data is
-saved in `<jsonPath>/.popc.json`. Workspace session file is stored in
-`<jsonPath>/.popc/` if `wksSaveUnderRoot` is 0, or `<WorkspaceRoot>/.popc/` if
-`wksSaveUnderRoot` is 1.
+`Workspace layer` is mainly for saving/loading specified vim session along with
+user's settings required for workspace and layout of `buffer layer`.
+All workspace data is saved to `<jsonPath>/.popc.json`.
+If `wksSaveUnderRoot = 0`, workspace session files are stored under `<jsonPath>/.popc/`.
+If `wksSaveUnderRoot = 1`, workspace session files are stored under `<WorkspaceRoot>/.popc/`.
 
-Use the following example maps to open buffer layer:
+An example mapping to open workspace layer:
 >
     nnoremap <leader><leader>w :PopcWorkspace<CR>
 <
-Search file or context in workspace with LeaderF(or fzf if you want):
+An example to search files or contexts of workspace with LeaderF:
 >
     function! PopcWksSearchFile()
         let l:wks_root = popc#layer#wks#GetCurrentWks('root')
@@ -340,13 +338,13 @@ Search file or context in workspace with LeaderF(or fzf if you want):
     nnoremap <leader>wf :call PopcWksSearchFile()<CR>
     nnoremap <leader>wc :call PopcWksSearchContext()<CR>
 <
-You can save and load your own settings in dict type with autocmd:
+An example to save and load specified workspace settings in `dict` format:
 >
     let g:ws = {'settings': {'key': 'test'}}
     autocmd User PopcLayerWksSavePre call popc#layer#wks#SetSettings(g:ws.settings)
     autocmd User PopcLayerWksLoaded let g:ws.settings = popc#layer#wks#GetSettings()
 <
-In workspace layer, press '?' to see all command help:
+In workspace layer, press '?' to see all operations:
 >
     w            | Pop workspace layer
     CR,Space,t,T | Load workspace (CR-Open, Space-Stay, tT-Tab)
@@ -362,9 +360,9 @@ In workspace layer, press '?' to see all command help:
                                                                       |popc-toc|
 
 --------------------------------------------------------------------------------
- 3.4 Common maps for layer                                         *popc-common*
+ 3.4 Common mappings for layers                                         *popc-common*
 
-There are common key-maps to switch from layer to another layer:
+There are common mappings to switch from layer to another layer:
 >
     h   | Goto buffers layer
     b   | Goto bookmarks layer
@@ -375,8 +373,8 @@ There are common key-maps to switch from layer to another layer:
 ================================================================================
 4. Add customized layer                                         *popc-add-layer*
 
-All you need to do is implement one layer struct and add to s:popc. The file
-`autoload/popc/layer/exp.vim` can be a good example layer to start.
+All you need to do is implementing one `layer` struct and add to `s:popc`. The
+file `autoload/popc/layer/exp.vim` can be a good example layer to start.
 
                                                                       |popc-toc|
 
