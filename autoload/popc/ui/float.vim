@@ -167,6 +167,7 @@ function! s:setFloat()
             \ })
     call nvim_win_set_option(s:hwin, 'wrap', v:false)
     call nvim_win_set_option(s:hwin, 'foldenable', v:false)
+    call nvim_win_set_option(s:hwin, 'winhighlight', 'NormalFloat:PopcSl')
     call win_gotoid(s:hwin)
 
     " focus on buffer window
