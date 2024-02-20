@@ -56,6 +56,16 @@ let s:mapsData = [
 
 " SECTION: dictionary function {{{1
 
+" FUNCTION: s:tab.reset() dict {{{
+function! s:tab.reset() dict
+    let self.idx = []
+    let self.pos = []
+    let self.sel = []
+    let self.lbl = []
+    let self.cnt = {}
+endfunction
+" }}}
+
 " FUNCTION: s:tab.insertTab(tidx) dict {{{
 function! s:tab.insertTab(tidx) dict
     call insert(self.idx, [], a:tidx)
@@ -828,6 +838,7 @@ function! popc#layer#buf#CloseAll()
             return
         endif
     endif
+    call s:tab.reset()
 
     " close all tab and buffer
     silent! execute '0tabnew'
