@@ -218,7 +218,7 @@ if a:updateall
 else
     " set text prop
     call nvim_buf_clear_namespace(s:hbuf, s:nsid, s:recover.line.old-1, s:recover.line.old)
-    call nvim_buf_add_highlight(s:hbuf, s:nsid, 'PopcSel', s:recover.line.cur-1, 1, -1)
+    call nvim_buf_add_highlight(s:hbuf, s:nsid, 'PopcSel', s:recover.line.cur-1, 0, -1)
 
     " set title prop
     let s:ctx.title[-1] = popc#stl#CreateRank(s:lyr, s:recover.line.cnt, s:recover.line.cur)
