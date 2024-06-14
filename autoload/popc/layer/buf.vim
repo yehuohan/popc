@@ -375,7 +375,7 @@ function! s:createTabBuffer(tidx)
         let l:symTab = ' '
         if s:lyr.info.state ==# s:STATE.Alltab
             if a:tidx == tabpagenr() - 1
-                let l:symTab = (k > 0) ? '.' : s:conf.symbols.CTab
+                let l:symTab = (k > 0) ? s:conf.symbols.DTab : s:conf.symbols.CTab
             else
                 let l:symTab = (k > 0) ? ' ' : s:conf.symbols.Tab
             endif
@@ -386,9 +386,9 @@ function! s:createTabBuffer(tidx)
             for l:id in b.windows
                 if win_id2tabwin(l:id)[0] == a:tidx + 1
                     " Note that a buffer may appear in more than one window.
-                    let l:symWin = s:conf.symbols.WOut
+                    let l:symWin = s:conf.symbols.Win
                     if l:id == l:winid
-                        let l:symWin = s:conf.symbols.WIn
+                        let l:symWin = s:conf.symbols.CWin
                         break
                     endif
                 endif

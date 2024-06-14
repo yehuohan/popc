@@ -21,17 +21,10 @@ let s:lst = {}
 "   'len' : [],             " length for each item
 "   'res' : []              " result: 1 for visible, 0 for hidden, -1 for replace item
 " }
-if s:conf.usePowerFont
-    let s:spl = s:conf.separator.left
-    let s:spr = s:conf.separator.right
-    let s:sspl = s:conf.subSeparator.left
-    let s:sspr = s:conf.subSeparator.right
-else
-    let s:spl = ''
-    let s:spr = ''
-    let s:sspl = '\'
-    let s:sspr = '/'
-endif
+let s:spl = s:conf.symbols.Sep[0]
+let s:spr = s:conf.symbols.Sep[1]
+let s:sspl = s:conf.symbols.SubSep[0]
+let s:sspr = s:conf.symbols.SubSep[1]
 
 
 " SECTION: dictionary function {{{1

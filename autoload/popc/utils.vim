@@ -65,7 +65,7 @@ endfunction
 " FUNCTION: popc#utils#Num2RankStr(num) {{{
 " @param num: the num in integer format
 function! popc#utils#Num2RankStr(num)
-    if s:conf.useUnicode
+    if s:conf.useNerdSymbols
         let l:str = ''
         let l:numStr = string(a:num)
         for k in range(len(l:numStr))

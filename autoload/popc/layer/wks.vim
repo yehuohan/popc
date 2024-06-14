@@ -58,7 +58,7 @@ function! s:createBuffer()
     " get context
     for k in range(len(s:wks))
         let l:line = printf('  %s %s%s %s %s',
-                    \ (s:lyr.info.wksName ==# s:wks[k].name && s:lyr.info.rootDir ==# s:wks[k].path) ? s:conf.symbols.WIn : ' ',
+                    \ (s:lyr.info.wksName ==# s:wks[k].name && s:lyr.info.rootDir ==# s:wks[k].path) ? s:conf.symbols.CWin : ' ',
                     \ s:wks[k].name,
                     \ repeat(' ', l:max - strwidth(s:wks[k].name) - 4),
                     \ s:conf.symbols.Arr,

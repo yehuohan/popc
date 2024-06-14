@@ -6,8 +6,8 @@
 let s:conf = {
     \ 'jsonPath'             : $HOME,
     \ 'useFloatingWin'       : 0,
+    \ 'useNerdSymbols'       : 1,
     \ 'symbols'              : {},
-    \ 'useUnicode'           : 1,
     \ 'highlight' : {
         \ 'text'             : 'Pmenu',
         \ 'selected'         : 'PmenuSel',
@@ -18,16 +18,12 @@ let s:conf = {
         \ 'labelTxt'         : 'IncSearch',
         \ 'blankTxt'         : 'Normal',
         \ },
+    \ 'maxHeight'            : 0,
     \ 'useTabline'           : 1,
     \ 'useStatusline'        : 1,
-    \ 'usePowerFont'         : 0,
-    \ 'selectPointer'        : '',
-    \ 'separator'            : {'left' : '', 'right': ''},
-    \ 'subSeparator'         : {'left' : '', 'right': ''},
     \ 'statusLine'           : 'popc#stl#StatusLine()',
     \ 'tabLine'              : 'popc#stl#TabLine()',
     \ 'tabLineLayout'        : {'left' : 'buffer', 'right': 'tab'},
-    \ 'maxHeight'            : 0,
     \ 'useLayer'             : {'Buffer': 1, 'Bookmark': 1, 'Workspace': 1},
     \ 'bufShowUnlisted'      : 0,
     \ 'bufIgnoredType'       : ['Popc', 'qf'],
@@ -47,19 +43,22 @@ let s:conf = {
     \ 'enableLog' : 0
     \ }
 let s:defaultSymbols = {
-    \ 'unicode' : {
+    \ 'nerd' : {
         \ 'Popc'   : '❖',
-        \ 'Buf'    : '⌂',
-        \ 'Wks'    : '♥',
-        \ 'Bms'    : '★',
-        \ 'CTab'   : '●',
-        \ 'Tab'    : '○',
-        \ 'WIn'    : '▪',
-        \ 'WOut'   : '▫',
+        \ 'Buf'    : '',
+        \ 'Wks'    : '',
+        \ 'Bms'    : '',
+        \ 'CTab'   : '󰧟',
+        \ 'DTab'   : '',
+        \ 'Tab'    : '',
+        \ 'CWin'   : '▪',
+        \ 'Win'    : '▫',
         \ 'Rank'   : '≡',
-        \ 'Arr'    : '→',
+        \ 'Arr'    : '󰜴',
         \ 'Dots'   : '…',
-        \ 'Ptr'    : '►',
+        \ 'Ptr'    : '',
+        \ 'Sep'    : ['', ''],
+        \ 'SubSep' : ['', ''],
         \ 'Nums'   : ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
         \ },
     \ 'ascii' : {
@@ -69,12 +68,15 @@ let s:defaultSymbols = {
         \ 'Bms'    : '$',
         \ 'Tab'    : '~',
         \ 'CTab'   : '%',
-        \ 'WIn'    : '*',
-        \ 'WOut'   : '-',
+        \ 'DTab'   : '.',
+        \ 'CWin'   : '*',
+        \ 'Win'    : '-',
         \ 'Rank'   : '=',
         \ 'Arr'    : '->',
         \ 'Dots'   : '...',
         \ 'Ptr'    : '>',
+        \ 'Sep'    : ['', ''],
+        \ 'SubSep' : ['\', '/'],
         \ 'Nums'   : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
         \ },
     \ }
@@ -183,6 +185,12 @@ function! s:initConfig()
         let g:Popc_wksSaveUnderRoot = g:Popc_useLayerPath
         call add(l:msg, 'Popc_useLayerPath is deprecated, and use Popc_wksSaveUnderRoot instead.')
     endif
+    if exists('g:Popc_useUnicode') || exists('g:Popc_usePowerFont')
+        call add(l:msg, 'Popc_useUnicode and Popc_usePowerFont are deprecated, and use Popc_useNerdSymbols instead.')
+    endif
+    if exists('g:Popc_selectPointer') || exists('g:Popc_separator') || exists('g:Popc_subSeparator')
+        call add(l:msg, 'Popc_selectPointer, Popc_separator and Popc_subSeparator are deprecated, and use Popc_symbols instead.')
+    endif
     if !empty(l:msg)
         echohl WarningMsg
         echomsg '[Popc] Deprecated configs:'
@@ -193,9 +201,8 @@ function! s:initConfig()
     endif
 
     " set confiuration's value and list
-    for k in ['jsonPath', 'useFloatingWin', 'useUnicode',
-            \ 'useTabline', 'useStatusline', 'usePowerFont', 'selectPointer',
-            \ 'statusLine', 'tabLine', 'maxHeight',
+    for k in ['jsonPath', 'useFloatingWin', 'useNerdSymbols', 'maxHeight',
+            \ 'useTabline', 'useStatusline', 'statusLine', 'tabLine',
             \ 'bufShowUnlisted', 'bufIgnoredType',
             \ 'wksRootPatterns', 'wksSaveUnderRoot',
             \ 'enableLog']
@@ -205,9 +212,9 @@ function! s:initConfig()
     endfor
 
     " set confiuration's dictionary and list
-    let s:conf.symbols = deepcopy(s:conf.useUnicode ? s:defaultSymbols.unicode : s:defaultSymbols.ascii)
+    let s:conf.symbols = deepcopy(s:conf.useNerdSymbols ? s:defaultSymbols.nerd : s:defaultSymbols.ascii)
     unlet s:defaultSymbols
-    for k in ['symbols', 'highlight', 'separator', 'subSeparator', 'tabLineLayout',
+    for k in ['symbols', 'highlight', 'tabLineLayout',
             \ 'useLayer', 'operationMaps']
         if exists('g:Popc_' . k)
             call extend(s:conf[k], g:{'Popc_' . k}, 'force')
