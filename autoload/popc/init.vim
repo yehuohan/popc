@@ -4,7 +4,7 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'jsonPath'             : $HOME,
+    \ 'jsonPath'             : has('nvim') ? stdpath('data'): $HOME,
     \ 'useFloatingWin'       : 0,
     \ 'useNerdSymbols'       : 1,
     \ 'symbols'              : {},
