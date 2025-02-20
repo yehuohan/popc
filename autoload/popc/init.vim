@@ -44,7 +44,7 @@ let s:conf = {
     \ }
 let s:defaultSymbols = {
     \ 'nerd' : {
-        \ 'Popc'   : '❖',
+        \ 'Popc'   : '󰯙',
         \ 'Buf'    : '',
         \ 'Wks'    : '',
         \ 'Bms'    : '',

@@ -106,7 +106,7 @@ default symbols:
 >
     let s:defaultSymbols = {
         \ 'unicode' : {
-            \ 'Popc'   : '❖',
+            \ 'Popc'   : '󰯙',
             \ 'Buf'    : '',
             \ 'Wks'    : '',
             \ 'Bms'    : '',
