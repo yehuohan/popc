@@ -218,7 +218,7 @@ function! s:saveWorkspace(name, root)
         call writefile(readfile(l:filename), l:filename . '.ori')
     endif
     call s:makeSession(l:filename, a:root)
-    call popc#utils#Log('wks', 'save workspace: %s root: %s', l:filename, a:root)
+    call popc#utils#Log('wks', 'save workspace: %s, root: %s', l:filename, a:root)
 endfunction
 " }}}
 

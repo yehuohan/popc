@@ -12,21 +12,21 @@ let s:tab = {
     \ 'sel' : [],
     \ 'lbl' : [],
     \ 'cnt' : {},
-    \ }                 " only manager Popc's internal tab-buffers data instead of
-                        " operateing(edit,open,close...) vim's tab-buffers actually
+    \ }
 " {{{ s:tab format
+" s:tab is a manager for Popc's internal tab-buffers data instead of vim's actual tab-buffers
 "{
-"   'idx' : [                           " all tas's bufnr index, use in self.idx[k]
-"       [nr3, nr6, ...],                " nr is number type
+"   'idx' : [                       " all tas's bufnr index, use in self.idx[k]
+"       [nr3, nr6, ...],            " nr is number type
 "       [nr6, nr9, ...],
 "       ...
 "   ],
-"   'pos' : [1, 0, ...]                 " current bufnr index position of each tab, use in self.idx[i][self.pos[k]]
-"   'sel' : [0, 1, ...]                 " current selected bufnr index for tabline selected attribute, use in self.idx[i][self.sel[k]]
-"   'lbl' : ['tl1', 'tl2', ...],        " all tab's label
-"   'cnt' :                             " reference counter of each bufnr
+"   'pos' : [1, 0, ...]             " current bufnr index position of each tab, use in self.idx[i][self.pos[k]]
+"   'sel' : [0, 1, ...]             " current selected bufnr index for tabline selected attribute, use in self.idx[i][self.sel[k]]
+"   'lbl' : ['tl1', 'tl2', ...],    " all tab's label
+"   'cnt' :                         " reference counter of each bufnr, counter = 0 means buffer is closed but not wiped out
 "   {
-"       nr3 : 1,                        " use nr as key of dict
+"       nr3 : 1,                    " use nr as key of dict
 "       nr6 : 2,
 "       nr9 : 1,
 "       ...
@@ -79,9 +79,8 @@ endfunction
 " FUNCTION: s:tab.removeTab(tidx) dict {{{
 function! s:tab.removeTab(tidx) dict
     for k in self.idx[a:tidx]
-        let self.cnt[k] -= 1
-        if self.cnt[k] == 0
-            call remove(self.cnt, k)
+        if self.cnt[k] > 0
+            let self.cnt[k] -= 1
         endif
     endfor
     call remove(self.idx, a:tidx)
@@ -141,10 +140,10 @@ function! s:tab.isBufferValid(bnr) dict
         let b = getbufinfo(a:bnr)[0]
         let l:ft = getbufvar(a:bnr, '&filetype')
         " Seemed b.loaded is not required to check
-        if    (!s:conf.bufShowUnlisted && !b.listed) ||
+        if    (!s:conf.bufShowUnlisted && get(self.cnt, a:bnr, -1) < 0 && !b.listed) ||
             \ (index(s:conf.bufIgnoredType, l:ft) >= 0) ||
-            \ (!has('nvim') && has_key(b, 'popups') && !empty(b.popups))
-            call popc#utils#Log('buf', 'catch a invalid buffer nr: %d, filetype: %s', a:bnr, l:ft)
+            \ (!has('nvim') && !empty(get(b, 'popups', [])))
+            call popc#utils#Log('buf', 'catch an invalid bufnr: %d, listed: %s, filetype: %s', a:bnr, b.listed, l:ft)
             return 0
         endif
     endif
@@ -158,7 +157,6 @@ function! s:tab.insertBuffer(tidx, bnr) dict
 
     if self.isBufferValid(l:bnr)
         let b = getbufinfo(l:bnr)[0]
-        let l:ft = getbufvar(l:bnr, '&filetype')
 
         " insert buffer
         let l:bidx = index(self.idx[a:tidx], l:bnr)
@@ -168,10 +166,12 @@ function! s:tab.insertBuffer(tidx, bnr) dict
             let s:selSave = self.sel[a:tidx]
             let self.sel[a:tidx] = self.num(a:tidx) - 1
             " count reference to s:tab.cnt
-            let self.cnt[l:bnr] = has_key(self.cnt, l:bnr) ? self.cnt[l:bnr] + 1 : 1
-            call popc#utils#Log('buf', 'tab %d add buffer nr: %d, filetype: %s, name: %s', a:tidx, l:bnr, l:ft, b.name)
+            let self.cnt[l:bnr] = get(self.cnt, l:bnr, 0) + 1
+            call popc#utils#Log('buf', 'tab[%d] append a bufnr: %d, name: %s', a:tidx, l:bnr, b.name)
         else
             let self.sel[a:tidx] = l:bidx
+            let self.cnt[l:bnr] = get(self.cnt, l:bnr, 1)
+            call popc#utils#Log('buf', 'tab[%d] switch to bufnr: %d, name: %s', a:tidx, l:bnr, b.name)
         endif
 
         " set tabel to s:tab.lbl
@@ -198,11 +198,10 @@ function! s:tab.removeBuffer(tidx, bnr) dict
         let self.sel[a:tidx] = self.num(a:tidx) - 1
     endif
     " s:tab.cnt
-    let self.cnt[l:bnr] -= 1
-    if self.cnt[l:bnr] == 0
-        call remove(self.cnt, l:bnr)
+    if get(self.cnt, l:bnr, 0) > 0
+        let self.cnt[l:bnr] -= 1
     endif
-    call popc#utils#Log('buf', 'tab %d remove buffer nr: %d, filetype: %s', a:tidx, l:bnr, getbufvar(l:bnr, '&filetype'))
+    call popc#utils#Log('buf', 'tab[%d] remove bufnr: %d, filetype: %s', a:tidx, l:bnr, getbufvar(l:bnr, '&filetype'))
 endfunction
 " }}}
 
@@ -251,11 +250,12 @@ function! popc#layer#buf#Init()
 
     augroup PopcLayerBufInit
         autocmd!
-        autocmd TabNew    * call s:tabCallback('new')
-        autocmd TabClosed * call s:tabCallback('close')
-        autocmd BufEnter  * call s:bufCallback('enter')
-        autocmd VimEnter  * call s:bufCallback('vim_enter')
-        autocmd BufNew    * let s:rootBuf=popc#utils#FindRoot()
+        autocmd TabNew     * call s:tabCallback('new')
+        autocmd TabClosed  * call s:tabCallback('close')
+        autocmd BufEnter   * call s:bufCallback('enter')
+        autocmd BufWipeout * call s:bufCallback('wipeout')
+        autocmd VimEnter   * call s:bufCallback('vim_enter')
+        autocmd BufNew     * let s:rootBuf=popc#utils#FindRoot()
     augroup END
 
     for md in s:mapsData
@@ -290,6 +290,7 @@ endfunction
 
 " FUNCTION: s:tabCallback(type) {{{
 function! s:tabCallback(type)
+    call popc#utils#Log('buf', 'tabCallback: ' . a:type)
     let l:tidx = tabpagenr() - 1
     if a:type ==# 'new'
         " all tab will be added from here
@@ -310,7 +311,7 @@ function! s:tabCallback(type)
         let l:bnrs = copy(s:tab.idx[l:tidx])
         call s:tab.removeTab(l:tidx)
         for bnr in l:bnrs
-            if !has_key(s:tab.cnt, bnr) && !getbufvar(bnr, "&modified")
+            if get(s:tab.cnt, bnr, 0) <= 0 && !getbufvar(bnr, "&modified")
                 silent execute 'noautocmd bdelete! ' . bnr
             endif
         endfor
@@ -320,12 +321,19 @@ endfunction
 
 " FUNCTION: s:bufCallback(type) {{{
 function! s:bufCallback(type)
+    call popc#utils#Log('buf', 'bufCallback: ' . a:type)
     let l:tidx = tabpagenr() - 1
     if a:type ==# 'enter'
         if !s:tab.num()
             call s:tab.insertTab(l:tidx)
         endif
         call s:tab.insertBuffer(l:tidx, bufnr('%'))
+    elseif a:type ==# 'wipeout'
+        let l:bnr = expand('<abuf>')
+        if has_key(s:tab.cnt, l:bnr)
+            call remove(s:tab.cnt, l:bnr)
+        endif
+        call popc#utils#Log('buf', 'wipeout bufnr: %s, afile: %s', l:bnr, expand('<afile>'))
     elseif a:type ==# 'vim_enter'
         " Append buffers from vim start arglist
         for l:arg in argv()[1:]
@@ -660,7 +668,7 @@ function! s:closeBuffer(tidx, bidx)
             silent execute 'buffer ' . s:tab.idx[a:tidx][l:newbidx]
         endif
     endif
-    if !has_key(s:tab.cnt, l:bnr)
+    if get(s:tab.cnt, l:bnr, 0) <= 0
         " delete bnr if no tab contain bnr
         silent! execute 'noautocmd bdelete! ' . string(l:bnr)
     endif
