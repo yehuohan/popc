@@ -148,7 +148,7 @@ function! s:initJson()
             autocmd!
             autocmd VimLeave * call popc#utils#Log('init', 'vim was exited') | call popc#utils#WriteLog()
         augroup END
-        call popc#utils#RegDbg('log', 'popc#utils#DbgDispLog', 'all')
+        call popc#utils#RegDbg('log', 'popc#utils#LogDebugger', 'all')
     endif
 endfunction
 " }}}

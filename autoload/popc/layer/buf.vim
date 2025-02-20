@@ -246,7 +246,7 @@ function! popc#layer#buf#Init()
                 \ 'state' : s:STATE.Sigtab,
                 \ 'rootDir' : ''
                 \ })
-    call popc#utils#RegDbg('buf', 'popc#layer#buf#DbgInfo', '')
+    call popc#utils#RegDbg('buf', 'popc#layer#buf#Debugger', '')
     call popc#utils#Log('buf', 'buffer layer was enabled')
 
     augroup PopcLayerBufInit
@@ -1033,8 +1033,8 @@ function! popc#layer#buf#GetFiles(type)
 endfunction
 " }}}
 
-" FUNCTION: popc#layer#buf#DbgInfo(type) {{{
-function! popc#layer#buf#DbgInfo(type)
+" FUNCTION: popc#layer#buf#Debugger(type) {{{
+function! popc#layer#buf#Debugger(type)
     let l:info = []
     if empty(a:type)
         call add(l:info, 'idx: ' . string(s:tab.idx))

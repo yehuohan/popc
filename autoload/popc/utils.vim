@@ -239,8 +239,8 @@ function! popc#utils#RegDbg(tag, func, args)
 endfunction
 " }}}
 
-" FUNCTION: popc#utils#DbgDispLog(type) {{{
-function! popc#utils#DbgDispLog(type)
+" FUNCTION: popc#utils#LogDebugger(type) {{{
+function! popc#utils#LogDebugger(type)
 if s:conf.enableLog
     let l:log = []
     if a:type == 'all'
@@ -254,7 +254,7 @@ endfunction
 " FUNCTION: popc#utils#Log(tag, str, [args]) {{{
 function! popc#utils#Log(tag, str, ...)
 if s:conf.enableLog
-    let l:line = printf("[%s] %s", a:tag, a:str)
+    let l:line = printf("[%s][%s] %s", strftime('%M:%S'), a:tag, a:str)
     if a:0 > 0
         let l:line = call('printf', [l:line] + a:000)
     endif
