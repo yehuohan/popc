@@ -254,7 +254,11 @@ function! popc#layer#buf#Init()
         autocmd TabClosed  * call s:tabCallback('close')
         autocmd BufEnter   * call s:bufCallback('enter')
         autocmd BufWipeout * call s:bufCallback('wipeout')
-        autocmd VimEnter   * call s:bufCallback('vim_enter')
+        if v:vim_did_enter
+            call s:bufCallback('vim_enter')
+        else
+            autocmd VimEnter * call s:bufCallback('vim_enter')
+        endif
         autocmd BufNew     * let s:rootBuf=popc#utils#FindRoot()
     augroup END
 
@@ -335,8 +339,11 @@ function! s:bufCallback(type)
         endif
         call popc#utils#Log('buf', 'wipeout bufnr: %s, afile: %s', l:bnr, expand('<afile>'))
     elseif a:type ==# 'vim_enter'
+        if !s:tab.num()
+            call s:tab.insertTab(l:tidx)
+        endif
         " Append buffers from vim start arglist
-        for l:arg in argv()[1:]
+        for l:arg in argv()
             call popc#utils#Log('buf', 'add arg file: ' . l:arg)
             call s:tab.insertBuffer(l:tidx, bufnr(l:arg))
         endfor
