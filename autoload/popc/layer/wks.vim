@@ -26,9 +26,9 @@ let s:mapsData = [
 " FUNCTION: popc#layer#wks#Init() {{{
 function! popc#layer#wks#Init()
     let s:lyr = s:popc.addLayer('Workspace', {
-                \ 'bindCom' : 1,
-                \ 'fnCom' : ['popc#layer#wks#Pop', 'w'],
-                \ 'fnPop' : function('popc#layer#wks#Pop'),
+                \ 'func' : 'popc#layer#wks#Pop',
+                \ 'ckey' : 'w',
+                \ 'args' : [],
                 \ 'sort' : 'path',
                 \ 'wksName' : '',
                 \ 'rootDir' : '',
@@ -67,7 +67,7 @@ function! s:createBuffer()
         call add(l:text, l:line)
     endfor
 
-    call s:lyr.setBufs(v:t_list, l:text)
+    call s:lyr.setBufs(l:text)
 endfunction
 " }}}
 
@@ -131,7 +131,7 @@ endfunction
 function! s:makeSession(filename, root)
     let l:lines = [
             \ 'let s:session_root = popc#layer#wks#GetCurrentWks("root")',
-            \ 'let s:session_tabbase = tabpagenr()',
+            \ 'let s:session_tidx = tabpagenr()',
             \ 'let s:session_json = ' . printf('''%s''', json_encode(s:settings)),
             \ 'call popc#layer#wks#SetSettings(s:session_json)',
             \ ]
@@ -169,11 +169,11 @@ function! s:makeSession(filename, root)
             let l:tabnr += 1
         elseif l:cmd =~# '^tabrewind'
             " start from base tabnr
-            call add(l:lines, 'exe "tabnext " . s:session_tabbase')
+            call add(l:lines, 'exe "tabnext " . s:session_tidx')
         elseif l:cmd =~# '^tabnext \d\+'
             " back to init tab
             let l:inc = string(str2nr(split(l:cmd)[-1]) - 1)
-            call add(l:lines, 'exe "tabnext " . string(s:session_tabbase + ' . l:inc . ')')
+            call add(l:lines, 'exe "tabnext " . string(s:session_tidx + ' . l:inc . ')')
         elseif l:cmd =~# 'win_findbuf(s:wipebuf)' || l:cmd =~# 'exists(''s:wipebuf'')'
             " only remove no name buffer
             call add(l:lines, 'if exists(''s:wipebuf'') && empty(bufname(s:wipebuf))')

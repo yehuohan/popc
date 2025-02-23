@@ -20,9 +20,9 @@ let s:mapsData = [
 " FUNCTION: popc#layer#bms#Init() {{{
 function! popc#layer#bms#Init()
     let s:lyr = s:popc.addLayer('Bookmark', {
-                \ 'bindCom' : 1,
-                \ 'fnCom' : ['popc#layer#bms#Pop', 'b'],
-                \ 'fnPop' : function('popc#layer#bms#Pop'),
+                \ 'func' : 'popc#layer#bms#Pop',
+                \ 'ckey' : 'b',
+                \ 'args' : [],
                 \ 'sort' : 'path',
                 \ 'centerText' : s:conf.symbols.Bms
                 \ })
@@ -61,7 +61,7 @@ function! s:createBuffer()
         call add(l:text, l:line)
     endfor
 
-    call s:lyr.setBufs(v:t_list, l:text)
+    call s:lyr.setBufs(l:text)
 endfunction
 " }}}
 

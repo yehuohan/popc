@@ -235,9 +235,9 @@ endfunction
 " FUNCTION: popc#layer#buf#Init() {{{
 function! popc#layer#buf#Init()
     let s:lyr = s:popc.addLayer('Buffer', {
-                \ 'bindCom' : 1,
-                \ 'fnCom' : ['popc#layer#buf#Pop', 'h'],
-                \ 'fnPop' : function('popc#layer#buf#Pop', ['h', 0]),
+                \ 'func' : 'popc#layer#buf#Pop',
+                \ 'ckey' : 'h',
+                \ 'args' : ['h', 0],
                 \ 'centerText' : s:conf.symbols.Buf,
                 \ 'events': {
                     \ 'onUiIndexChanged': function('popc#layer#buf#OnIndexChanged'),
@@ -491,7 +491,7 @@ endfunction
 " FUNCTION: s:pop(state) {{{
 function! s:pop(state)
     call s:lyr.setInfo('state', a:state)
-    call s:lyr.setBufs(v:t_func, funcref('s:createBuffer'))
+    call s:lyr.setBufs(funcref('s:createBuffer'))
     " set lastIndex
     if a:state ==# s:STATE.Sigtab
         call s:lyr.setInfo('lastIndex', s:tab.pos[tabpagenr() - 1])

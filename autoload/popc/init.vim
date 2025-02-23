@@ -175,31 +175,6 @@ endfunction
 
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
-    " check deprecated configs
-    let l:msg = []
-    if exists('g:Popc_useLayerRoots')
-        let g:Popc_wksRootPatterns = g:Popc_useLayerRoots
-        call add(l:msg, 'Popc_useLayerRoots is deprecated, and use Popc_wksRootPatterns instead.')
-    endif
-    if exists('g:Popc_useLayerPath')
-        let g:Popc_wksSaveUnderRoot = g:Popc_useLayerPath
-        call add(l:msg, 'Popc_useLayerPath is deprecated, and use Popc_wksSaveUnderRoot instead.')
-    endif
-    if exists('g:Popc_useUnicode') || exists('g:Popc_usePowerFont')
-        call add(l:msg, 'Popc_useUnicode and Popc_usePowerFont are deprecated, and use Popc_useNerdSymbols instead.')
-    endif
-    if exists('g:Popc_selectPointer') || exists('g:Popc_separator') || exists('g:Popc_subSeparator')
-        call add(l:msg, 'Popc_selectPointer, Popc_separator and Popc_subSeparator are deprecated, and use Popc_symbols instead.')
-    endif
-    if !empty(l:msg)
-        echohl WarningMsg
-        echomsg '[Popc] Deprecated configs:'
-        for msg in l:msg
-            echomsg msg
-        endfor
-        echohl None
-    endif
-
     " set confiuration's value and list
     for k in ['jsonPath', 'useFloatingWin', 'useNerdSymbols', 'maxHeight',
             \ 'useTabline', 'useStatusline', 'statusLine', 'tabLine',

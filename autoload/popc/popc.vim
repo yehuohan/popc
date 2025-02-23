@@ -10,14 +10,14 @@ let s:layer = {
     \ 'mode' : 'normal',
     \ 'maps' : {},
     \ 'help' : [],
-    \ 'bufs' : {'typ': v:t_list, 'fnc': '', 'txt': []},
+    \ 'bufs' : v:null,
     \ 'info' : {
-        \ 'bindCom'    : 0,
-        \ 'fnCom'      : [],
-        \ 'fnPop'      : v:null,
+        \ 'func' : '',
+        \ 'ckey'  : '',
+        \ 'args' : [],
         \ 'lastIndex'  : 0,
         \ 'centerText' : '',
-        \ 'events'     : {
+        \ 'events': {
             \ 'onUiIndexChanged' : v:null,
             \ 'onQuit'           : v:null,
             \ },
@@ -29,11 +29,10 @@ let s:layer = {
 
 " FUNCTION: s:popc.addLayer(layer, ...) dict {{{
 " @param layer: layer name as index of s:popc
-" @param(a:1): v:t_number or v:t_bool for value decide bind to common maps or not
-"              v:t_dict for info value with keys bellow
-"   - bindCom: the `layer` should response to common mappings or not
-"   - fnCom: common mapping of the `layer` in format ['funcName', 'key'], which used by `popc#ui#AddComMap`
-"   - fnPop: pop function of the `layer` in type v:t_func, which used by `popc#popc#Popc`
+" @param info(a:1):
+"   - func: the pop function name
+"   - ckey: used by `popc#ui#AddComMap` to jump among layers
+"   - args: used by `popc#popc#Popc` to pop layer
 "   - lastIndex: last index of item of `layer`
 "   - centerText: text about `layer` to display
 "   - events: layer events callback functions
@@ -43,14 +42,10 @@ function! s:popc.addLayer(layer, ...) dict
     let self[a:layer] = deepcopy(s:layer)
     let self[a:layer].name = a:layer
     if a:0 > 0
-        if type(a:1) == v:t_number || type(a:1) == v:t_bool
-            call self[a:layer].setInfo('bindCom', a:1)
-        elseif type(a:1) == v:t_dict
-            call extend(self[a:layer].info, a:1, 'force')
-        endif
+        call extend(self[a:layer].info, a:1, 'force')
     endif
-    if !empty(self[a:layer].info.fnCom)
-        call popc#ui#AddComMap(self[a:layer].info.fnCom[0], self[a:layer].info.fnCom[1])
+    if !empty(self[a:layer].info.ckey)
+        call popc#ui#AddComMap(self[a:layer].info.func, self[a:layer].info.ckey)
     endif
     return self[a:layer]
 endfunctio
@@ -123,16 +118,10 @@ function! s:layer.createHelp() dict
 endfunction
 " }}}
 
-" FUNCTION: s:layer.setBufs(type, val) dict {{{
-" @type: v:t_func or v:t_list
-" @val: funcref for v:t_func or txt-list for v:t_list
-function! s:layer.setBufs(type, val) dict
-    let self.bufs.typ = a:type
-    if self.bufs.typ == v:t_func
-        let self.bufs.fnc = a:val
-    elseif self.bufs.typ == v:t_list
-        let self.bufs.txt = a:val
-    endif
+" FUNCTION: s:layer.setBufs(val) dict {{{
+" @val: funcref or txt-list
+function! s:layer.setBufs(val) dict
+    let self.bufs = a:val
 endfunction
 " }}}
 
@@ -141,10 +130,10 @@ function! s:layer.getBufs() dict
     if self.mode == 'help'
         return self.createHelp()
     else
-        if self.bufs.typ == v:t_func
-            let l:txt = self.bufs.fnc()
-        elseif self.bufs.typ == v:t_list
-            let l:txt = self.bufs.txt
+        if type(self.bufs) == v:t_func
+            let l:txt = self.bufs()
+        elseif type(self.bufs) == v:t_list
+            let l:txt = self.bufs
         endif
         if empty(l:txt)
             call add(l:txt, '  Nothing to pop.')
@@ -199,10 +188,11 @@ endfunction
 " FUNCTION: popc#popc#Popc(layername) {{{
 function! popc#popc#Popc(layername)
     if has_key(s:popc, a:layername)
-        if type(s:popc[a:layername].info.fnPop) != v:t_func
+        let l:info = s:popc[a:layername].info
+        if empty(l:info.func)
             call popc#ui#Msg('Layer ''%s'' doesn''t provide fnPop.', a:layername)
         else
-            call s:popc[a:layername].info.fnPop()
+            call call(l:info.func, l:info.args)
         endif
     else
         call popc#ui#Msg('Popc doest''t contain layer ''%s''.', a:layername)

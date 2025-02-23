@@ -179,7 +179,7 @@ function! popc#ui#Trigger(key, index)
         if (type(get(s:lyr.info.events, 'onQuit')) == v:t_func) && (index(s:conf.operationMaps.quit, a:key) >= 0)
             call s:lyr.info.events.onQuit()
         endif
-    elseif s:lyr.info.bindCom && has_key(s:ui.maps.common, a:key)
+    elseif !empty(s:lyr.info.ckey) && has_key(s:ui.maps.common, a:key)
         call s:ui.maps.common[a:key](a:index)
     elseif has_key(s:lyr.maps, a:key) && s:lyr.mode == 'normal'
         call s:lyr.maps[a:key](a:index)

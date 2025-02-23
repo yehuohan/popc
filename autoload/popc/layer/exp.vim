@@ -30,9 +30,9 @@ let s:mapsData = [
 " FUNCTION: popc#layer#exp#Init() {{{
 function! popc#layer#exp#Init()
     let s:lyr = s:popc.addLayer('Example', {
-                \ 'bindCom' : 1,
-                \ 'fnCom' : ['popc#layer#exp#Pop', 'p'],
-                \ 'fnPop' : function('popc#layer#exp#Pop'),
+                \ 'func' : 'popc#layer#exp#Pop',
+                \ 'ckey' : 'p',
+                \ 'args' : [],
                 \ 'centerText' : 'This Is Example Layer'
                 \ })
 
@@ -53,7 +53,7 @@ function! s:createBuffer()
         call add(l:text, l:line)
     endfor
 
-    call s:lyr.setBufs(v:t_list, l:text)
+    call s:lyr.setBufs(l:text)
 endfunction
 " }}}
 
