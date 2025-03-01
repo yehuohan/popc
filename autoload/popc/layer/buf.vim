@@ -578,7 +578,7 @@ function! popc#layer#buf#Split(key, index)
 
     call popc#ui#Destroy()
     if s:lyr.info.state ==# s:STATE.Listab
-        call popc#ui#Msg('Can NOT split or tabedit in tab-list.')
+        call popc#ui#Msg('Can not split or tabedit in tab-list.')
         call s:pop(s:lyr.info.state)
     else
         if a:key ==? 's'
@@ -767,7 +767,7 @@ function! popc#layer#buf#Move(key, index)
         if (s:tab.num() < 2)
             call popc#ui#Msg('Number of tab < 2.')
         elseif (a:key ==# 'I' && l:tidx == 0) || (a:key ==# 'O' && l:tidx == s:tab.num() - 1)
-            call popc#ui#Msg('Can NOT swap the boundary tab.')
+            call popc#ui#Msg('Can not swap the boundary tab.')
         else
             call popc#ui#Destroy()
             if a:key ==# 'I'
@@ -863,7 +863,7 @@ endfunction
 " }}}
 
 " FUNCTION: popc#layer#buf#CloseBuffer(bang) {{{
-" @param bang 0:NOT keep window 1:keep window
+" @param bang 0:not keep window 1:keep window
 function! popc#layer#buf#CloseBuffer(bang)
     let l:tidx = tabpagenr() - 1
     let l:curIdx = index(s:tab.idx[l:tidx], bufnr('%'))

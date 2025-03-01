@@ -218,7 +218,7 @@ function! popc#utils#Dbg(...)
             let l:args = (a:0 > 1) ? a:2 : s:dbg[a:1].args
             let l:str .= printf("%s:\n%s", a:1, "\t" . join(function(l:func)(l:args), "\n\t"))
         else
-            let l:str .= printf("'%s' is NOT one of the registered tag:\n%s", a:1, "\t" . join(keys(s:dbg), "\n\t"))
+            let l:str .= printf("'%s' is not one of the registered tag:\n%s", a:1, "\t" . join(keys(s:dbg), "\n\t"))
         endif
     else
         for [key, tag] in items(s:dbg)

@@ -314,7 +314,7 @@ function! popc#layer#wks#Load(key, index)
     let l:name = s:wks[a:index].name
     let l:path = s:wks[a:index].path
 
-    if !isdirectory(l:path) && !popc#ui#Confirm('The root ''' . l:path . ''' is NOT existed, try load workspace anyway?')
+    if !isdirectory(l:path) && !popc#ui#Confirm('The root ''' . l:path . ''' is not existed, try load workspace anyway?')
         return
     endif
 
@@ -356,7 +356,7 @@ function! popc#layer#wks#Add(key, index)
         return
     endif
     if !isdirectory(l:path)
-        call popc#ui#Msg('Root ''' . l:path . ''' is NOT exists.')
+        call popc#ui#Msg('Root ''' . l:path . ''' is not exists.')
         return
     endif
     let l:path = s:useSlash(fnamemodify(l:path, ':p'), 1)
@@ -385,13 +385,13 @@ function! popc#layer#wks#Save(key, index)
     let l:path = s:wks[a:index].path
 
     if !isdirectory(l:path)
-        call popc#ui#Msg('Root ''' . l:path . ''' is NOT exists.')
+        call popc#ui#Msg('Root ''' . l:path . ''' is not exists.')
         return
     endif
 
     if a:key ==# 's'
         if l:name !=# s:lyr.info.wksName || l:path !=# s:lyr.info.rootDir
-            call popc#ui#Msg('Can NOT override with the workspace: %s [%s]', s:lyr.info.wksName, s:lyr.info.rootDir)
+            call popc#ui#Msg('Can not override with the workspace: %s [%s]', s:lyr.info.wksName, s:lyr.info.rootDir)
             return
         elseif !popc#ui#Confirm('Save to workspace ''' . l:name . ''' ?')
             return

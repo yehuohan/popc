@@ -137,7 +137,7 @@ function! popc#ui#Input(prompt, ...)
         " v:null returned by input() would be string type, so check with v:null before real return
         return l:ret == v:null ? v:null : l:ret
     else
-        " BUG: we can NOT input '' in vim because pressing <ESC> will return '' too
+        " BUG: we can not input '' in vim because pressing <ESC> will return '' too
         let l:ret = (a:0 == 0) ? input(l:msg) :
                   \ (a:0 == 1) ? input(l:msg, a:1) :
                   \              input(l:msg, a:1, a:2)
