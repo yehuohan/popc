@@ -914,6 +914,10 @@ function! popc#layer#buf#SwitchBuffer(type, bang)
 
     let l:tidx = tabpagenr() - 1
     let l:bidx = index(s:tab.idx[l:tidx], bufnr('%'))
+    if l:bidx == -1
+        call popc#ui#Msg('Can''t switch from buffer out of popc')
+        return
+    endif
 
     let l:cycle = 0
     if a:type == 'left'
