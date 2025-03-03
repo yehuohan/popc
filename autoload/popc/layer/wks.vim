@@ -9,15 +9,16 @@ let s:lyr = {}          " this layer
 let s:wks = []          " workspaces from .popc.json
 let s:settings = {}     " workspace's settings to saved
 let s:mapsData = [
-    \ ['popc#layer#wks#Pop'    , ['w'],                  'Pop workspace layer'],
-    \ ['popc#layer#wks#Load'   , ['CR','Space','t','T'], 'Load workspace (CR-Open, Space-Stay, tT-Tab)'],
-    \ ['popc#layer#wks#Add'    , ['a'],                  'Add new workspace'],
-    \ ['popc#layer#wks#Save'   , ['s', 'S'],             'Save the workspace (S-Save in force)'],
-    \ ['popc#layer#wks#Delete' , ['d'],                  'Delete the workspace'],
-    \ ['popc#layer#wks#Close'  , ['C'],                  'Close current workspace'],
-    \ ['popc#layer#wks#SetName', ['n'],                  'Set name of workspace'],
-    \ ['popc#layer#wks#SetRoot', ['r'],                  'Set root of workspace'],
-    \ ['popc#layer#wks#Sort'   , ['g'],                  'Display sorted workspaces'],
+    \ ['popc#layer#wks#Pop'    , ['w'],          'Pop workspace layer'],
+    \ ['popc#layer#wks#Load'   , ['CR','Space'], 'Load workspace (Space: stay)'],
+    \ ['popc#layer#wks#Load'   , ['t','T'],      'Tabnew workspace (T: stay)'],
+    \ ['popc#layer#wks#Add'    , ['a'],          'Add new workspace'],
+    \ ['popc#layer#wks#Save'   , ['s', 'S'],     'Save the workspace (S: force)'],
+    \ ['popc#layer#wks#Delete' , ['d'],          'Delete the workspace'],
+    \ ['popc#layer#wks#Close'  , ['C'],          'Close current workspace'],
+    \ ['popc#layer#wks#SetName', ['n'],          'Set name of workspace'],
+    \ ['popc#layer#wks#SetRoot', ['r'],          'Set root of workspace'],
+    \ ['popc#layer#wks#Sort'   , ['g'],          'Display sorted workspaces'],
     \]
 
 

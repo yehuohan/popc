@@ -13,13 +13,13 @@ let s:layer = {
     \ 'bufs' : v:null,
     \ 'info' : {
         \ 'func' : '',
-        \ 'ckey'  : '',
+        \ 'ckey' : '',
         \ 'args' : [],
-        \ 'lastIndex'  : 0,
+        \ 'lastIndex' : 0,
         \ 'centerText' : '',
         \ 'events': {
             \ 'onUiIndexChanged' : v:null,
-            \ 'onQuit'           : v:null,
+            \ 'onQuit' : v:null,
             \ },
         \ },
     \ }
@@ -79,11 +79,15 @@ function! s:layer.createHelp() dict
 
     " get help-operation keys
     let l:optkeys = [
-        \ join(s:conf.operationMaps['moveCursorUp']  , ',') .. '/' .. join(s:conf.operationMaps['moveCursorDown']  , ','),
-        \ join(s:conf.operationMaps['moveCursorPgUp'], ',') .. '/' .. join(s:conf.operationMaps['moveCursorPgDown'], ','),
-        \ join(s:conf.operationMaps['moveCursorTop'] , ',') .. '/' .. join(s:conf.operationMaps['moveCursorBottom'], ','),
-        \ join(s:conf.operationMaps['back']          , ',') .. '/' .. join(s:conf.operationMaps['quit']            , ','),
-        \ join(s:conf.operationMaps['help']          , ','),
+        \ join(s:conf.operationMaps['moveCursorUp'],     ','),
+        \ join(s:conf.operationMaps['moveCursorDown'],   ','),
+        \ join(s:conf.operationMaps['moveCursorPgUp'],   ','),
+        \ join(s:conf.operationMaps['moveCursorPgDown'], ','),
+        \ join(s:conf.operationMaps['moveCursorTop'],    ','),
+        \ join(s:conf.operationMaps['moveCursorBottom'], ','),
+        \ join(s:conf.operationMaps['back'],             ',') .. '/' ..
+        \ join(s:conf.operationMaps['quit'],             ','),
+        \ join(s:conf.operationMaps['help'],             ','),
         \ ]
     let l:optmax = max(map(copy(l:optkeys), {-> len(v:val)}))
 
@@ -98,7 +102,7 @@ function! s:layer.createHelp() dict
         let l:max = (l:wid > l:max) ? l:wid : l:max
     endfor
     let l:max = (l:optmax > l:max) ? l:optmax : l:max
-    let l:fmt = printf('  %%-%ds | %%s', l:max)
+    let l:fmt = printf('  %%%ds  %%s', l:max)
 
     " add help-context
     let l:text = []
@@ -107,11 +111,14 @@ function! s:layer.createHelp() dict
     endfor
 
     " add help-operation
-    call add(l:text, printf(l:fmt, l:optkeys[0], 'Operation up/down'))
-    call add(l:text, printf(l:fmt, l:optkeys[1], 'Operation page up/down'))
-    call add(l:text, printf(l:fmt, l:optkeys[2], 'Operation top/bottom'))
-    call add(l:text, printf(l:fmt, l:optkeys[3], 'Operation back/quit'))
-    call add(l:text, printf(l:fmt, l:optkeys[4], 'Operation help'))
+    call add(l:text, printf(l:fmt, l:optkeys[0], 'Operation up'))
+    call add(l:text, printf(l:fmt, l:optkeys[1], 'Operation down'))
+    call add(l:text, printf(l:fmt, l:optkeys[2], 'Operation page up'))
+    call add(l:text, printf(l:fmt, l:optkeys[3], 'Operation page down'))
+    call add(l:text, printf(l:fmt, l:optkeys[4], 'Operation top'))
+    call add(l:text, printf(l:fmt, l:optkeys[5], 'Operation bottom'))
+    call add(l:text, printf(l:fmt, l:optkeys[6], 'Operation back/quit'))
+    call add(l:text, printf(l:fmt, l:optkeys[7], 'Operation help'))
 
     let self.help = l:text
     return self.help

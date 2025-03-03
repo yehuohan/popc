@@ -41,16 +41,18 @@ const s:STATE = {
 let s:rootBuf = ''
 let s:fullPath = v:false
 let s:mapsData = [
-    \ ['popc#layer#buf#Pop'          , ['h','a','l'],             'Pop buffers layer (h-Tab buffers, a-All buffers, l-Tab list)'],
-    \ ['popc#layer#buf#Load'         , ['CR','Space'],            'Load buffers (Space to stay in popc)'],
-    \ ['popc#layer#buf#Split'        , ['s','S','v','V','t','T'], 'Split or tabnew buffers (SVT to stay in popc)'],
-    \ ['popc#layer#buf#Show'         , ['p'],                     'Show/hide full path of buffers'],
-    \ ['popc#layer#buf#Goto'         , ['g','G'],                 'Goto window contain the current buffer(G to stay in popc)'],
-    \ ['popc#layer#buf#Close'        , ['c','C'],                 'Close one buffer (C to close all buffers of current tab)'],
-    \ ['popc#layer#buf#Switch'       , ['i','o'],                 'Switch to left/right(i/o) tab'],
-    \ ['popc#layer#buf#Move'         , ['I','O'],                 'Move buffer or tab to the left/right(I/O)'],
-    \ ['popc#layer#buf#ReName'       , ['n'],                     'Set current tab name'],
-    \ ['popc#layer#buf#Edit'         , ['e'],                     'Edit a new file'],
+    \ ['popc#layer#buf#Pop'    , ['h','a','l'],  'Pop buffer layer (h: tab buffers, a: all buffers, l: tab list)'],
+    \ ['popc#layer#buf#Load'   , ['CR','Space'], 'Load buffer (Space: stay)'],
+    \ ['popc#layer#buf#Split'  , ['s','S'],      'Split buffer (S: stay)'],
+    \ ['popc#layer#buf#Split'  , ['v','V'],      'Split buffer (V: stay)'],
+    \ ['popc#layer#buf#Split'  , ['t','T'],      'Tabnew buffer (T: stay)'],
+    \ ['popc#layer#buf#Show'   , ['p'],          'Show/hide full path of buffers'],
+    \ ['popc#layer#buf#Goto'   , ['g','G'],      'Goto window contain the current buffer(G: stay)'],
+    \ ['popc#layer#buf#Close'  , ['c','C'],      'Close one buffer (C: close all tab buffers)'],
+    \ ['popc#layer#buf#Switch' , ['i','o'],      'Switch to left/right(i/o) tab'],
+    \ ['popc#layer#buf#Move'   , ['I','O'],      'Move buffer or tab to the left/right(I/O)'],
+    \ ['popc#layer#buf#ReName' , ['n'],          'Set current tab name'],
+    \ ['popc#layer#buf#Edit'   , ['e'],          'Edit a new file'],
     \ ]
 
 

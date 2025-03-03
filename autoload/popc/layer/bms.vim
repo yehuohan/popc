@@ -8,11 +8,14 @@ let s:conf = popc#init#GetConfig()
 let s:lyr = {}          " this layer
 let s:bms = []          " bookmarks from .popc.json
 let s:mapsData = [
-    \ ['popc#layer#bms#Pop'   , ['b'],                                  'Pop bookmarks layer'],
-    \ ['popc#layer#bms#Load'  , ['CR','Space','s','S','v','V','t','T'], 'Load bookmark (CR-Open, Space-Stay, sSvV-Split, tT-Tab)'],
-    \ ['popc#layer#bms#Add'   , ['a'],                                  'Add file as bookmark'],
-    \ ['popc#layer#bms#Delete', ['d'],                                  'Delete one bookmark'],
-    \ ['popc#layer#bms#Sort'  , ['g'],                                  'Display sorted bookmaks'],
+    \ ['popc#layer#bms#Pop'   , ['b'],          'Pop bookmarks layer'],
+    \ ['popc#layer#bms#Load'  , ['CR','Space'], 'Load bookmark (Space: stay)'],
+    \ ['popc#layer#bms#Load'  , ['s','S'],      'Split bookmark (S: stay)'],
+    \ ['popc#layer#bms#Load'  , ['v','V'],      'Split bookmark (V: stay)'],
+    \ ['popc#layer#bms#Load'  , ['t','T'],      'Tabnew bookmark (T: stay)'],
+    \ ['popc#layer#bms#Add'   , ['a'],          'Add file as bookmark'],
+    \ ['popc#layer#bms#Delete', ['d'],          'Delete one bookmark'],
+    \ ['popc#layer#bms#Sort'  , ['g'],          'Display sorted bookmaks'],
     \ ]
 
 " SECTION: functions {{{1
