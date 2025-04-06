@@ -55,6 +55,10 @@ if !empty(s:err)
     finish
 endif
 
+if has('nvim')
+    call v:lua.require('popc').setup()
+endif
+
 call popc#popc#Init()
 let g:popc_version = 'Popc 3.10.4'
 let g:popc_loaded = 1
