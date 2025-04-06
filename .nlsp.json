@@ -1,0 +1,21 @@
+/// Local .nlsp.json
+{
+    /* Neoconf settings */
+    "neoconf": {
+        "plugins": {
+            "lspconfig": { "enabled": true },
+            "jsonls": { "enabled": true },
+            "lua_ls": { "enabled": true }
+        }
+    },
+    /* Language server settings */
+    "lspconfig": {
+        "lua_ls": {
+            "Lua.runtime.version": "LuaJIT", // "Lua 5.2", "LuaJIT"
+            "Lua.workspace.library": [],
+            "Lua.diagnostics.disable": [
+                "deprecated"
+            ]
+        }
+    }
+}
