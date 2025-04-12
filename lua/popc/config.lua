@@ -8,8 +8,8 @@ M.opts = {
     icons = {
         popc = '󰯙',
         tabbuf = '',
-        session = '',
         bookmark = '',
+        workspace = '',
         tab = '',
         tab_focus = '',
         tab_scope = '│',
@@ -35,6 +35,11 @@ M.opts = {
             ['k'] = 'prev',
             ['J'] = 'next_page',
             ['K'] = 'prev_page',
+            ['h'] = function()
+                require('popc.panel.tabuf').pop()
+            end,
+            -- ['b'] = function() require('popc.panel.bookmark').pop() end,
+            -- ['w'] = function() require('popc.panel.workspace').pop() end,
         },
     },
     tabuf = {
@@ -43,6 +48,11 @@ M.opts = {
                 return true
             end
         end,
+        keys = {
+            ['h'] = 'list_buffers',
+            ['l'] = 'list_tabpages',
+            ['a'] = 'list_tabpage_buffers',
+        },
     },
 }
 
