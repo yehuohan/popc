@@ -28,7 +28,7 @@ function M.get_tags()
     return vim.tbl_keys(log)
 end
 
-function M.print(tag)
+function M.get_logs(tag)
     local txt = ''
     if tag and log[tag] then
         txt = tag .. '\n    ' .. table.concat(log[tag], '\n    ')
@@ -39,7 +39,7 @@ function M.print(tag)
             end)
             :join('')
     end
-    vim.print(txt)
+    return txt
 end
 
 return M
