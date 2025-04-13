@@ -23,6 +23,7 @@ M.opts = {
         nums = { '⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' },
     },
     usermode = {
+        input = nil, -- 'snacks'
         win = {
             border = 'rounded', -- 'none', 'single', 'double', 'rounded'
             number = true,

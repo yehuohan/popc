@@ -2,7 +2,7 @@
 local M = {}
 local fn = vim.fn
 local api = vim.api
-local opts = require('popc.config').opts
+local copts = require('popc.config').opts
 
 --- @class PanelContext
 --- @field name string Panel name displayed at floating window title right
@@ -43,7 +43,7 @@ local umode = {
     ctx = {
         state = M.State.None,
     },
-    keys = opts.usermode.keys,
+    keys = copts.usermode.keys,
     ns = api.nvim_create_namespace('Popc.Usermode'),
 }
 --- Usermode keys handler
@@ -87,13 +87,13 @@ end
 --- @return integer new_width The require floating window width
 local function create_title(name, text, width)
     local title = {
-        { opts.icons.seps[1], 'PopcFloatTitleBarPad' },
+        { copts.icons.seps[1], 'PopcFloatTitleBarPad' },
         { 'Popc', 'PopcFloatTitleBar' },
-        { opts.icons.seps[2], 'PopcFloatTitleBarSep' },
+        { copts.icons.seps[2], 'PopcFloatTitleBarSep' },
         { text, 'PopcFloatTitle' },
-        { opts.icons.seps[1], 'PopcFloatTitleBarSep' },
+        { copts.icons.seps[1], 'PopcFloatTitleBarSep' },
         { name, 'PopcFloatTitleBar' },
-        { opts.icons.seps[2], 'PopcFloatTitleBarPad' },
+        { copts.icons.seps[2], 'PopcFloatTitleBarPad' },
     }
     local len = 0
     for _, t in ipairs(title) do
@@ -156,7 +156,7 @@ local function switch_line(uctx, newidx)
     local idx = math.max(1, math.min(uctx.pctx.index, win_row))
     newidx = math.max(1, math.min(newidx, win_row))
     umode.lines[idx] = ' ' .. fn.strcharpart(umode.lines[idx], 1)
-    umode.lines[newidx] = opts.icons.select .. fn.strcharpart(umode.lines[newidx], 1)
+    umode.lines[newidx] = copts.icons.select .. fn.strcharpart(umode.lines[newidx], 1)
     uctx.pctx.index = newidx
     api.nvim_buf_set_lines(umode.buf, idx - 1, idx, false, { umode.lines[idx] })
     api.nvim_buf_set_lines(umode.buf, newidx - 1, newidx, false, { umode.lines[newidx] })
@@ -178,7 +178,7 @@ local function display(pctx)
     local num_wid = 1 -- numberwidth must >= 1
     local win_wid, win_hei
     umode.lines, win_wid, win_hei = create_lines(pctx.items)
-    if opts.usermode.win.number then
+    if copts.usermode.win.number then
         num_wid = math.floor(math.log10(win_hei)) + 1
         win_wid = win_wid + num_wid + 1
     end
@@ -196,11 +196,11 @@ local function display(pctx)
         width = win_wid,
         row = math.floor((vim.o.lines - win_hei) / 2),
         col = math.floor((vim.o.columns - win_wid) / 2),
-        border = opts.usermode.win.border,
+        border = copts.usermode.win.border,
     })
-    vim.wo[umode.win].number = opts.usermode.win.number
+    vim.wo[umode.win].number = copts.usermode.win.number
     vim.wo[umode.win].numberwidth = num_wid
-    vim.wo[umode.win].winhighlight = opts.usermode.win.highlight
+    vim.wo[umode.win].winhighlight = copts.usermode.win.highlight
     api.nvim_win_call(umode.win, function()
         fn.winrestview({ topline = 1 })
     end)
@@ -306,6 +306,40 @@ function M.pop(pctx)
     if umode.ctx.state == M.State.None then
         ok_key(pctx)
     end
+end
+
+--- Async pop out panel
+--- @param pctx PanelContext
+function M.apop(pctx)
+    coroutine.wrap(M.pop)(pctx)
+end
+
+--- Notify message
+function M.notify(message, level)
+    vim.notify((' %s %s'):format(copts.icons.popc, message), level)
+end
+
+--- Input text
+--- @param opts table vim.ui.input.Opts
+--- @return string?
+function M.input(opts)
+    opts.prompt = ' ' .. copts.icons.popc .. ' ' .. opts.prompt
+    if copts.usermode.input == 'snacks' then
+        return coroutine.yield((function()
+            local caller = coroutine.running()
+            require('snacks').input(opts, function(inp)
+                coroutine.resume(caller, inp)
+            end)
+        end)())
+    else
+        return fn.input(opts)
+    end
+end
+
+--- @param prompt string
+--- @return boolean
+function M.confirm(prompt)
+    return 'y' == M.input({ prompt = prompt .. ' (yN):' })
 end
 
 function M.inspect()

@@ -3,7 +3,7 @@ local M = {}
 local fn = vim.fn
 local api = vim.api
 local log = require('popc.log').get('tabuf')
-local opts = require('popc.config').opts
+local copts = require('popc.config').opts
 local umode = require('popc.usermode')
 
 --- @enum TabufState
@@ -29,10 +29,10 @@ local bufctx = {}
 --- @type PanelContext
 local pctx = {
     name = 'Tabuf',
-    text = opts.icons.tabuf,
+    text = copts.icons.tabuf,
     items = {},
     index = 1,
-    keys = opts.tabuf.keys,
+    keys = copts.tabuf.keys,
     pkeys = {},
     -- Specified panel data
     state = M.State.Sigtab,
@@ -66,7 +66,7 @@ end
 local function num2str(num)
     local res = ''
     for _, n in ipairs(vim.split(tostring(num), '')) do
-        res = res .. opts.icons.nums[tonumber(n) + 1]
+        res = res .. copts.icons.nums[tonumber(n) + 1]
     end
     return res
 end
@@ -117,7 +117,7 @@ function M.add_buf(tid, bid)
     if info.listed == 0 then
         return
     end
-    if opts.tabuf.exclude_buffer(bid) then
+    if copts.tabuf.exclude_buffer(bid) then
         return
     end
 
@@ -206,10 +206,10 @@ function M.get_state_items(state)
     local cur_bid = api.nvim_get_current_buf()
 
     local tab_icon = function(tid)
-        return (tid == cur_tid and opts.icons.tab_focus or ' ') .. (#M.get_modified_bufs(tid, true) > 0 and '+' or ' ')
+        return (tid == cur_tid and copts.icons.tab_focus or ' ') .. (#M.get_modified_bufs(tid, true) > 0 and '+' or ' ')
     end
     local win_icon = function(bid, winbufs)
-        return bid == cur_bid and opts.icons.win_focus or (vim.tbl_contains(winbufs, bid) and opts.icons.win or ' ')
+        return bid == cur_bid and copts.icons.win_focus or (vim.tbl_contains(winbufs, bid) and copts.icons.win or ' ')
     end
     local buf_icon = function(bid)
         return fn.getbufvar(bid, '&modified') == 1 and '+' or ' '
@@ -232,8 +232,8 @@ function M.get_state_items(state)
             for k, bid in ipairs(tabctx[tid].bufs) do
                 table.insert(items, {
                     (
-                        tid == cur_tid and (k == 1 and opts.icons.tab_focus or opts.icons.tab_scope)
-                        or (k == 1 and opts.icons.tab or ' ')
+                        tid == cur_tid and (k == 1 and copts.icons.tab_focus or copts.icons.tab_scope)
+                        or (k == 1 and copts.icons.tab or ' ')
                     )
                         .. win_icon(bid, tab_winbufs)
                         .. buf_icon(bid),
@@ -390,19 +390,22 @@ local function setup_state_items(state)
     pctx.index = pctx.state_index[state]
 end
 
-function pkeys.pop_buffers()
+--- @param uctx UsermodeContext
+function pkeys.pop_buffers(uctx)
     setup_state_items(M.State.Sigtab)
-    umode.pop(pctx)
+    uctx.state = umode.State.ReDisp
 end
 
-function pkeys.pop_tabpages()
+--- @param uctx UsermodeContext
+function pkeys.pop_tabpages(uctx)
     setup_state_items(M.State.Listab)
-    umode.pop(pctx)
+    uctx.state = umode.State.ReDisp
 end
 
-function pkeys.pop_tabpage_buffers()
+--- @param uctx UsermodeContext
+function pkeys.pop_tabpage_buffers(uctx)
     setup_state_items(M.State.Alltab)
-    umode.pop(pctx)
+    uctx.state = umode.State.ReDisp
 end
 
 --- @param uctx UsermodeContext
@@ -428,7 +431,8 @@ function pkeys.load_buffer_quit(uctx)
 end
 
 function M.pop()
-    pkeys.pop_buffers()
+    setup_state_items(M.State.Sigtab)
+    umode.apop(pctx)
 end
 
 return M
