@@ -12,7 +12,9 @@
     "lspconfig": {
         "lua_ls": {
             "Lua.runtime.version": "LuaJIT", // "Lua 5.2", "LuaJIT"
-            "Lua.workspace.library": [],
+            "Lua.workspace.library": [
+                "./../plenary.nvim/lua"
+            ],
             "Lua.diagnostics.disable": [
                 "deprecated"
             ]
