@@ -14,24 +14,26 @@ local opts = require('popc.config').opts
 
 --- @class Usermode Custom user mode
 --- @field ctx UsermodeContext
+--- @field keys table<string, string|UserkeysHandler>
 --- @field ns integer
 --- @field buf integer?
 --- @field win integer?
 --- @field title string[][]?
 --- @field lines string[]?
---- @field help_title string|string[][]?
+--- @field help_title string[][]?
 --- @field help_lines string[]?
 
 --- @class UsermodeContext Custom user mode context
 --- @field pctx PanelContext?
 --- @field state UsermodeState
 
---- @alias UserkeysHandler fun(ukey:string?, uctx:UsermodeContext?) Handle all keys from custom user mode
+--- @alias UserkeysHandler fun(uctx:UsermodeContext?, ukey:string?) Handle all keys from custom user mode
 
 --- @enum UsermodeState
 M.State = {
-    None = 1,
+    None = 1, -- Request to quit custom user mode
     WaitKey = 2,
+    Redraw = 3,
 }
 
 --- @type Usermode
@@ -39,6 +41,7 @@ local umode = {
     ctx = {
         state = M.State.None,
     },
+    keys = opts.usermode.keys,
     ns = api.nvim_create_namespace('Popc.Usermode'),
 }
 --- Usermode keys handler
@@ -144,13 +147,14 @@ local function create_lines(pctx)
 end
 
 --- Switch the selected item
-local function switch_line(newidx)
+--- @param uctx UsermodeContext
+local function switch_line(uctx, newidx)
     local win_row = #umode.lines
-    local idx = math.max(1, math.min(umode.ctx.pctx.index, win_row))
+    local idx = math.max(1, math.min(uctx.pctx.index, win_row))
     newidx = math.max(1, math.min(newidx, win_row))
     umode.lines[idx] = ' ' .. fn.strcharpart(umode.lines[idx], 1)
     umode.lines[newidx] = opts.icons.select .. fn.strcharpart(umode.lines[newidx], 1)
-    umode.ctx.pctx.index = newidx
+    uctx.pctx.index = newidx
     api.nvim_buf_set_lines(umode.buf, idx - 1, idx, false, { umode.lines[idx] })
     api.nvim_buf_set_lines(umode.buf, newidx - 1, newidx, false, { umode.lines[newidx] })
     api.nvim_buf_set_extmark(umode.buf, umode.ns, newidx - 1, 0, {
@@ -161,8 +165,9 @@ local function switch_line(newidx)
     vim.cmd.redraw()
 end
 
-function ukeys.quit()
-    umode.ctx.state = M.State.None
+--- @param uctx UsermodeContext
+function ukeys.quit(uctx)
+    uctx.state = M.State.None
 end
 
 function ukeys.back()
@@ -173,21 +178,25 @@ function ukeys.help()
     vim.notify('TODO: usermode help')
 end
 
-function ukeys.next()
-    switch_line(umode.ctx.pctx.index % #umode.lines + 1)
+--- @param uctx UsermodeContext
+function ukeys.next(uctx)
+    switch_line(uctx, uctx.pctx.index % #umode.lines + 1)
 end
 
-function ukeys.prev()
-    local idx = umode.ctx.pctx.index
-    switch_line(idx == 1 and #umode.lines or (idx - 1))
+--- @param uctx UsermodeContext
+function ukeys.prev(uctx)
+    local idx = uctx.pctx.index
+    switch_line(uctx, idx == 1 and #umode.lines or (idx - 1))
 end
 
-function ukeys.next_page()
-    switch_line(umode.ctx.pctx.index + api.nvim_win_get_height(umode.win) - 1)
+--- @param uctx UsermodeContext
+function ukeys.next_page(uctx)
+    switch_line(uctx, uctx.pctx.index + api.nvim_win_get_height(umode.win) - 1)
 end
 
-function ukeys.prev_page()
-    switch_line(umode.ctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
+--- @param uctx UsermodeContext
+function ukeys.prev_page(uctx)
+    switch_line(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
 end
 
 --- @param pctx PanelContext
@@ -195,7 +204,9 @@ local function ok_key(pctx)
     umode.ctx.state = M.State.WaitKey
     vim.cmd.redraw()
     while true do
-        if umode.ctx.state ~= M.State.WaitKey then
+        if umode.ctx.state == M.State.Redraw then
+            vim.cmd.redraw()
+        elseif umode.ctx.state ~= M.State.WaitKey then
             break
         end
 
@@ -207,15 +218,14 @@ local function ok_key(pctx)
         local k = fn.keytrans(c)
 
         -- Handle key
-        if opts.usermode.keys[k] then
-            local handler = opts.usermode.keys[k]
+        if umode.keys[k] then
+            local handler = umode.keys[k]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
-            --- @diagnostic disable-next-line: redundant-parameter
-            handler(k, umode.ctx)
+            handler(umode.ctx, k)
         elseif pctx.keys[k] then
             local handler = pctx.keys[k]
             handler = vim.is_callable(handler) and handler or pctx.pkeys[handler]
-            handler(k, umode.ctx)
+            handler(umode.ctx, k)
         else
             vim.notify(("No handler for key '%s'"):format(k))
         end
@@ -241,6 +251,9 @@ end
 
 --- @param pctx PanelContext
 function M.pop(pctx)
+    umode.ctx.pctx = pctx
+
+    -- Validate custom user mode's buffer and window
     validate()
 
     local num_wid = 1 -- numberwidth must >= 1
@@ -272,8 +285,7 @@ function M.pop(pctx)
         fn.winrestview({ topline = 1 })
     end)
 
-    umode.ctx.pctx = pctx
-    switch_line(umode.ctx.pctx.index)
+    switch_line(umode.ctx, pctx.index)
     if umode.ctx.state == M.State.None then
         ok_key(pctx)
     end
