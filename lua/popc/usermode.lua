@@ -5,8 +5,8 @@ local api = vim.api
 local opts = require('popc.config').opts
 
 --- @class PanelContext
---- @field name string Panel name displayed at floating window title
---- @field title string Panel title displayed at floating window title
+--- @field name string Panel name displayed at floating window title right
+--- @field text string Panel text displayed at floating window title center
 --- @field items string[][] Panel lines displayed at floating window
 --- @field index integer Current selected index item of panel, 1-based
 --- @field keys table<string, string|UserkeysHandler>
@@ -32,8 +32,10 @@ local opts = require('popc.config').opts
 --- @enum UsermodeState
 M.State = {
     None = 1, -- Request to quit custom user mode
-    WaitKey = 2,
-    Redraw = 3,
+    RePop = 2, -- Request re-pop panel at another tabpage
+    ReDisp = 3, -- Request re-display panel at same tabpage
+    ReDraw = 4, -- Request redraw at same tabpage
+    WaitKey = 5,
 }
 
 --- @type Usermode
@@ -77,19 +79,20 @@ local function validate()
     end
 end
 
---- Create floating window title from popc panel title
---- @param pctx PanelContext
+--- Create floating window title from popc panel name and text
+--- @param name string
+--- @param text string
 --- @param width integer The expected width of title
 --- @return string[][] title
 --- @return integer new_width The require floating window width
-local function create_title(pctx, width)
+local function create_title(name, text, width)
     local title = {
         { opts.icons.seps[1], 'PopcFloatTitleBarPad' },
         { 'Popc', 'PopcFloatTitleBar' },
         { opts.icons.seps[2], 'PopcFloatTitleBarSep' },
-        { pctx.title, 'PopcFloatTitle' },
+        { text, 'PopcFloatTitle' },
         { opts.icons.seps[1], 'PopcFloatTitleBarSep' },
-        { pctx.name, 'PopcFloatTitleBar' },
+        { name, 'PopcFloatTitleBar' },
         { opts.icons.seps[2], 'PopcFloatTitleBarPad' },
     }
     local len = 0
@@ -97,7 +100,7 @@ local function create_title(pctx, width)
         len = len + fn.strdisplaywidth(t[1])
     end
     local fill = width - len - 2
-    title[4][1] = (' %s%s '):format(pctx.title, (' '):rep(fill))
+    title[4][1] = (' %s%s '):format(text, (' '):rep(fill))
     return title, fill >= 0 and width or (width - fill)
 end
 
@@ -111,18 +114,18 @@ end
 ---     {'a', 'bcdef'},          'a   bcdef',
 --- }                        }
 --- ```
---- @param pctx PanelContext
+--- @param items string[][] PanelContext.items
 --- @return table lines
 --- @return integer width
 --- @return integer height
-local function create_lines(pctx)
-    if #pctx.items == 0 then
+local function create_lines(items)
+    if #items == 0 then
         local lines = { '  Nothing to pop ' }
         return lines, fn.strdisplaywidth(lines[1]), #lines
     end
 
     local maxs = {}
-    for _, chunks in ipairs(pctx.items) do
+    for _, chunks in ipairs(items) do
         for k, chunk in ipairs(chunks) do
             local chunk_wid = fn.strdisplaywidth(chunk)
             if (not maxs[k]) or chunk_wid > maxs[k] then
@@ -137,7 +140,7 @@ local function create_lines(pctx)
             end)
             :join(' ')
         .. ' '
-    local lines = vim.iter(pctx.items)
+    local lines = vim.iter(items)
         :map(function(i)
             -- Note: string.format can't align in display cells
             return fn.printf(fmt, unpack(i))
@@ -163,6 +166,45 @@ local function switch_line(uctx, newidx)
     })
     api.nvim_win_set_cursor(umode.win, { newidx, 0 })
     vim.cmd.redraw()
+end
+
+--- Display panel items at floating window
+--- @param pctx PanelContext
+local function display(pctx)
+    -- Validate custom user mode's buffer and window
+    validate()
+
+    -- Create title and lines
+    local num_wid = 1 -- numberwidth must >= 1
+    local win_wid, win_hei
+    umode.lines, win_wid, win_hei = create_lines(pctx.items)
+    if opts.usermode.win.number then
+        num_wid = math.floor(math.log10(win_hei)) + 1
+        win_wid = win_wid + num_wid + 1
+    end
+    umode.title, win_wid = create_title(pctx.name, pctx.text, win_wid)
+    win_wid = math.min(win_wid, math.floor(0.8 * vim.o.columns))
+    win_hei = math.min(win_hei, math.floor(0.8 * vim.o.lines))
+
+    -- Display title and lines
+    api.nvim_buf_set_lines(umode.buf, 0, -1, false, umode.lines)
+    api.nvim_win_set_config(umode.win, {
+        title = umode.title,
+        title_pos = 'center',
+        relative = 'editor',
+        height = win_hei,
+        width = win_wid,
+        row = math.floor((vim.o.lines - win_hei) / 2),
+        col = math.floor((vim.o.columns - win_wid) / 2),
+        border = opts.usermode.win.border,
+    })
+    vim.wo[umode.win].number = opts.usermode.win.number
+    vim.wo[umode.win].numberwidth = num_wid
+    vim.wo[umode.win].winhighlight = opts.usermode.win.highlight
+    api.nvim_win_call(umode.win, function()
+        fn.winrestview({ topline = 1 })
+    end)
+    switch_line(umode.ctx, pctx.index)
 end
 
 --- @param uctx UsermodeContext
@@ -204,11 +246,18 @@ local function ok_key(pctx)
     umode.ctx.state = M.State.WaitKey
     vim.cmd.redraw()
     while true do
-        if umode.ctx.state == M.State.Redraw then
-            vim.cmd.redraw()
-        elseif umode.ctx.state ~= M.State.WaitKey then
+        -- Handle state
+        if umode.ctx.state == M.State.None then
             break
+        elseif umode.ctx.state == M.State.RePop then
+            api.nvim_win_close(umode.win, false)
+            display(pctx)
+        elseif umode.ctx.state == M.State.ReDisp then
+            display(pctx)
+        elseif umode.ctx.state == M.State.ReDraw then
+            vim.cmd.redraw()
         end
+        umode.ctx.state = M.State.WaitKey
 
         -- Get key
         local ok, c = pcall(vim.fn.getcharstr, -1, { cursor = 'hide' })
@@ -249,43 +298,11 @@ function M.__on_key()
     end, ns)
 end
 
+--- Pop out panel
 --- @param pctx PanelContext
 function M.pop(pctx)
     umode.ctx.pctx = pctx
-
-    -- Validate custom user mode's buffer and window
-    validate()
-
-    local num_wid = 1 -- numberwidth must >= 1
-    local win_wid, win_hei
-    umode.lines, win_wid, win_hei = create_lines(pctx)
-    if opts.usermode.win.number then
-        num_wid = math.floor(math.log10(win_hei)) + 1
-        win_wid = win_wid + num_wid + 1
-    end
-    umode.title, win_wid = create_title(pctx, win_wid)
-    win_wid = math.min(win_wid, math.floor(0.8 * vim.o.columns))
-    win_hei = math.min(win_hei, math.floor(0.8 * vim.o.lines))
-
-    api.nvim_buf_set_lines(umode.buf, 0, -1, false, umode.lines)
-    api.nvim_win_set_config(umode.win, {
-        title = umode.title,
-        title_pos = 'center',
-        relative = 'editor',
-        height = win_hei,
-        width = win_wid,
-        row = math.floor((vim.o.lines - win_hei) / 2),
-        col = math.floor((vim.o.columns - win_wid) / 2),
-        border = opts.usermode.win.border,
-    })
-    vim.wo[umode.win].number = opts.usermode.win.number
-    vim.wo[umode.win].numberwidth = num_wid
-    vim.wo[umode.win].winhighlight = opts.usermode.win.highlight
-    api.nvim_win_call(umode.win, function()
-        fn.winrestview({ topline = 1 })
-    end)
-
-    switch_line(umode.ctx, pctx.index)
+    display(pctx)
     if umode.ctx.state == M.State.None then
         ok_key(pctx)
     end

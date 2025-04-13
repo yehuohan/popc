@@ -6,8 +6,12 @@ local log = require('popc.log').get('tabuf')
 local opts = require('popc.config').opts
 local umode = require('popc.usermode')
 
+--- @enum TabufState
+M.State = { Sigtab = 1, Alltab = 2, Listab = 3 }
+
 --- @alias TabID integer A valid tabpage ID (nvim_buf_is_valid() = true)
 --- @alias BufID integer A valid buffer ID (nvim_tabpage_is_valid() = true)
+--- @alias WinID integer A valid window ID (nvim_win_is_valid() = true)
 
 --- @class TabContext
 --- @field name string Tabpage name
@@ -21,8 +25,26 @@ local umode = require('popc.usermode')
 local tabctx = {}
 --- @type table<BufID, BufContext>
 local bufctx = {}
+--- Tabuf panel context
+--- @type PanelContext
+local pctx = {
+    name = 'Tabuf',
+    text = opts.icons.tabuf,
+    items = {},
+    index = 1,
+    keys = opts.tabuf.keys,
+    pkeys = {},
+    -- Specified panel data
+    state = M.State.Sigtab,
+    state_items = {},
+    state_index = {
+        [M.State.Sigtab] = 1,
+        [M.State.Alltab] = 1,
+        [M.State.Listab] = 1,
+    },
+}
 
---- Get then list index of value
+--- Get the list index of value
 --- @param lst any[]
 --- @param val any
 --- @return integer?
@@ -140,7 +162,7 @@ end
 --- Get tabpage's modified buffers
 --- @param tid TabID
 --- @param check boolean? Only check has modified buffer or not
-function M.modified_bufs(tid, check)
+function M.get_modified_bufs(tid, check)
     if not tabctx[tid] then
         return {}
     end
@@ -156,6 +178,82 @@ function M.modified_bufs(tid, check)
     return res
 end
 
+--- Get windows that contain tabpage's buffers
+--- @param tid TabID
+--- @param bid BufID? Try make wins[1] == bid when bid ~= nil
+--- @return WinID[]
+function M.get_buf_wins(tid, bid)
+    local wins = vim.tbl_filter(function(wid)
+        return vim.tbl_contains(tabctx[tid].bufs, api.nvim_win_get_buf(wid))
+    end, api.nvim_tabpage_list_wins(tid))
+    if bid and #wins > 1 then
+        for k, wid in ipairs(wins) do
+            if bid == api.nvim_win_get_buf(wid) then
+                wins[1], wins[k] = wins[k], wins[1]
+                break
+            end
+        end
+    end
+    return wins
+end
+
+--- Get buffer or tabpage's items accordint to tabuf state
+--- @param state TabufState
+--- @return string[][] items
+--- @return string[][] state_items
+function M.get_state_items(state)
+    local cur_tid = api.nvim_get_current_tabpage()
+    local cur_bid = api.nvim_get_current_buf()
+
+    local tab_icon = function(tid)
+        return (tid == cur_tid and opts.icons.tab_focus or ' ') .. (#M.get_modified_bufs(tid, true) > 0 and '+' or ' ')
+    end
+    local win_icon = function(bid, winbufs)
+        return bid == cur_bid and opts.icons.win_focus or (vim.tbl_contains(winbufs, bid) and opts.icons.win or ' ')
+    end
+    local buf_icon = function(bid)
+        return fn.getbufvar(bid, '&modified') == 1 and '+' or ' '
+    end
+
+    local items = {}
+    local state_items = {}
+    if state == M.State.Sigtab then
+        local tab_winbufs = vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(cur_tid))
+        for _, bid in ipairs(tabctx[cur_tid].bufs) do
+            table.insert(items, {
+                win_icon(bid, tab_winbufs) .. buf_icon(bid),
+                fn.bufname(bid),
+            })
+            table.insert(state_items, { tid = cur_tid, bid = bid })
+        end
+    elseif state == M.State.Alltab then
+        for _, tid in ipairs(api.nvim_list_tabpages()) do
+            local tab_winbufs = vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tid))
+            for k, bid in ipairs(tabctx[tid].bufs) do
+                table.insert(items, {
+                    (
+                        tid == cur_tid and (k == 1 and opts.icons.tab_focus or opts.icons.tab_scope)
+                        or (k == 1 and opts.icons.tab or ' ')
+                    )
+                        .. win_icon(bid, tab_winbufs)
+                        .. buf_icon(bid),
+                    fn.bufname(bid),
+                })
+                table.insert(state_items, { tid = tid, bid = bid })
+            end
+        end
+    elseif state == M.State.Listab then
+        for _, tid in ipairs(api.nvim_list_tabpages()) do
+            table.insert(items, {
+                tab_icon(tid),
+                '[' .. tabctx[tid].name .. ']' .. num2str(M.buf_num(tid)),
+            })
+            table.insert(state_items, { tid = tid })
+        end
+    end
+    return items, state_items
+end
+
 --- Get tabpage's status for tabline
 function M.get_tabstatus()
     local cur_tid = api.nvim_get_current_tabpage()
@@ -165,7 +263,7 @@ function M.get_tabstatus()
             tid = tid,
             name = tabctx[tid].name .. num2str(M.buf_num(tid)),
             current = tid == cur_tid,
-            modified = #M.modified_bufs(tid, true) > 0,
+            modified = #M.get_modified_bufs(tid, true) > 0,
         }
     end
     return res
@@ -281,93 +379,56 @@ function M.inspect()
     return txt
 end
 
-local State = { Sigtab = 1, Alltab = 2, Listab = 3 }
-
---- Tabuf panel context
---- @type PanelContext
-local pctx = {
-    name = 'Tabuf',
-    title = opts.icons.tabbuf,
-    items = {},
-    index = 1,
-    keys = opts.tabuf.keys,
-    pkeys = {},
-    -- Specified panel data
-    state = State.Sigtab,
-    state_indices = {
-        [State.Sigtab] = 1,
-        [State.Alltab] = 1,
-        [State.Listab] = 1,
-    },
-}
 --- Panel keys handler
 local pkeys = pctx.pkeys
 
-function pkeys.list_buffers()
-    local cur_tid = api.nvim_get_current_tabpage()
-    local cur_bid = api.nvim_get_current_buf()
-    local tab_winbufs = vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(cur_tid))
+--- @param state TabufState
+local function setup_state_items(state)
+    pctx.items, pctx.state_items = M.get_state_items(state)
+    pctx.state_index[pctx.state] = pctx.index
+    pctx.state = state
+    pctx.index = pctx.state_index[state]
+end
 
-    pctx.items = {}
-    for _, bid in ipairs(tabctx[cur_tid].bufs) do
-        table.insert(pctx.items, {
-            (bid == cur_bid and opts.icons.win_focus or (vim.tbl_contains(tab_winbufs, bid) and opts.icons.win or ' '))
-                .. (fn.getbufvar(bid, '&modified') == 1 and '+' or ' '),
-            fn.bufname(bid),
-        })
-    end
-    pctx.state_indices[pctx.state] = pctx.index
-    pctx.state = State.Sigtab
-    pctx.index = pctx.state_indices[pctx.state]
+function pkeys.pop_buffers()
+    setup_state_items(M.State.Sigtab)
     umode.pop(pctx)
 end
 
-function pkeys.list_tabpages()
-    local cur_tid = api.nvim_get_current_tabpage()
-
-    pctx.items = {}
-    for _, tid in ipairs(api.nvim_list_tabpages()) do
-        table.insert(pctx.items, {
-            (tid == cur_tid and opts.icons.tab_focus or ' ') .. (#M.modified_bufs(tid, true) > 0 and '+' or ' '),
-            '[' .. tabctx[tid].name .. ']' .. num2str(M.buf_num(tid)),
-        })
-    end
-    if pctx.state == State.Alltab then
-        pctx.index = list_index(api.nvim_list_tabpages(), cur_tid) or 1
-    end
-    pctx.state_indices[pctx.state] = pctx.index
-    pctx.state = State.Listab
-    pctx.index = pctx.state_indices[pctx.state]
+function pkeys.pop_tabpages()
+    setup_state_items(M.State.Listab)
     umode.pop(pctx)
 end
 
-function pkeys.list_tabpage_buffers()
-    local cur_tid = api.nvim_get_current_tabpage()
-    local cur_bid = api.nvim_get_current_buf()
-    local tab_winbufs = vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(cur_tid))
-
-    pctx.items = {}
-    for _, tid in ipairs(api.nvim_list_tabpages()) do
-        for k, bid in ipairs(tabctx[tid].bufs) do
-            table.insert(pctx.items, {
-                (
-                    tid == cur_tid and (k == 1 and opts.icons.tab_focus or opts.icons.tab_scope)
-                    or (k == 1 and opts.icons.tab or ' ')
-                )
-                    .. (bid == cur_bid and opts.icons.win_focus or (vim.tbl_contains(tab_winbufs, bid) and opts.icons.win or ' '))
-                    .. (fn.getbufvar(bid, '&modified') == 1 and '+' or ' '),
-                fn.bufname(bid),
-            })
-        end
-    end
-    pctx.state_indices[pctx.state] = pctx.index
-    pctx.state = State.Alltab
-    pctx.index = pctx.state_indices[pctx.state]
+function pkeys.pop_tabpage_buffers()
+    setup_state_items(M.State.Alltab)
     umode.pop(pctx)
+end
+
+--- @param uctx UsermodeContext
+function pkeys.load_buffer(uctx)
+    local item = pctx.state_items[pctx.index]
+    if pctx.state == M.State.Listab then
+        api.nvim_set_current_tabpage(item.tid)
+        uctx.state = umode.State.RePop
+    else
+        local cur_tid = api.nvim_get_current_tabpage()
+        local cur_bid = api.nvim_get_current_buf()
+        local wid = M.get_buf_wins(cur_tid, cur_bid)[1] or 0
+        api.nvim_win_set_buf(wid, item.bid)
+        uctx.state = umode.State.ReDisp
+    end
+    setup_state_items(pctx.state)
+end
+
+--- @param uctx UsermodeContext
+function pkeys.load_buffer_quit(uctx)
+    pkeys.load_buffer(uctx)
+    uctx.state = umode.State.None
 end
 
 function M.pop()
-    pkeys.list_buffers()
+    pkeys.pop_buffers()
 end
 
 return M

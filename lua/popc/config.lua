@@ -7,7 +7,7 @@ M.opts = {
     data_path = fn.stdpath('data'),
     icons = {
         popc = '󰯙',
-        tabbuf = '',
+        tabuf = '',
         bookmark = '',
         workspace = '',
         tab = '',
@@ -49,9 +49,11 @@ M.opts = {
             end
         end,
         keys = {
-            ['h'] = 'list_buffers',
-            ['l'] = 'list_tabpages',
-            ['a'] = 'list_tabpage_buffers',
+            ['h'] = 'pop_buffers',
+            ['l'] = 'pop_tabpages',
+            ['a'] = 'pop_tabpage_buffers',
+            ['<CR>'] = 'load_buffer_quit',
+            ['<Space>'] = 'load_buffer',
         },
     },
 }
