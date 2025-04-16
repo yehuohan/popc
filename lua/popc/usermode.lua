@@ -207,7 +207,6 @@ local function display(pctx)
     switch_line(umode.ctx, pctx.index)
 end
 
---- @param uctx UsermodeContext
 function ukeys.quit(uctx)
     uctx.state = M.State.None
 end
@@ -220,23 +219,18 @@ function ukeys.help()
     vim.notify('TODO: usermode help')
 end
 
---- @param uctx UsermodeContext
 function ukeys.next(uctx)
     switch_line(uctx, uctx.pctx.index % #umode.lines + 1)
 end
 
---- @param uctx UsermodeContext
 function ukeys.prev(uctx)
-    local idx = uctx.pctx.index
-    switch_line(uctx, idx == 1 and #umode.lines or (idx - 1))
+    switch_line(uctx, (uctx.pctx.index - 2) % #umode.lines + 1)
 end
 
---- @param uctx UsermodeContext
 function ukeys.next_page(uctx)
     switch_line(uctx, uctx.pctx.index + api.nvim_win_get_height(umode.win) - 1)
 end
 
---- @param uctx UsermodeContext
 function ukeys.prev_page(uctx)
     switch_line(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
 end
@@ -250,7 +244,9 @@ local function ok_key(pctx)
         if umode.ctx.state == M.State.None then
             break
         elseif umode.ctx.state == M.State.RePop then
-            api.nvim_win_close(umode.win, false)
+            if api.nvim_win_is_valid(umode.win) then
+                api.nvim_win_close(umode.win, false)
+            end
             display(pctx)
         elseif umode.ctx.state == M.State.ReDisp then
             display(pctx)
@@ -279,11 +275,13 @@ local function ok_key(pctx)
             vim.notify(("No handler for key '%s'"):format(k))
         end
     end
-    api.nvim_win_close(umode.win, false)
+    if api.nvim_win_is_valid(umode.win) then
+        api.nvim_win_close(umode.win, false)
+    end
     umode.ctx.state = M.State.None
 end
 
-function M.__on_key()
+local function __on_key()
     local ns = api.nvim_create_namespace('Popc.OnKey')
     -- Issue: Can't break omap key sequence
     vim.on_key(function(_, typed)
