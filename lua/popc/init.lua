@@ -8,9 +8,6 @@ function M.setup(opts)
         require('popc.panel.tabuf').setup()
     end
 
-    -- Only for development
-    vim.keymap.set('n', '<leader><leader>H', '<Cmd>PopcTabuf<CR>')
-
     if opts.debug then
         vim.api.nvim_create_user_command('PopcInspect', function(args)
             local module = 'popc.panel.tabuf'

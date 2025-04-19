@@ -44,8 +44,9 @@ M.opts = {
     },
     tabuf = {
         enable = true,
+        root_marker = { '.git' },
         exclude_buffer = function(bid)
-            if vim.tbl_contains({ 'Popc' }, fn.getbufvar(bid, '&filetype')) then
+            if vim.tbl_contains({ 'Popc', 'qf' }, fn.getbufvar(bid, '&filetype')) then
                 return true
             end
         end,
@@ -53,9 +54,9 @@ M.opts = {
             ['h'] = 'pop_buffers',
             ['l'] = 'pop_tabpages',
             ['a'] = 'pop_tabpage_buffers',
-            ['<CR>'] = 'load_buffer_or_tabpage_quit',
+            ['<CR>'] = 'load_buffer_or_tabpage_quit', -- Load buffer into current window of current tabpage
             ['<Space>'] = 'load_buffer_or_tabpage',
-            ['<S-CR>'] = 'goto_buffer_or_tabpage_quit',
+            ['<S-CR>'] = 'goto_buffer_or_tabpage_quit', -- Goto buffer of corresponding window and tabpage
             ['<S-Space>'] = 'goto_buffer_or_tabpage',
             ['f'] = 'focus_on_window',
             ['s'] = 'split_buffer_quit',
@@ -64,17 +65,18 @@ M.opts = {
             ['V'] = 'vsplit_buffer',
             ['t'] = 'tabnew_buffer_quit',
             ['T'] = 'tabnew_buffer',
-            ['c'] = 'close_buffer_or_tabpage',
-            ['C'] = 'close_all_buffers_or_tabpages',
-            ['d'] = 'close_window',
-            ['D'] = 'close_window_and_buffer',
+            ['c'] = 'close_buffer_or_tabpage', -- Keep windows layout
+            ['C'] = 'close_all_buffers_or_tabpages', -- Keep windows layout
+            ['d'] = 'close_window', -- Only close window
+            ['D'] = 'close_window_and_buffer', -- Also close window along with buffer
             ['i'] = 'switch_to_prev_tabpage',
             ['o'] = 'switch_to_next_tabpage',
-            ['I'] = 'move_buffer_or_tabpage_to_prev',
+            ['I'] = 'move_buffer_or_tabpage_to_prev', -- Select item index follows buffer
             ['O'] = 'move_buffer_or_tabpage_to_next',
-            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev',
+            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev', -- Select item index keeps unchanged
             ['<M-o>'] = 'move_out_buffer_or_tabpage_to_next',
-            ['n'] = 'rename_tabpage',
+            ['n'] = 'set_tabpage_label',
+            ['r'] = 'set_tabpage_dir', -- Support expand environment variables
             ['p'] = 'toggle_fullpath',
         },
     },

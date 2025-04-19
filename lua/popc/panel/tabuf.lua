@@ -13,6 +13,7 @@ local umode = require('popc.usermode')
 --- @class TabContext
 --- @field label string? A label name for tabpage
 --- @field name string Tabpage current buffer name
+--- @field tdir string? Tabpage directory as base directory for buffer filename
 --- @field bufs BufID[] Buffers scoped under tabpage
 
 --- @class BufContext
@@ -117,9 +118,22 @@ end
 --- @param bid BufID
 --- @return string
 function M.buf_name(tid, bid)
-    local name = fn.bufname(bid)
-    if pctx.fullpath then
-        name = fn.fnamemodify(name, ':p')
+    local name = vim.fs.normalize(api.nvim_buf_get_name(bid))
+    if not pctx.fullpath then
+        local base_dir
+        if tabctx[tid] then
+            base_dir = tabctx[tid].tdir
+        end
+        if not base_dir then
+            base_dir = pctx.root_dir
+        end
+        if not base_dir then
+            base_dir = vim.fs.normalize(fn.getcwd(-1, api.nvim_tabpage_get_number(tid)))
+        end
+        -- Prefer `vim.startswith` to avoid pattern with `string.gsub`
+        if vim.startswith(name, base_dir) then
+            name = string.sub(name, string.len(base_dir) + 2)
+        end
     end
     return string.len(name) == 0 and ('[%d.NoName]'):format(bid) or name
 end
@@ -371,7 +385,14 @@ end
 function M.buf_callback(args)
     log('buf_callback: ' .. args.event)
     local cur_tid = api.nvim_get_current_tabpage()
-    if args.event == 'BufEnter' then
+    if args.event == 'BufNew' then
+        if not pctx.root_dir then
+            pctx.root_dir = vim.fs.root(args.file, copts.tabuf.root_marker)
+            if pctx.root_dir then
+                pctx.root_dir = vim.fs.normalize(pctx.root_dir)
+            end
+        end
+    elseif args.event == 'BufEnter' then
         if M.tab_num() == 0 then
             M._add_tab(api.nvim_get_current_tabpage())
         end
@@ -406,7 +427,7 @@ function M.setup()
         { group = 'Popc.Panel.Tabuf', pattern = { '*' }, callback = M.tab_callback }
     )
     api.nvim_create_autocmd(
-        { 'BufEnter', 'BufWipeout', (not vim.v.vim_did_enter) and 'VimEnter' or nil },
+        { 'BufNew', 'BufEnter', 'BufWipeout', (not vim.v.vim_did_enter) and 'VimEnter' or nil },
         { group = 'Popc.Panel.Tabuf', pattern = { '*' }, callback = M.buf_callback }
     )
     if vim.v.vim_did_enter then
@@ -437,25 +458,26 @@ function M.inspect()
     local tids = api.nvim_list_tabpages()
     local txt = 'tabids = ' .. vim.inspect(tids)
     txt = txt
-        .. '\ntabctx = [\n  '
+        .. '\ntabctx = {\n  '
         .. vim.iter(tids)
             :map(function(tid)
-                return vim.split(('[%d] = %s,'):format(tid, vim.inspect(tabctx[tid])), '\n')
+                return ('[%d] = %s,'):format(tid, string.gsub(vim.inspect(tabctx[tid]), '\n ?', ''))
             end)
             :flatten()
             :join('\n  ')
-        .. '\n]'
+        .. '\n}'
     txt = txt
-        .. '\nbufctx = [\n  '
+        .. '\nbufctx = {\n  '
         .. vim.iter(vim.iter(pairs(bufctx))
             :map(function(bid, buf)
-                return vim.split(('[%d] = %s,'):format(bid, vim.inspect(buf)), '\n')
+                return ('[%d] = %s,'):format(bid, string.gsub(vim.inspect(buf), '\n ?', ''))
             end)
             :totable())
             :flatten()
             :join('\n  ')
-        .. '\n]'
-    return txt, tabctx, bufctx
+        .. '\n}'
+    txt = txt .. ('\npctx = { root_dir = %s }'):format(vim.inspect(pctx.root_dir))
+    return txt, tabctx, bufctx, pctx
 end
 
 --- Panel keys handler
@@ -508,6 +530,9 @@ end
 
 function pkeys.load_buffer_or_tabpage(uctx)
     local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state == M.State.Listab then
         api.nvim_set_current_tabpage(item.tid)
         uctx.state = umode.State.RePop
@@ -526,6 +551,9 @@ end
 
 function pkeys.goto_buffer_or_tabpage(uctx)
     local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     local cur_tid = api.nvim_get_current_tabpage()
 
     uctx.state = umode.State.ReDisp
@@ -547,12 +575,15 @@ function pkeys.goto_buffer_or_tabpage_quit(uctx)
 end
 
 function pkeys.focus_on_window(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state == M.State.Listab then
         umode.notify("Can't focus window on tabpage list")
         return
     end
 
-    local item = pctx.state_items[pctx.index]
     if item.wid then
         api.nvim_tabpage_set_win(item.tid, item.wid)
         transit_state()
@@ -563,6 +594,10 @@ function pkeys.focus_on_window(uctx)
 end
 
 function pkeys.split_buffer(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state == M.State.Listab then
         umode.notify("Can't split tabpage")
         return
@@ -571,7 +606,6 @@ function pkeys.split_buffer(uctx)
     local cur_tid = api.nvim_get_current_tabpage()
     local wid = M.get_target_wins(cur_tid, true)[1] or 0
     api.nvim_win_call(wid, vim.cmd.split)
-    local item = pctx.state_items[pctx.index]
     api.nvim_win_set_buf(wid, item.bid)
 
     transit_state()
@@ -584,6 +618,10 @@ function pkeys.split_buffer_quit(uctx)
 end
 
 function pkeys.vsplit_buffer(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state == M.State.Listab then
         umode.notify("Can't vsplit tabpage")
         return
@@ -592,7 +630,6 @@ function pkeys.vsplit_buffer(uctx)
     local cur_tid = api.nvim_get_current_tabpage()
     local wid = M.get_target_wins(cur_tid, true)[1] or 0
     api.nvim_win_call(wid, vim.cmd.vsplit)
-    local item = pctx.state_items[pctx.index]
     api.nvim_win_set_buf(wid, item.bid)
 
     transit_state()
@@ -605,6 +642,10 @@ function pkeys.vsplit_buffer_quit(uctx)
 end
 
 function pkeys.tabnew_buffer(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state == M.State.Listab then
         umode.notify("Can't tabnew tabpage")
         return
@@ -613,7 +654,6 @@ function pkeys.tabnew_buffer(uctx)
     vim.opt.eventignore:append('BufEnter')
     vim.cmd.tabnew()
     vim.opt.eventignore:remove('BufEnter')
-    local item = pctx.state_items[pctx.index]
     api.nvim_win_set_buf(api.nvim_get_current_win(), item.bid)
 
     transit_state()
@@ -660,10 +700,13 @@ local function delete_buffer(index)
 end
 
 function pkeys.close_buffer(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state ~= M.State.Sigtab and pctx.state ~= M.State.Alltab then
         return
     end
-    local item = pctx.state_items[pctx.index]
 
     -- Unsaved changes
     if
@@ -681,10 +724,13 @@ function pkeys.close_buffer(uctx)
 end
 
 function pkeys.close_tabpage(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state ~= M.State.Listab then
         return
     end
-    local item = pctx.state_items[pctx.index]
 
     -- Unsaved changes
     if
@@ -729,10 +775,13 @@ function pkeys.close_buffer_or_tabpage(uctx)
 end
 
 function pkeys.close_all_buffers(uctx)
+    local item = pctx.state_items[pctx.index]
+    if not item then
+        return
+    end
     if pctx.state ~= M.State.Sigtab and pctx.state ~= M.State.Alltab then
         return
     end
-    local item = pctx.state_items[pctx.index]
 
     -- Unsaved changes
     if
@@ -966,14 +1015,34 @@ function pkeys.move_out_buffer_or_tabpage_to_next(uctx)
     uctx.state = umode.State.ReDisp
 end
 
-function pkeys.rename_tabpage(uctx)
+function pkeys.set_tabpage_label(uctx)
     local label = umode.input({ prompt = 'Input tabpage label:' })
     if label then
         local item = pctx.state_items[pctx.index]
+        if not item then
+            return
+        end
         if label == '' then
             tabctx[item.tid].label = nil
         else
             tabctx[item.tid].label = label
+        end
+    end
+    transit_state()
+    uctx.state = umode.State.ReDisp
+end
+
+function pkeys.set_tabpage_dir(uctx)
+    local tdir = umode.input({ prompt = 'Input tabpage label:' })
+    if tdir then
+        local item = pctx.state_items[pctx.index]
+        if not item then
+            return
+        end
+        if tdir == '' then
+            tabctx[item.tid].tdir = nil
+        else
+            tabctx[item.tid].tdir = vim.fs.normalize(tdir, { expand_env = true })
         end
     end
     transit_state()
