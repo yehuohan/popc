@@ -15,6 +15,8 @@ local umode = require('popc.usermode')
 --- @field name string Tabpage current buffer name
 --- @field tdir string? Tabpage directory as base directory for buffer filename
 --- @field bufs BufID[] Buffers scoped under tabpage
+--- @field icur integer The current buffer index of `TabContext.bufs`
+--- @field istt integer The pctx.index for the tabpage
 
 --- @class BufContext
 --- @field cnt integer cnt = 0 means buffer is closed but not wiped out
@@ -280,15 +282,14 @@ function M.get_bufstatus(tid)
     if not tabctx[cur_tid] then
         return {}
     end
-    local cur_bid = api.nvim_get_current_buf()
     local res = {}
-    for _, bid in ipairs(tabctx[cur_tid].bufs) do
+    for k, bid in ipairs(tabctx[cur_tid].bufs) do
         local name = fn.bufname(bid)
         name = string.len(name) == 0 and ('%d.NoName'):format(bid) or vim.fs.basename(name)
         res[#res + 1] = {
             bid = bid,
             name = name,
-            current = bid == cur_bid,
+            current = k == tabctx[cur_tid].icur,
             modified = fn.getbufvar(bid, '&modified') == 1,
         }
     end
@@ -298,7 +299,7 @@ end
 --- Add a tabpage (mainly for M.tab_callback)
 --- @param tid TabID
 function M._add_tab(tid)
-    tabctx[tid] = { label = nil, name = '', bufs = {} }
+    tabctx[tid] = { name = '', bufs = {}, index = 1, icur = 1, istt = 1 }
 end
 
 --- Delete a tabpage (mainly for M.tab_callback)
