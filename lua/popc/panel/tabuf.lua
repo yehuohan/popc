@@ -104,9 +104,18 @@ function M.buf_num(tid)
     return tabctx[tid] and #tabctx[tid].bufs or 0
 end
 
+--- Get tabpage's buffer index
+--- @param tid TabID
+--- @param bid BufID
+--- @return integer?
+function M.buf_idx(tid, bid)
+    return tabctx[tid] and list_index(tabctx[tid].bufs, bid)
+end
+
 --- Get buffer name
 --- @param tid TabID
 --- @param bid BufID
+--- @return string
 function M.buf_name(tid, bid)
     local name = fn.bufname(bid)
     if pctx.fullpath then
@@ -330,7 +339,7 @@ function M._del_buf(tid, bid)
     if not tabctx[tid] then
         return
     end
-    local idx = list_index(tabctx[tid].bufs, bid)
+    local idx = M.buf_idx(tid, bid)
     if idx then
         table.remove(tabctx[tid].bufs, idx)
         bufctx[bid].cnt = math.max(bufctx[bid].cnt - 1, 0)
@@ -403,6 +412,25 @@ function M.setup()
     if vim.v.vim_did_enter then
         M.buf_callback({ event = 'VimEnter' })
     end
+
+    local buffer_switch_left = function(args)
+        M.cmd_switch_buffer(args.bang, -(args.count == 0 and 1 or args.count))
+    end
+    local buffer_switch_right = function(args)
+        M.cmd_switch_buffer(args.bang, args.count == 0 and 1 or args.count)
+    end
+    local buffer_jump_prev = function(args)
+        M.cmd_jump_inside_buffer(-(args.count == 0 and 1 or args.count))
+    end
+    local buffer_jump_next = function(args)
+        M.cmd_jump_inside_buffer(args.count == 0 and 1 or args.count)
+    end
+    api.nvim_create_user_command('PopcTabuf', M.pop, { nargs = 0 })
+    api.nvim_create_user_command('PopcBufferSwitchLeft', buffer_switch_left, { bang = true, nargs = 0, count = true })
+    api.nvim_create_user_command('PopcBufferSwitchRight', buffer_switch_right, { bang = true, nargs = 0, count = true })
+    api.nvim_create_user_command('PopcBufferJumpPrev', buffer_jump_prev, { nargs = 0, count = true })
+    api.nvim_create_user_command('PopcBufferJumpNext', buffer_jump_next, { nargs = 0, count = true })
+    api.nvim_create_user_command('PopcBufferClose', M.cmd_close_buffer, { nargs = 0 })
 end
 
 function M.inspect()
@@ -427,7 +455,7 @@ function M.inspect()
             :flatten()
             :join('\n  ')
         .. '\n]'
-    return txt
+    return txt, tabctx, bufctx
 end
 
 --- Panel keys handler
@@ -858,7 +886,7 @@ local function move_buffer_to_tabpage(index, direction)
         local newtid = tids[newtid_idx]
 
         -- Move out the target buffer from old tabpage to new tabpage
-        local bid_idx = list_index(tabctx[item.tid].bufs, item.bid)
+        local bid_idx = M.buf_idx(item.tid, item.bid)
         if bid_idx then
             hide_buffer(index)
             table.remove(tabctx[item.tid].bufs, bid_idx)
@@ -962,6 +990,97 @@ function M.pop()
     pctx.text = copts.icons.tabuf .. ' Buffers'
     transit_state(M.State.Sigtab)
     umode.apop(pctx)
+end
+
+--- Switch target window's buffer to another buffer
+--- @param bang boolean true to switch from target window buffer, false to switch from current buffer
+--- @param direction integer +n for next, -n for prev
+function M.cmd_switch_buffer(bang, direction)
+    local cur_tid = api.nvim_get_current_tabpage()
+    local num = M.buf_num(cur_tid)
+    if num <= 1 then
+        return
+    end
+
+    local wid = M.get_target_wins(cur_tid, true)[1] or 0
+    local bid = bang and api.nvim_win_get_buf(wid) or api.nvim_get_current_buf()
+    local idx = M.buf_idx(cur_tid, bid)
+    if idx then
+        idx = (idx + direction - 1) % num + 1
+        api.nvim_win_set_buf(wid, tabctx[cur_tid].bufs[idx])
+    else
+        umode.notify("Can't switch from this buffer for it's out of Popc.Tabuf")
+    end
+end
+
+--- Jump inside current buffer according to jumplist
+--- @param direction integer +n for next, -n for prev
+function M.cmd_jump_inside_buffer(direction)
+    local jumplist = fn.getjumplist()
+    local lst, idx = jumplist[1], jumplist[2] + 1
+    local cur_bid = api.nvim_get_current_buf()
+
+    local cmd
+    local step
+    local stop
+    if direction < 0 then
+        cmd = '%d<C-o>'
+        step, stop = -1, 1
+    elseif direction > 0 then
+        cmd = '%d<C-i>'
+        step, stop = 1, #lst
+    end
+    if cmd then
+        local cnt = 0
+        local num = math.abs(direction)
+        for k = idx + step, stop, step do
+            if lst[k].bufnr == cur_bid then
+                cnt = cnt + 1
+                if cnt == num then
+                    -- Why '<C-i/o>' only work with `nvim_feedkeys` with lua, buf not with `vim.cmd.normal`?
+                    api.nvim_feedkeys(vim.keycode(cmd:format(math.abs(k - idx))), 'n', false)
+                    break
+                end
+            end
+        end
+    end
+end
+
+--- Close current window's buffer
+function M.cmd_close_buffer()
+    local cur_tid = api.nvim_get_current_tabpage()
+    local cur_bid = api.nvim_get_current_buf()
+    local cur_bid_idx = M.buf_idx(cur_tid, cur_bid)
+    if not cur_bid_idx then
+        umode.notify("Can't close this buffer for it's out of Popc.Tabuf")
+        return
+    end
+
+    local wids = M.get_target_wins(cur_tid)
+    local num = M.buf_num(cur_tid)
+    if num > 1 then
+        -- Try switch to the last accessed buffer
+        local alt_bid = fn.bufnr('#')
+        if not M.buf_idx(cur_tid, alt_bid) then
+            alt_bid = tabctx[cur_tid].bufs[cur_bid_idx == num and (cur_bid_idx - 1) or (cur_bid_idx + 1)]
+        end
+
+        -- Close buffer
+        for _, wid in ipairs(wids) do
+            if cur_bid == api.nvim_win_get_buf(wid) then
+                api.nvim_win_set_buf(wid, alt_bid)
+            end
+        end
+        M._del_buf(cur_tid, cur_bid)
+        if bufctx[cur_bid].cnt == 0 then
+            vim.cmd.bdelete({ bang = true, count = cur_bid, mods = { silent = true } })
+        end
+    else
+        local tmp_bid = api.nvim_create_buf(true, true)
+        for _, wid in ipairs(wids) do
+            api.nvim_win_set_buf(wid, tmp_bid)
+        end
+    end
 end
 
 return M

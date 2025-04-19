@@ -112,4 +112,35 @@ describe('tabuf', function()
             { bid = fn.bufnr('test.c'), name = 'test.c', current = false, modified = false },
         }, tabuf.get_bufstatus(tids[3]))
     end)
+
+    it('. cmd_switch_buffer', function()
+        vim.cmd.normal('gt')
+        local wid = _wids[1]['test.py']
+
+        eq(fn.bufnr('test.py'), api.nvim_win_get_buf(wid))
+        tabuf.cmd_switch_buffer(false, -2)
+        eq(fn.bufnr('test.lua'), api.nvim_win_get_buf(wid))
+        tabuf.cmd_switch_buffer(false, 1)
+        eq(fn.bufnr('test.vim'), api.nvim_win_get_buf(wid))
+
+        vim.cmd.split()
+        api.nvim_win_set_buf(0, api.nvim_create_buf(false, true))
+        tabuf.cmd_switch_buffer(false, 1)
+        eq(fn.bufnr('test.vim'), api.nvim_win_get_buf(wid))
+        tabuf.cmd_switch_buffer(true, 1)
+        eq(fn.bufnr('test.py'), api.nvim_win_get_buf(wid))
+    end)
+
+    it('. cmd_close_buffer', function()
+        vim.cmd.normal('gt')
+        local wid = _wids[1]['test.py']
+
+        eq(fn.bufnr('test.py'), api.nvim_win_get_buf(wid))
+        api.nvim_win_set_buf(wid, fn.bufnr('test.lua'))
+        api.nvim_win_set_buf(wid, fn.bufnr('#'))
+        tabuf.cmd_close_buffer()
+        eq(fn.bufnr('test.lua'), api.nvim_win_get_buf(wid))
+        tabuf.cmd_close_buffer()
+        eq(fn.bufnr('test.vim'), api.nvim_win_get_buf(wid))
+    end)
 end)

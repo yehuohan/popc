@@ -341,7 +341,7 @@ function M.confirm(prompt)
 end
 
 function M.inspect()
-    return vim.inspect(umode)
+    return vim.inspect(umode), umode
 end
 
 return M
