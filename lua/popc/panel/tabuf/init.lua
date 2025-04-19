@@ -89,7 +89,7 @@ end
 
 --- Get tabpage name
 --- @param tid TabID
---- @param pad boolean
+--- @param pad boolean?
 function M.tab_name(tid, pad)
     local name = tabctx[tid] and (tabctx[tid].label or tabctx[tid].name) or ''
     if pad then
@@ -135,7 +135,7 @@ function M.buf_name(tid, bid)
             name = string.sub(name, string.len(base_dir) + 2)
         end
     end
-    return string.len(name) == 0 and ('[%d.NoName]'):format(bid) or name
+    return string.len(name) == 0 and ('%d.NoName'):format(bid) or name
 end
 
 --- Get tabpage's modified buffers
@@ -283,9 +283,11 @@ function M.get_bufstatus(tid)
     local cur_bid = api.nvim_get_current_buf()
     local res = {}
     for _, bid in ipairs(tabctx[cur_tid].bufs) do
+        local name = fn.bufname(bid)
+        name = string.len(name) == 0 and ('%d.NoName'):format(bid) or vim.fs.basename(name)
         res[#res + 1] = {
             bid = bid,
-            name = vim.fs.basename(fn.bufname(bid)),
+            name = name,
             current = bid == cur_bid,
             modified = fn.getbufvar(bid, '&modified') == 1,
         }
@@ -432,6 +434,11 @@ function M.setup()
     )
     if vim.v.vim_did_enter then
         M.buf_callback({ event = 'VimEnter' })
+    end
+
+    if copts.tabuf.tabline then
+        vim.o.showtabline = 2
+        vim.o.tabline = '%{%v:lua.require("popc.panel.tabuf.tabline").eval()%}'
     end
 
     local buffer_switch_left = function(args)

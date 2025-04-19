@@ -44,6 +44,7 @@ M.opts = {
     },
     tabuf = {
         enable = true,
+        tabline = true,
         root_marker = { '.git' },
         exclude_buffer = function(bid)
             if vim.tbl_contains({ 'Popc', 'qf' }, fn.getbufvar(bid, '&filetype')) then
