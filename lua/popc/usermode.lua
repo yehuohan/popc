@@ -11,6 +11,7 @@ local copts = require('popc.config').opts
 --- @field index integer Current selected index item of panel, 1-based
 --- @field keys table<string, string|UserkeysHandler>
 --- @field pkeys table<string, UserkeysHandler>
+--- @field on_quit UserkeysHandler?
 
 --- @class Usermode Custom user mode
 --- @field ctx UsermodeContext
@@ -25,6 +26,7 @@ local copts = require('popc.config').opts
 
 --- @class UsermodeContext Custom user mode context
 --- @field pctx PanelContext?
+--- @field pret any Return from panel (usually assign at PanelContext.on_quit)
 --- @field state UsermodeState
 
 --- @alias UserkeysHandler fun(uctx:UsermodeContext?, ukey:string?) Handle all keys from custom user mode
@@ -87,13 +89,13 @@ end
 --- @return integer new_width The require floating window width
 local function create_title(name, text, width)
     local title = {
-        { copts.icons.seps[1], 'PopcFloatTitleBarPad' },
+        { copts.icons.pads[1], 'PopcFloatTitleBarPad' },
         { 'Popc', 'PopcFloatTitleBar' },
-        { copts.icons.seps[2], 'PopcFloatTitleBarSep' },
+        { copts.icons.pads[2], 'PopcFloatTitleBarSep' },
         { text, 'PopcFloatTitle' },
-        { copts.icons.seps[1], 'PopcFloatTitleBarSep' },
+        { copts.icons.pads[1], 'PopcFloatTitleBarSep' },
         { name, 'PopcFloatTitleBar' },
-        { copts.icons.seps[2], 'PopcFloatTitleBarPad' },
+        { copts.icons.pads[2], 'PopcFloatTitleBarPad' },
     }
     local len = 0
     for _, t in ipairs(title) do
@@ -207,7 +209,10 @@ local function display(pctx)
     switch_line(umode.ctx, pctx.index)
 end
 
-function ukeys.quit(uctx)
+function ukeys.quit(uctx, ukey)
+    if uctx.pctx.on_quit then
+        uctx.pctx.on_quit(uctx, ukey)
+    end
     uctx.state = M.State.None
 end
 
@@ -236,6 +241,7 @@ function ukeys.prev_page(uctx)
 end
 
 --- @param pctx PanelContext
+--- @return any
 local function ok_key(pctx)
     umode.ctx.state = M.State.WaitKey
     vim.cmd.redraw()
@@ -260,25 +266,26 @@ local function ok_key(pctx)
         if not ok then -- Quit with <C-c>
             break
         end
-        local k = fn.keytrans(c)
+        local ukey = fn.keytrans(c)
 
         -- Handle key
-        if umode.keys[k] then
-            local handler = umode.keys[k]
+        if umode.keys[ukey] then
+            local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
-            handler(umode.ctx, k)
-        elseif pctx.keys[k] then
-            local handler = pctx.keys[k]
+            handler(umode.ctx, ukey)
+        elseif pctx.keys[ukey] then
+            local handler = pctx.keys[ukey]
             handler = vim.is_callable(handler) and handler or pctx.pkeys[handler]
-            handler(umode.ctx, k)
+            handler(umode.ctx, ukey)
         else
-            vim.notify(("No handler for key '%s'"):format(k))
+            vim.notify(("No handler for key '%s'"):format(ukey))
         end
     end
     if api.nvim_win_is_valid(umode.win) then
         api.nvim_win_close(umode.win, false)
     end
     umode.ctx.state = M.State.None
+    return umode.ctx.pret
 end
 
 local function __on_key()
@@ -300,16 +307,17 @@ end
 --- @param pctx PanelContext
 function M.pop(pctx)
     umode.ctx.pctx = pctx
+    umode.ctx.pret = nil
     display(pctx)
     if umode.ctx.state == M.State.None then
-        ok_key(pctx)
+        return ok_key(pctx)
     end
 end
 
 --- Async pop out panel
 --- @param pctx PanelContext
 function M.apop(pctx)
-    coroutine.wrap(M.pop)(pctx)
+    return coroutine.wrap(M.pop)(pctx)
 end
 
 --- Notify message

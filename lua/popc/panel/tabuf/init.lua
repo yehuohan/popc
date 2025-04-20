@@ -6,23 +6,31 @@ local log = require('popc.log').get('tabuf')
 local copts = require('popc.config').opts
 local umode = require('popc.usermode')
 
---- @alias TabID integer A valid tabpage ID (nvim_buf_is_valid() = true)
---- @alias BufID integer A valid buffer ID (nvim_tabpage_is_valid() = true)
---- @alias WinID integer A valid window ID (nvim_win_is_valid() = true)
+--- @alias TabID integer A tabpage ID
+--- @alias BufID integer A buffer ID
+--- @alias WinID integer A window ID
 
 --- @class TabContext
---- @field label string? A label name for tabpage
---- @field name string Tabpage current buffer name
+--- @field label string? A label for tabpage
 --- @field tdir string? Tabpage directory as base directory for buffer filename
 --- @field bufs BufID[] Buffers scoped under tabpage
+--- @field icur integer The current buffer index of `TabContext.bufs`
+--- @field istt integer The state item index for the tabpage
 
 --- @class BufContext
 --- @field cnt integer cnt = 0 means buffer is closed but not wiped out
 
+--- @class TabufStatus
+--- @field id TabID|BufID
+--- @field idx integer The index of tabpage or tabpage buffer
+--- @field name string
+--- @field current boolean
+--- @field modified boolean
+
 --- @enum TabufState
 M.State = { Sigtab = 1, Alltab = 2, Listab = 3 }
 
---- @class StateItem
+--- @class TabufStateItem
 --- @field tid TabID
 --- @field bid BufID?
 --- @field wid WinID?
@@ -45,7 +53,7 @@ local pctx = {
     root_dir = nil,
     fullpath = false,
     state = M.State.Sigtab,
-    --- @type StateItem[]
+    --- @type TabufStateItem[]
     state_items = {},
     state_index = {
         [M.State.Sigtab] = 1,
@@ -91,7 +99,16 @@ end
 --- @param tid TabID
 --- @param pad boolean?
 function M.tab_name(tid, pad)
-    local name = tabctx[tid] and (tabctx[tid].label or tabctx[tid].name) or ''
+    if not tabctx[tid] then
+        return 'None'
+    end
+    local name = tabctx[tid].label
+    if not name then
+        local cur_bid = api.nvim_win_get_buf(api.nvim_tabpage_get_win(tid))
+        name = fn.bufname(cur_bid)
+        name = name == '' and fn.getbufvar(cur_bid, '&filetype') or vim.fs.basename(name)
+        name = name == '' and ('%d.NoName'):format(cur_bid) or name
+    end
     if pad then
         name = '[' .. name .. ']'
     end
@@ -117,8 +134,17 @@ end
 --- @param tid TabID
 --- @param bid BufID
 --- @return string
-function M.buf_name(tid, bid)
-    local name = vim.fs.normalize(api.nvim_buf_get_name(bid))
+function M.buf_name(tid, bid, base)
+    local name = api.nvim_buf_get_name(bid)
+
+    -- Need base name
+    if base then
+        name = name == '' and fn.getbufvar(bid, '&filetype') or vim.fs.basename(name)
+        return name == '' and ('%d.NoName'):format(bid) or name
+    end
+
+    -- Need full name
+    name = vim.fs.normalize(name)
     if not pctx.fullpath then
         local base_dir
         if tabctx[tid] then
@@ -135,7 +161,8 @@ function M.buf_name(tid, bid)
             name = string.sub(name, string.len(base_dir) + 2)
         end
     end
-    return string.len(name) == 0 and ('%d.NoName'):format(bid) or name
+    name = name == '' and fn.getbufvar(bid, '&filetype') or name
+    return name == '' and ('%d.NoName'):format(bid) or name
 end
 
 --- Get tabpage's modified buffers
@@ -259,12 +286,15 @@ function M.get_state_items(state)
 end
 
 --- Get tabpage's status for tabline
+--- @return TabufStatus[]
 function M.get_tabstatus()
     local cur_tid = api.nvim_get_current_tabpage()
+    --- @type TabufStatus[]
     local res = {}
-    for _, tid in ipairs(api.nvim_list_tabpages()) do
+    for k, tid in ipairs(api.nvim_list_tabpages()) do
         res[#res + 1] = {
-            tid = tid,
+            id = tid,
+            idx = k,
             name = M.tab_name(tid),
             current = tid == cur_tid,
             modified = #M.get_modified_bufs(tid, true) > 0,
@@ -275,19 +305,23 @@ end
 
 --- Get tabpage's buffers status for tabline
 --- @param tid TabID? nil for nvim_get_current_tabpage()
+--- @return TabufStatus[]
 function M.get_bufstatus(tid)
     local cur_tid = tid or api.nvim_get_current_tabpage()
     if not tabctx[cur_tid] then
         return {}
     end
-    local cur_bid = api.nvim_get_current_buf()
+    local cur_bid = api.nvim_win_get_buf(api.nvim_tabpage_get_win(cur_tid))
+    if not M.buf_idx(cur_tid, cur_bid) then
+        cur_bid = tabctx[cur_tid].bufs[tabctx[cur_tid].icur]
+    end
+    --- @type TabufStatus[]
     local res = {}
-    for _, bid in ipairs(tabctx[cur_tid].bufs) do
-        local name = fn.bufname(bid)
-        name = string.len(name) == 0 and ('%d.NoName'):format(bid) or vim.fs.basename(name)
+    for k, bid in ipairs(tabctx[cur_tid].bufs) do
         res[#res + 1] = {
-            bid = bid,
-            name = name,
+            id = bid,
+            idx = k,
+            name = M.buf_name(cur_tid, bid, true),
             current = bid == cur_bid,
             modified = fn.getbufvar(bid, '&modified') == 1,
         }
@@ -298,7 +332,7 @@ end
 --- Add a tabpage (mainly for M.tab_callback)
 --- @param tid TabID
 function M._add_tab(tid)
-    tabctx[tid] = { label = nil, name = '', bufs = {} }
+    tabctx[tid] = { bufs = {}, icur = 1, istt = 1 }
 end
 
 --- Delete a tabpage (mainly for M.tab_callback)
@@ -325,17 +359,18 @@ function M._add_buf(tid, bid)
     if not info then
         return
     end
-    if info.listed == 0 then
+    if info.listed == 0 and not bufctx[bid] then
         return
     end
     if copts.tabuf.exclude_buffer(bid) then
         return
     end
 
-    local tnr = api.nvim_tabpage_get_number(tid)
     local tab = tabctx[tid]
-    if vim.list_contains(tab.bufs, bid) then
-        log('switch buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
+    local bid_idx = M.buf_idx(tid, bid)
+    if bid_idx then
+        tab.icur = bid_idx
+        log('switch buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, api.nvim_tabpage_get_number(tid), bid, info.name)
     else
         table.insert(tab.bufs, bid)
         if bufctx[bid] then
@@ -343,9 +378,8 @@ function M._add_buf(tid, bid)
         else
             bufctx[bid] = { cnt = 1 }
         end
-        log('append buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
+        log('append buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, api.nvim_tabpage_get_number(tid), bid, info.name)
     end
-    tab.name = info.name == '' and tostring(bid) .. '.NoName' or vim.fs.basename(info.name)
 end
 
 --- Delete a buffer from a tabpage (mainly for M.buf_callback)
@@ -395,24 +429,32 @@ function M.buf_callback(args)
             end
         end
     elseif args.event == 'BufEnter' then
-        if M.tab_num() == 0 then
-            M._add_tab(api.nvim_get_current_tabpage())
+        -- Update context for `nvim_get_current_win()`
+        local bid_idx = M.buf_idx(cur_tid, api.nvim_get_current_buf())
+        if bid_idx then
+            tabctx[cur_tid].icur = bid_idx
         end
+    elseif args.event == 'BufWinEnter' then
         M._add_buf(cur_tid, api.nvim_get_current_buf())
     elseif args.event == 'BufWipeout' then
+        --- Wipeout buffers from all tabpages
         local bid = args.buf -- <abuf>
         if bufctx[bid] then
-            --- Wipeout buffers from all tabpages
             for _, tid in ipairs(api.nvim_list_tabpages()) do
                 M._del_buf(tid, bid)
             end
             bufctx[bid] = nil
-            local tnr = api.nvim_tabpage_get_number(cur_tid)
-            log('wipeout buffer: tid = %d, tnr = %d, bid = %d, afile = %s', cur_tid, tnr, bid, args.file)
+            log(
+                'wipeout buffer: tid = %d, tnr = %d, bid = %d, afile = %s',
+                cur_tid,
+                api.nvim_tabpage_get_number(cur_tid),
+                bid,
+                args.file
+            )
         end
     elseif args.event == 'VimEnter' then
         if M.tab_num() == 0 then
-            M._add_tab(api.nvim_get_current_tabpage())
+            M._add_tab(cur_tid)
         end
         --- @diagnostic disable-next-line: param-type-mismatch
         for _, arg in ipairs(fn.argv()) do
@@ -429,7 +471,7 @@ function M.setup()
         { group = 'Popc.Panel.Tabuf', pattern = { '*' }, callback = M.tab_callback }
     )
     api.nvim_create_autocmd(
-        { 'BufNew', 'BufEnter', 'BufWipeout', (not vim.v.vim_did_enter) and 'VimEnter' or nil },
+        { 'BufNew', 'BufEnter', 'BufWinEnter', 'BufWipeout', (not vim.v.vim_did_enter) and 'VimEnter' or nil },
         { group = 'Popc.Panel.Tabuf', pattern = { '*' }, callback = M.buf_callback }
     )
     if vim.v.vim_did_enter then
@@ -468,7 +510,8 @@ function M.inspect()
         .. '\ntabctx = {\n  '
         .. vim.iter(tids)
             :map(function(tid)
-                return ('[%d] = %s,'):format(tid, string.gsub(vim.inspect(tabctx[tid]), '\n ?', ''))
+                local res = vim.inspect(tabctx[tid]):gsub('\n ?', ''):gsub('}$', ' }')
+                return ('[%d] = %s,'):format(tid, res)
             end)
             :flatten()
             :join('\n  ')
@@ -477,7 +520,8 @@ function M.inspect()
         .. '\nbufctx = {\n  '
         .. vim.iter(vim.iter(pairs(bufctx))
             :map(function(bid, buf)
-                return ('[%d] = %s,'):format(bid, string.gsub(vim.inspect(buf), '\n ?', ''))
+                local res = vim.inspect(buf):gsub('\n ?', ''):gsub('}$', ' }')
+                return ('[%d] = %s,'):format(bid, res)
             end)
             :totable())
             :flatten()
@@ -490,29 +534,44 @@ end
 --- Panel keys handler
 local pkeys = pctx.pkeys
 
+--- Transit from pctx.state to state
 --- @param state TabufState?
 local function transit_state(state)
     local item = pctx.state_items[pctx.index]
-    if state and item then
-        pctx.state_index[pctx.state] = pctx.index
 
-        -- Transit state
-        if pctx.state == M.State.Sigtab and state == M.State.Alltab then
-            for _, tid in ipairs(api.nvim_list_tabpages()) do
-                if tid == item.tid then
-                    break
-                end
-                pctx.index = pctx.index + M.buf_num(tid)
-            end
-        elseif pctx.state == M.State.Alltab and state == M.State.Sigtab then
-            pctx.index = item.idx
-        elseif pctx.state == M.State.Listab and state ~= M.State.Listab then
-            pctx.index = pctx.state_index[state]
-        elseif pctx.state ~= M.State.Listab and state == M.State.Listab then
-            pctx.index = list_index(api.nvim_list_tabpages(), item.tid) or 1
+    if item then
+        -- Store tabpage state item index
+        if pctx.state ~= M.State.Listab then
+            tabctx[item.tid].istt = item.idx
         end
 
-        pctx.state = state
+        -- Update state item index
+        if state then
+            pctx.state_index[pctx.state] = pctx.index
+
+            if pctx.state == M.State.Sigtab and state == M.State.Alltab then
+                for _, tid in ipairs(api.nvim_list_tabpages()) do
+                    if tid == item.tid then
+                        break
+                    end
+                    pctx.index = pctx.index + M.buf_num(tid)
+                end
+            elseif pctx.state == M.State.Alltab and state == M.State.Sigtab then
+                pctx.index = item.idx
+            elseif pctx.state == M.State.Listab and state == M.State.Sigtab then
+                pctx.index = tabctx[item.tid] and tabctx[item.tid].istt or item.idx
+            elseif pctx.state == M.State.Listab and state == M.State.Alltab then
+                pctx.index = pctx.state_index[state]
+            elseif pctx.state ~= M.State.Listab and state == M.State.Listab then
+                pctx.index = list_index(api.nvim_list_tabpages(), item.tid) or 1
+            end
+
+            pctx.state = state
+        else
+            if pctx.state == M.State.Sigtab then
+                pctx.index = tabctx[api.nvim_get_current_tabpage()].istt
+            end
+        end
     end
     pctx.items, pctx.state_items = M.get_state_items(pctx.state)
 end
@@ -675,6 +734,10 @@ end
 --- Hide buffer and keep buffer window
 local function hide_buffer(index)
     local item = pctx.state_items[index]
+    if not item then
+        return
+    end
+
     local wids = M.get_target_wins(item.tid, false)
     if M.buf_num(item.tid) > 1 then
         for _, wid in ipairs(wids) do
@@ -699,9 +762,15 @@ end
 --- Delete buffer and keep buffer window
 local function delete_buffer(index)
     local item = pctx.state_items[index]
+    if not item then
+        return
+    end
+
     hide_buffer(index)
     M._del_buf(item.tid, item.bid)
-    if bufctx[item.bid].cnt == 0 then
+
+    -- Hide buffer may result BufWipeout, so check bufctx[item.bid] first
+    if bufctx[item.bid] and bufctx[item.bid].cnt == 0 then
         vim.cmd.bdelete({ bang = true, count = item.bid, mods = { silent = true } })
     end
 end
@@ -855,8 +924,11 @@ local function close_window(index, also_buffer)
         umode.notify("Can't close window on tabpage")
         return false
     end
-
     local item = pctx.state_items[index]
+    if not item then
+        return
+    end
+
     if item.wid then
         local wids = M.get_target_wins(item.tid, false)
         if #wids == 1 then
@@ -903,6 +975,9 @@ end
 --- @return integer new_index
 local function move_buffer(index, direction)
     local item = pctx.state_items[index]
+    if not item then
+        return index
+    end
     local move = (index + direction - 1) % #pctx.state_items + 1
     local bids = tabctx[item.tid].bufs
     bids[index], bids[move] = bids[move], bids[index]
@@ -913,6 +988,9 @@ end
 --- @return integer new_index
 local function move_tabpage(index, direction)
     local item = pctx.state_items[index]
+    if not item then
+        return index
+    end
     local move = (index + direction - 1) % #pctx.state_items + 1
     api.nvim_win_call(api.nvim_tabpage_get_win(item.tid), function()
         if direction == -1 then
@@ -928,12 +1006,15 @@ end
 --- @param direction integer +1 for next, -1 for prev
 --- @return integer? new_index The new pctx.index
 local function move_buffer_to_tabpage(index, direction)
+    local item = pctx.state_items[index]
+    if not item then
+        return
+    end
     if M.tab_num() == 1 then
         umode.notify("There's no another tabpage to place moved buffer")
         return
     end
 
-    local item = pctx.state_items[index]
     local tids = api.nvim_list_tabpages()
     local tid_idx = list_index(tids, item.tid)
     if tid_idx then
@@ -1023,7 +1104,7 @@ function pkeys.move_out_buffer_or_tabpage_to_next(uctx)
 end
 
 function pkeys.set_tabpage_label(uctx)
-    local label = umode.input({ prompt = 'Input tabpage label:' })
+    local label = umode.input({ prompt = 'Set tabpage label:' })
     if label then
         local item = pctx.state_items[pctx.index]
         if not item then
@@ -1040,7 +1121,7 @@ function pkeys.set_tabpage_label(uctx)
 end
 
 function pkeys.set_tabpage_dir(uctx)
-    local tdir = umode.input({ prompt = 'Input tabpage label:' })
+    local tdir = umode.input({ prompt = 'Set tabpage base directory:' })
     if tdir then
         local item = pctx.state_items[pctx.index]
         if not item then
@@ -1064,7 +1145,9 @@ end
 
 function M.pop()
     pctx.text = copts.icons.tabuf .. ' Buffers'
-    transit_state(M.State.Sigtab)
+    pctx.state = M.State.Sigtab -- Pre-set state to avoid transit state
+    pctx.state_items = {} -- Clear previous state items
+    transit_state()
     umode.apop(pctx)
 end
 

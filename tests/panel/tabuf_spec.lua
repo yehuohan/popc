@@ -93,23 +93,23 @@ describe('tabuf', function()
     it('. get_tabstatus/get_bufstatus', function()
         local tids = api.nvim_list_tabpages()
         eq({
-            { tid = tids[1], name = 'test.py³', current = false, modified = true },
-            { tid = tids[2], name = 'test.cpp²', current = false, modified = false },
-            { tid = tids[3], name = 'test.rs²', current = true, modified = true },
+            { id = tids[1], idx = 1, name = 'test.py³', current = false, modified = true },
+            { id = tids[2], idx = 2, name = 'test.cpp²', current = false, modified = false },
+            { id = tids[3], idx = 3, name = 'test.rs²', current = true, modified = true },
         }, tabuf.get_tabstatus())
 
         eq({
-            { bid = fn.bufnr('test.lua'), name = 'test.lua', current = false, modified = false },
-            { bid = fn.bufnr('test.vim'), name = 'test.vim', current = false, modified = false },
-            { bid = fn.bufnr('test.py'), name = 'test.py', current = false, modified = true },
+            { id = fn.bufnr('test.lua'), idx = 1, name = 'test.lua', current = false, modified = false },
+            { id = fn.bufnr('test.vim'), idx = 2, name = 'test.vim', current = false, modified = false },
+            { id = fn.bufnr('test.py'), idx = 3, name = 'test.py', current = true, modified = true },
         }, tabuf.get_bufstatus(tids[1]))
         eq({
-            { bid = fn.bufnr('test.c'), name = 'test.c', current = false, modified = false },
-            { bid = fn.bufnr('test.cpp'), name = 'test.cpp', current = false, modified = false },
+            { id = fn.bufnr('test.c'), idx = 1, name = 'test.c', current = false, modified = false },
+            { id = fn.bufnr('test.cpp'), idx = 2, name = 'test.cpp', current = true, modified = false },
         }, tabuf.get_bufstatus(tids[2]))
         eq({
-            { bid = fn.bufnr('test.rs'), name = 'test.rs', current = true, modified = true },
-            { bid = fn.bufnr('test.c'), name = 'test.c', current = false, modified = false },
+            { id = fn.bufnr('test.rs'), idx = 1, name = 'test.rs', current = true, modified = true },
+            { id = fn.bufnr('test.c'), idx = 2, name = 'test.c', current = false, modified = false },
         }, tabuf.get_bufstatus(tids[3]))
     end)
 
