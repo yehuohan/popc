@@ -10,24 +10,24 @@ local copts = require('popc.config').opts
 --- @field items string[][] Panel lines displayed at floating window
 --- @field index integer Current selected index item of panel, 1-based
 --- @field keys table<string, string|UserkeysHandler>
---- @field pkeys table<string, UserkeysHandler>
+--- @field pkeys table<string, UserkeysHandler>?
 --- @field on_quit UserkeysHandler?
+--- @field helpctx PanelContext?
 
 --- @class Usermode Custom user mode
 --- @field ctx UsermodeContext
+--- @field pctx PanelContext?
 --- @field keys table<string, string|UserkeysHandler>
 --- @field ns integer
 --- @field buf integer?
 --- @field win integer?
---- @field title string[][]?
---- @field lines string[]?
---- @field help_title string[][]?
---- @field help_lines string[]?
 
 --- @class UsermodeContext Custom user mode context
 --- @field pctx PanelContext?
 --- @field pret any Return from panel (usually assign at PanelContext.on_quit)
 --- @field state UsermodeState
+--- @field title string[][]?
+--- @field lines string[]?
 
 --- @alias UserkeysHandler fun(uctx:UsermodeContext?, ukey:string?) Handle all keys from custom user mode
 
@@ -39,47 +39,6 @@ M.State = {
     ReDraw = 4, -- Request redraw at same tabpage
     WaitKey = 5,
 }
-
---- @type Usermode
-local umode = {
-    ctx = {
-        state = M.State.None,
-    },
-    keys = copts.usermode.keys,
-    ns = api.nvim_create_namespace('Popc.Usermode'),
-}
---- Usermode keys handler
---- @type table<string, UserkeysHandler>
-local ukeys = {}
-
-local function validate()
-    if (not umode.buf) or (not api.nvim_buf_is_valid(umode.buf)) then
-        local buf = api.nvim_create_buf(false, true)
-        vim.b[buf].swapfile = false
-        vim.b[buf].buftype = 'nofile'
-        vim.b[buf].bufhidden = 'hide'
-        vim.b[buf].buflisted = false
-        vim.b[buf].filetype = 'Popc'
-        umode.buf = buf
-        umode.ctx.state = M.State.None
-    end
-
-    if (not umode.win) or (not api.nvim_win_is_valid(umode.win)) then
-        local win = api.nvim_open_win(umode.buf, false, {
-            relative = 'editor',
-            width = 1,
-            height = 1,
-            col = 1,
-            row = 1,
-            style = 'minimal',
-            focusable = false,
-        })
-        vim.w[win].wrap = false
-        vim.w[win].foldenable = false
-        umode.win = win
-        umode.ctx.state = M.State.None
-    end
-end
 
 --- Create floating window title from popc panel name and text
 --- @param name string
@@ -151,19 +110,60 @@ local function create_lines(items)
     return lines, fn.strdisplaywidth(lines[1]), #lines
 end
 
+--- @type Usermode
+local umode = {
+    ctx = {
+        state = M.State.None,
+    },
+    keys = copts.usermode.keys,
+    ns = api.nvim_create_namespace('Popc.Usermode'),
+}
+--- Usermode keys handler
+--- @type table<string, UserkeysHandler>
+local ukeys = {}
+
+local function validate()
+    if (not umode.buf) or (not api.nvim_buf_is_valid(umode.buf)) then
+        local buf = api.nvim_create_buf(false, true)
+        vim.b[buf].swapfile = false
+        vim.b[buf].buftype = 'nofile'
+        vim.b[buf].bufhidden = 'hide'
+        vim.b[buf].buflisted = false
+        vim.b[buf].filetype = 'Popc'
+        umode.buf = buf
+        umode.ctx.state = M.State.None
+    end
+
+    if (not umode.win) or (not api.nvim_win_is_valid(umode.win)) then
+        local win = api.nvim_open_win(umode.buf, false, {
+            relative = 'editor',
+            width = 1,
+            height = 1,
+            col = 1,
+            row = 1,
+            style = 'minimal',
+            focusable = false,
+        })
+        vim.w[win].wrap = false
+        vim.w[win].foldenable = false
+        umode.win = win
+        umode.ctx.state = M.State.None
+    end
+end
+
 --- Switch the selected item
 --- @param uctx UsermodeContext
-local function switch_line(uctx, newidx)
-    local win_row = #umode.lines
+local function switch(uctx, newidx)
+    local win_row = #uctx.lines
     local idx = math.max(1, math.min(uctx.pctx.index, win_row))
     newidx = math.max(1, math.min(newidx, win_row))
-    umode.lines[idx] = ' ' .. fn.strcharpart(umode.lines[idx], 1)
-    umode.lines[newidx] = copts.icons.select .. fn.strcharpart(umode.lines[newidx], 1)
+    uctx.lines[idx] = ' ' .. fn.strcharpart(uctx.lines[idx], 1)
+    uctx.lines[newidx] = copts.icons.select .. fn.strcharpart(uctx.lines[newidx], 1)
     uctx.pctx.index = newidx
-    api.nvim_buf_set_lines(umode.buf, idx - 1, idx, false, { umode.lines[idx] })
-    api.nvim_buf_set_lines(umode.buf, newidx - 1, newidx, false, { umode.lines[newidx] })
+    api.nvim_buf_set_lines(umode.buf, idx - 1, idx, false, { uctx.lines[idx] })
+    api.nvim_buf_set_lines(umode.buf, newidx - 1, newidx, false, { uctx.lines[newidx] })
     api.nvim_buf_set_extmark(umode.buf, umode.ns, newidx - 1, 0, {
-        end_col = #umode.lines[newidx],
+        end_col = #uctx.lines[newidx],
         hl_group = 'PopcFloatSelect',
     })
     api.nvim_win_set_cursor(umode.win, { newidx, 0 })
@@ -171,27 +171,27 @@ local function switch_line(uctx, newidx)
 end
 
 --- Display panel items at floating window
---- @param pctx PanelContext
-local function display(pctx)
+--- @param uctx UsermodeContext
+local function display(uctx)
     -- Validate custom user mode's buffer and window
     validate()
 
     -- Create title and lines
     local num_wid = 1 -- numberwidth must >= 1
     local win_wid, win_hei
-    umode.lines, win_wid, win_hei = create_lines(pctx.items)
+    uctx.lines, win_wid, win_hei = create_lines(uctx.pctx.items)
     if copts.usermode.win.number then
         num_wid = math.floor(math.log10(win_hei)) + 1
         win_wid = win_wid + num_wid + 1
     end
-    umode.title, win_wid = create_title(pctx.name, pctx.text, win_wid)
+    uctx.title, win_wid = create_title(uctx.pctx.name, uctx.pctx.text, win_wid)
     win_wid = math.min(win_wid, math.floor(0.8 * vim.o.columns))
     win_hei = math.min(win_hei, math.floor(0.8 * vim.o.lines))
 
     -- Display title and lines
-    api.nvim_buf_set_lines(umode.buf, 0, -1, false, umode.lines)
+    api.nvim_buf_set_lines(umode.buf, 0, -1, false, uctx.lines)
     api.nvim_win_set_config(umode.win, {
-        title = umode.title,
+        title = uctx.title,
         title_pos = 'center',
         relative = 'editor',
         height = win_hei,
@@ -206,7 +206,7 @@ local function display(pctx)
     api.nvim_win_call(umode.win, function()
         fn.winrestview({ topline = 1 })
     end)
-    switch_line(umode.ctx, pctx.index)
+    switch(umode.ctx, uctx.pctx.index)
 end
 
 function ukeys.quit(uctx, ukey)
@@ -216,33 +216,66 @@ function ukeys.quit(uctx, ukey)
     uctx.state = M.State.None
 end
 
-function ukeys.back()
-    vim.notify('TODO: usermode back')
+function ukeys.back(uctx)
+    if uctx.pctx == umode.pctx then
+        return
+    end
+    uctx.pctx = umode.pctx
+    uctx.state = M.State.ReDisp
 end
 
-function ukeys.help()
-    vim.notify('TODO: usermode help')
+function ukeys.help(uctx)
+    if uctx.pctx == umode.pctx.helpctx then
+        return
+    end
+    if not umode.pctx.helpctx then
+        local items = {}
+
+        local keys2items = function(keys)
+            for _, k in ipairs(fn.sort(vim.tbl_keys(keys), 'i')) do
+                local f = keys[k]
+                if type(f) == 'function' then
+                    local info = debug.getinfo(f, 'S')
+                    f = ('%s:L%d'):format(info.short_src, info.linedefined)
+                end
+                table.insert(items, { ('%10s %s'):format(k, f) })
+            end
+        end
+
+        table.insert(items, { '# Usermode' })
+        keys2items(umode.keys)
+        table.insert(items, { '# Panel' })
+        keys2items(umode.pctx.keys)
+        umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {} }
+    end
+    uctx.pctx = umode.pctx.helpctx
+    uctx.state = M.State.ReDisp
 end
 
 function ukeys.next(uctx)
-    switch_line(uctx, uctx.pctx.index % #umode.lines + 1)
+    switch(uctx, uctx.pctx.index % #uctx.lines + 1)
 end
 
 function ukeys.prev(uctx)
-    switch_line(uctx, (uctx.pctx.index - 2) % #umode.lines + 1)
+    switch(uctx, (uctx.pctx.index - 2) % #uctx.lines + 1)
 end
 
 function ukeys.next_page(uctx)
-    switch_line(uctx, uctx.pctx.index + api.nvim_win_get_height(umode.win) - 1)
+    switch(uctx, uctx.pctx.index + api.nvim_win_get_height(umode.win) - 1)
 end
 
 function ukeys.prev_page(uctx)
-    switch_line(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
+    switch(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
 end
 
---- @param pctx PanelContext
+function ukeys.pop_tabuf(uctx)
+    uctx.state = M.State.WaitKey
+    require('popc.panel.tabuf').pop()
+end
+
+--- @param uctx UsermodeContext
 --- @return any
-local function ok_key(pctx)
+local function ok_key(uctx)
     umode.ctx.state = M.State.WaitKey
     vim.cmd.redraw()
     while true do
@@ -253,9 +286,9 @@ local function ok_key(pctx)
             if api.nvim_win_is_valid(umode.win) then
                 api.nvim_win_close(umode.win, false)
             end
-            display(pctx)
+            display(uctx)
         elseif umode.ctx.state == M.State.ReDisp then
-            display(pctx)
+            display(uctx)
         elseif umode.ctx.state == M.State.ReDraw then
             vim.cmd.redraw()
         end
@@ -273,9 +306,9 @@ local function ok_key(pctx)
             local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
             handler(umode.ctx, ukey)
-        elseif pctx.keys[ukey] then
-            local handler = pctx.keys[ukey]
-            handler = vim.is_callable(handler) and handler or pctx.pkeys[handler]
+        elseif uctx.pctx.keys[ukey] then
+            local handler = uctx.pctx.keys[ukey]
+            handler = vim.is_callable(handler) and handler or uctx.pctx.pkeys[handler]
             handler(umode.ctx, ukey)
         else
             vim.notify(("No handler for key '%s'"):format(ukey))
@@ -306,11 +339,12 @@ end
 --- Pop out panel
 --- @param pctx PanelContext
 function M.pop(pctx)
+    umode.pctx = pctx
     umode.ctx.pctx = pctx
     umode.ctx.pret = nil
-    display(pctx)
+    display(umode.ctx)
     if umode.ctx.state == M.State.None then
-        return ok_key(pctx)
+        return ok_key(umode.ctx)
     end
 end
 

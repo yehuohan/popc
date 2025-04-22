@@ -232,16 +232,16 @@ function M.get_state_items(state)
     local cur_tid = api.nvim_get_current_tabpage()
 
     local tab_icon = function(tid)
-        return (tid == cur_tid and copts.icons.tab_focus or ' ') .. (#M.get_modified_bufs(tid, true) > 0 and '+' or ' ')
+        return (tid == cur_tid and copts.icons.tab or ' ') .. (#M.get_modified_bufs(tid, true) > 0 and '+' or ' ')
     end
     local alltab_icon = function(tid, idx, num)
         local s = copts.icons.tab_scope
-        local f = copts.icons.tab_scope_focus
+        local f = copts.icons.tab_focus
         return tid == cur_tid and (idx == 1 and (num == 1 and f[1] or f[2]) or (idx == num and f[4] or f[3]))
             or (idx == 1 and (num == 1 and s[1] or s[2]) or (idx == num and s[4] or s[3]))
     end
     local buf_icon = function(bid, cur_bid, bid2wid)
-        return (bid == cur_bid and copts.icons.win_focus or bid2wid[bid] and copts.icons.win or ' ')
+        return (bid == cur_bid and copts.icons.focus or bid2wid[bid] and copts.icons.win or ' ')
             .. (fn.getbufvar(bid, '&modified') == 1 and '+' or ' ')
     end
     local lookup = function(wids)
@@ -527,7 +527,16 @@ function M.inspect()
             :flatten()
             :join('\n  ')
         .. '\n}'
-    txt = txt .. ('\npctx = { root_dir = %s }'):format(vim.inspect(pctx.root_dir))
+    txt = txt
+        .. ('\npctx = {\n  index = %d,\n  root_dir = %s,\n  items = {\n%s\n  },\n}'):format(
+            vim.inspect(pctx.index),
+            vim.inspect(pctx.root_dir),
+            vim.iter(pctx.items)
+                :map(function(item)
+                    return ('    %s,'):format(vim.inspect(item))
+                end)
+                :join('\n')
+        )
     return txt, tabctx, bufctx, pctx
 end
 

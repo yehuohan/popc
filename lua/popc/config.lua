@@ -10,11 +10,11 @@ M.opts = {
         tabuf = '',
         bookmark = '',
         workspace = '',
+        focus = '▪',
         win = '▫',
-        win_focus = '▪',
-        tab_focus = '',
+        tab = '',
         tab_scope = { '(', '╭', '│', '╰' },
-        tab_scope_focus = { '[', '┏', '┃', '┗' },
+        tab_focus = { '[', '┏', '┃', '┗' },
         tlbuf = '', -- Tabline buffer icon
         tltab = '', -- Tabline tabpage icon
         pointer = '󰜴',
@@ -38,11 +38,7 @@ M.opts = {
             ['k'] = 'prev',
             ['J'] = 'next_page',
             ['K'] = 'prev_page',
-            ['h'] = function()
-                require('popc.panel.tabuf').pop()
-            end,
-            -- ['b'] = function() require('popc.panel.bookmark').pop() end,
-            -- ['w'] = function() require('popc.panel.workspace').pop() end,
+            ['h'] = 'pop_tabuf',
         },
     },
     tabuf = {
@@ -76,9 +72,9 @@ M.opts = {
             ['D'] = 'close_window_and_buffer', -- Also close window along with buffer
             ['i'] = 'switch_to_prev_tabpage',
             ['o'] = 'switch_to_next_tabpage',
-            ['I'] = 'move_buffer_or_tabpage_to_prev', -- Select item index follows buffer
+            ['I'] = 'move_buffer_or_tabpage_to_prev', -- The selected item index follows buffer
             ['O'] = 'move_buffer_or_tabpage_to_next',
-            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev', -- Select item index keeps unchanged
+            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev', -- The selected item index keeps unchanged
             ['<M-o>'] = 'move_out_buffer_or_tabpage_to_next',
             ['n'] = 'set_tabpage_label', -- Input empty string means delete label
             ['r'] = 'set_tabpage_dir', -- Support expand environment variables, input empty string means delete dir
@@ -88,7 +84,7 @@ M.opts = {
 }
 
 function M.setup_highlights()
-    set_hl = vim.api.nvim_set_hl
+    local set_hl = vim.api.nvim_set_hl
 
     local hint = '#fe8019'
     local text = '#ebdcb4'
