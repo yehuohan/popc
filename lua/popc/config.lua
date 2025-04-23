@@ -1,10 +1,13 @@
 --- @class Popc.Config
 local M = {}
 
+--- @class ConfigData
+
 M.opts = {
     debug = false,
     data_path = vim.fn.stdpath('data'),
     auto_setup_highlights = true, -- Add ColorScheme event for highlights
+    root_marker = { '.git' }, -- Detect root path for tabuf and workspace panel
     icons = {
         popc = '󰯙',
         tabuf = '',
@@ -44,7 +47,6 @@ M.opts = {
     tabuf = {
         enable = true,
         tabline = true,
-        root_marker = { '.git' },
         exclude_buffer = function(bid)
             if vim.tbl_contains({ 'Popc', 'qf' }, vim.fn.getbufvar(bid, '&filetype')) then
                 return true
@@ -82,6 +84,47 @@ M.opts = {
         },
     },
 }
+
+--- Get a filepath under popc working directory
+--- @param filename string
+--- @return string
+function M.get_wdir_file(filename)
+    return vim.fs.joinpath(M.opts.data_path, 'popc', filename)
+end
+
+--- Load popc.json to table
+--- @return ConfigData
+function M.load_data()
+    return vim.json.decode(table.concat(vim.fn.readfile(M.opts._data_json)))
+end
+
+--- Save table as popc.json
+--- @param data ConfigData
+function M.save_data(data)
+    if type(data) == 'table' then
+        vim.fn.writefile({ vim.json.encode(data) }, M.opts._data_json)
+    end
+end
+
+function M.validate_data()
+    local res = vim.uv.fs_stat(M.opts._data_json)
+    if res and res.type == 'file' then
+        return
+    end
+
+    res = vim.uv.fs_stat(M.opts._data_wdir)
+    if (not res) or res.type ~= 'directory' then
+        vim.uv.fs_mkdir(M.opts._data_wdir, tonumber('666', 8))
+    end
+
+    local old_popc_json = vim.fs.joinpath(M.opts.data_path, '.popc.json')
+    res = vim.uv.fs_stat(old_popc_json)
+    if res and res.type == 'file' then
+        vim.uv.fs_copyfile(old_popc_json, M.opts._data_json)
+    else
+        M.save_data({ workspace = {}, bookmark = {} })
+    end
+end
 
 function M.setup_highlights()
     local set_hl = vim.api.nvim_set_hl
@@ -133,7 +176,11 @@ function M.setup(opts)
         M.opts = vim.tbl_deep_extend('force', M.opts, opts)
     end
     opts = M.opts
+    opts.data_path = vim.fs.normalize(opts.data_path)
+    opts._data_wdir = vim.fs.joinpath(opts.data_path, 'popc')
+    opts._data_json = vim.fs.joinpath(opts.data_path, 'popc', 'popc.json')
 
+    vim.schedule(M.validate_data)
     M.setup_highlights()
     if opts.auto_setup_highlights then
         vim.api.nvim_create_autocmd('ColorScheme', {

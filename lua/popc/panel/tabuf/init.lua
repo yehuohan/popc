@@ -50,8 +50,6 @@ local pctx = {
     keys = copts.tabuf.keys,
     pkeys = {},
     -- Specified panel data
-    root_dir = nil,
-    fullpath = false,
     state = M.State.Sigtab,
     --- @type TabufStateItem[]
     state_items = {},
@@ -60,6 +58,8 @@ local pctx = {
         [M.State.Alltab] = 1,
         [M.State.Listab] = 1,
     },
+    root_dir = nil,
+    fullpath = false,
 }
 
 --- Get the list index of value
@@ -423,7 +423,7 @@ function M.buf_callback(args)
     local cur_tid = api.nvim_get_current_tabpage()
     if args.event == 'BufNew' then
         if not pctx.root_dir then
-            pctx.root_dir = vim.fs.root(args.file, copts.tabuf.root_marker)
+            pctx.root_dir = vim.fs.root(args.file, copts.root_marker)
             if pctx.root_dir then
                 pctx.root_dir = vim.fs.normalize(pctx.root_dir)
             end
@@ -726,9 +726,9 @@ function pkeys.tabnew_buffer(uctx)
         return
     end
 
-    vim.opt.eventignore:append('BufEnter')
+    vim.opt.eventignore:append('BufWinEnter')
     vim.cmd.tabnew()
-    vim.opt.eventignore:remove('BufEnter')
+    vim.opt.eventignore:remove('BufWinEnter')
     api.nvim_win_set_buf(api.nvim_get_current_win(), item.bid)
 
     transit_state()
@@ -907,7 +907,7 @@ function pkeys.close_all_tabpages(uctx)
             break
         end
     end
-    if has_modified and (not umode.confirm('These tabpages contains unsaved modified buffers. Continue anyway?')) then
+    if has_modified and (not umode.confirm('There are unsaved modified buffers. Continue anyway?')) then
         return
     end
 

@@ -2,6 +2,7 @@
 local M = {}
 local fn = vim.fn
 local api = vim.api
+local log = require('popc.log').get('usermode')
 local copts = require('popc.config').opts
 
 --- @class PanelContext
@@ -10,7 +11,7 @@ local copts = require('popc.config').opts
 --- @field items string[][] Panel lines displayed at floating window
 --- @field index integer Current selected index item of panel, 1-based
 --- @field keys table<string, string|UserkeysHandler>
---- @field pkeys table<string, UserkeysHandler>?
+--- @field pkeys table<string, UserkeysHandler>
 --- @field on_quit UserkeysHandler?
 --- @field helpctx PanelContext?
 
@@ -246,7 +247,7 @@ function ukeys.help(uctx)
         keys2items(umode.keys)
         table.insert(items, { '# Panel' })
         keys2items(umode.pctx.keys)
-        umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {} }
+        umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {}, pkeys = {} }
     end
     uctx.pctx = umode.pctx.helpctx
     uctx.state = M.State.ReDisp
@@ -344,7 +345,10 @@ function M.pop(pctx)
     umode.ctx.pret = nil
     display(umode.ctx)
     if umode.ctx.state == M.State.None then
-        return ok_key(umode.ctx)
+        log('Enter usermode')
+        local res = ok_key(umode.ctx)
+        log('Level usermode')
+        return res
     end
 end
 

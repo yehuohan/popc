@@ -31,13 +31,13 @@ end
 function M.get_logs(tag)
     local txt = ''
     if tag and log[tag] then
-        txt = tag .. '\n    ' .. table.concat(log[tag], '\n    ')
+        txt = ('# %s\n    %s'):format(tag, table.concat(log[tag], '\n    '))
     else
         txt = vim.iter(log)
             :map(function(t, lst)
-                return t .. '\n    ' .. table.concat(lst, '\n    ')
+                return ('# %s\n    %s'):format(t, table.concat(lst, '\n    '))
             end)
-            :join('')
+            :join('\n')
     end
     return txt
 end
