@@ -898,29 +898,10 @@ function pkeys.close_all_tabpages(uctx)
     if pctx.state ~= M.State.Listab then
         return
     end
-
-    -- Unsaved changes
-    local has_modified = false
-    for _, tid in ipairs(api.nvim_list_tabpages()) do
-        if #M.get_modified_bufs(tid, true) > 0 then
-            has_modified = true
-            break
-        end
+    if M.cmd_clear_all() then
+        transit_state(M.State.Sigtab)
+        uctx.state = umode.State.ReNew
     end
-    if has_modified and (not umode.confirm('There are unsaved modified buffers. Continue anyway?')) then
-        return
-    end
-
-    -- Close all tabpages and all buffers
-    local all_bufs = vim.tbl_keys(bufctx)
-    tabctx = {}
-    bufctx = {}
-    vim.cmd.tabonly({ bang = true, mods = { noautocmd = true, silent = true } })
-    vim.cmd.bdelete({ bang = true, args = all_bufs, mods = { silent = true } })
-    M._add_tab(api.nvim_get_current_tabpage())
-
-    transit_state(M.State.Sigtab)
-    uctx.state = umode.State.RePop
 end
 
 function pkeys.close_all_buffers_or_tabpages(uctx)
@@ -1113,7 +1094,7 @@ function pkeys.move_out_buffer_or_tabpage_to_next(uctx)
 end
 
 function pkeys.set_tabpage_label(uctx)
-    local label = umode.input({ prompt = 'Set tabpage label:' })
+    local label = umode.input({ prompt = 'Set tabpage label: ' })
     if label then
         local item = pctx.state_items[pctx.index]
         if not item then
@@ -1124,13 +1105,13 @@ function pkeys.set_tabpage_label(uctx)
         else
             tabctx[item.tid].label = label
         end
+        transit_state()
+        uctx.state = umode.State.ReDisp
     end
-    transit_state()
-    uctx.state = umode.State.ReDisp
 end
 
 function pkeys.set_tabpage_dir(uctx)
-    local tdir = umode.input({ prompt = 'Set tabpage base directory:' })
+    local tdir = umode.input({ prompt = 'Set tabpage base directory: ', completion = 'file' })
     if tdir then
         local item = pctx.state_items[pctx.index]
         if not item then
@@ -1139,11 +1120,12 @@ function pkeys.set_tabpage_dir(uctx)
         if tdir == '' then
             tabctx[item.tid].tdir = nil
         else
+            tdir = fn.fnamemodify(tdir, ':p')
             tabctx[item.tid].tdir = vim.fs.normalize(tdir, { expand_env = true })
         end
+        transit_state()
+        uctx.state = umode.State.ReDisp
     end
-    transit_state()
-    uctx.state = umode.State.ReDisp
 end
 
 function pkeys.toggle_fullpath(uctx)
@@ -1158,6 +1140,37 @@ function M.pop()
     pctx.state_items = {} -- Clear previous state items
     transit_state()
     umode.apop(pctx)
+end
+
+--- @return table<TabID, TabContext>
+function M.cmd_get_tabctx()
+    return tabctx
+end
+
+--- @param tid TabID
+--- @param attr TabContext
+function M.cmd_set_tabctx(tid, attr)
+    if tabctx[tid] then
+        tabctx[tid] = vim.tbl_deep_extend('force', tabctx[tid], attr)
+    end
+end
+
+--- @return table<BufID, BufContext>
+function M.cmd_get_bufctx()
+    return bufctx
+end
+
+--- @param bid BufID
+--- @param attr BufContext
+function M.cmd_set_bufctx(bid, attr)
+    if bufctx[bid] then
+        bufctx[bid] = vim.tbl_deep_extend('force', bufctx[bid], attr)
+    end
+end
+
+--- @param root_dir string?
+function M.cmd_set_root(root_dir)
+    pctx.root_dir = root_dir
 end
 
 --- Switch target window's buffer to another buffer
@@ -1249,6 +1262,32 @@ function M.cmd_close_buffer()
             api.nvim_win_set_buf(wid, tmp_bid)
         end
     end
+end
+
+--- Clear all tabpages and buffers
+--- @return boolean
+function M.cmd_clear_all()
+    -- Unsaved changes
+    local has_modified = false
+    for _, tid in ipairs(api.nvim_list_tabpages()) do
+        if #M.get_modified_bufs(tid, true) > 0 then
+            has_modified = true
+            break
+        end
+    end
+    if has_modified and (not umode.confirm('There are unsaved modified buffers. Continue anyway?')) then
+        return false
+    end
+
+    -- Close all tabpages and all buffers
+    local all_bufs = vim.tbl_keys(bufctx)
+    tabctx = {}
+    bufctx = {}
+    vim.cmd.tabonly({ bang = true, mods = { noautocmd = true, silent = true } })
+    vim.cmd('silent! %bdelete!')
+    -- vim.cmd('silent! %bwipeout!') -- TODO: Some dangerous?
+    M._add_tab(api.nvim_get_current_tabpage())
+    return true
 end
 
 return M

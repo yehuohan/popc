@@ -2,6 +2,7 @@
 local M = {}
 
 --- @class ConfigData
+--- @field workspaces WorkspaceItem[]
 
 M.opts = {
     debug = false,
@@ -42,6 +43,7 @@ M.opts = {
             ['J'] = 'next_page',
             ['K'] = 'prev_page',
             ['h'] = 'pop_tabuf',
+            ['w'] = 'pop_workspace',
         },
     },
     tabuf = {
@@ -83,6 +85,22 @@ M.opts = {
             ['p'] = 'toggle_fullpath',
         },
     },
+    workspace = {
+        enable = true,
+        keys = {
+            -- Set false to disable key
+            ['<CR>'] = 'open_workspace_quit', -- Open workspace: drop all original tabpages and buffers
+            ['<S-CR>'] = 'open_workspace_quit_silent', -- Open workspace silently (also ignore errors)
+            ['t'] = 'load_workspace_quit', -- Load workspace: keep original tabpages and buffers
+            ['a'] = 'append_workspace', -- Append a new workspace
+            ['d'] = 'delete_workspace', -- Delete the seleted  workspace
+            ['s'] = 'save_workspace', -- Override the same workspace
+            ['S'] = 'save_workspace_forcely', -- Override the seleted workspace forcely
+            ['n'] = 'set_workspace_name',
+            ['r'] = 'set_workspace_root',
+            ['g'] = 'sort_workspace',
+        },
+    },
 }
 
 --- Get a filepath under popc working directory
@@ -107,22 +125,51 @@ function M.save_data(data)
 end
 
 function M.validate_data()
-    local res = vim.uv.fs_stat(M.opts._data_json)
-    if res and res.type == 'file' then
+    local stat = vim.uv.fs_stat(M.opts._data_json)
+    if stat and stat.type == 'file' then
         return
     end
 
-    res = vim.uv.fs_stat(M.opts._data_wdir)
-    if (not res) or res.type ~= 'directory' then
+    -- Validate M.opts._data_wdir
+    stat = vim.uv.fs_stat(M.opts._data_wdir)
+    if (not stat) or stat.type ~= 'directory' then
         vim.uv.fs_mkdir(M.opts._data_wdir, tonumber('666', 8))
+
+        -- Port old data
+        local old_popc_wdir = vim.fs.joinpath(M.opts.data_path, '.popc')
+        stat = vim.uv.fs_stat(old_popc_wdir)
+        if stat and stat.type == 'directory' then
+            local fs = vim.uv.fs_scandir(old_popc_wdir)
+            local copied = {}
+            while fs do
+                local name, type = vim.uv.fs_scandir_next(fs)
+                if name and type then
+                    if type == 'file' then
+                        vim.uv.fs_copyfile(vim.fs.joinpath(old_popc_wdir, name), vim.fs.joinpath(M.opts._data_wdir, name))
+                        table.insert(copied, name)
+                    end
+                else
+                    if M.opts.debug then
+                        vim.notify(vim.inspect(copied))
+                    end
+                    break
+                end
+            end
+        end
     end
 
+    -- Validate M.opts._data_json
     local old_popc_json = vim.fs.joinpath(M.opts.data_path, '.popc.json')
-    res = vim.uv.fs_stat(old_popc_json)
-    if res and res.type == 'file' then
+    stat = vim.uv.fs_stat(old_popc_json)
+    if stat and stat.type == 'file' then
         vim.uv.fs_copyfile(old_popc_json, M.opts._data_json)
+        local cfg_data = M.load_data()
+        for _, wks in ipairs(cfg_data.workspaces) do
+            wks.path = vim.fs.normalize(wks.path)
+        end
+        M.save_data(cfg_data)
     else
-        M.save_data({ workspace = {}, bookmark = {} })
+        M.save_data({ workspaces = {}, bookmarks = {} })
     end
 end
 

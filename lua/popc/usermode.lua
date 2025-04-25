@@ -35,10 +35,11 @@ local copts = require('popc.config').opts
 --- @enum UsermodeState
 M.State = {
     None = 1, -- Request to quit custom user mode
-    RePop = 2, -- Request re-pop panel at another tabpage
-    ReDisp = 3, -- Request re-display panel at same tabpage
-    ReDraw = 4, -- Request redraw at same tabpage
-    WaitKey = 5,
+    ReNew = 2, -- Request re-new usermode's buffer and window (for the case that panel deleted usermode's buffer)
+    RePop = 3, -- Request re-pop panel at another tabpage
+    ReDisp = 4, -- Request re-display panel at same tabpage
+    ReDraw = 5, -- Request redraw at same tabpage
+    WaitKey = 6,
 }
 
 --- Create floating window title from popc panel name and text
@@ -152,6 +153,17 @@ local function validate()
     end
 end
 
+local function destroy()
+    if api.nvim_win_is_valid(umode.win) then
+        api.nvim_win_close(umode.win, false)
+    end
+    if api.nvim_buf_is_valid(umode.buf) then
+        api.nvim_buf_delete(umode.buf, { force = true })
+    end
+    umode.buf = nil
+    umode.win = nil
+end
+
 --- Switch the selected item
 --- @param uctx UsermodeContext
 local function switch(uctx, newidx)
@@ -243,10 +255,10 @@ function ukeys.help(uctx)
             end
         end
 
-        table.insert(items, { '# Usermode' })
-        keys2items(umode.keys)
         table.insert(items, { '# Panel' })
         keys2items(umode.pctx.keys)
+        table.insert(items, { '# Usermode' })
+        keys2items(umode.keys)
         umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {}, pkeys = {} }
     end
     uctx.pctx = umode.pctx.helpctx
@@ -269,9 +281,12 @@ function ukeys.prev_page(uctx)
     switch(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
 end
 
-function ukeys.pop_tabuf(uctx)
-    uctx.state = M.State.WaitKey
+function ukeys.pop_tabuf()
     require('popc.panel.tabuf').pop()
+end
+
+function ukeys.pop_workspace()
+    require('popc.panel.workspace').pop()
 end
 
 --- @param uctx UsermodeContext
@@ -279,10 +294,14 @@ end
 local function ok_key(uctx)
     umode.ctx.state = M.State.WaitKey
     vim.cmd.redraw()
+
     while true do
         -- Handle state
         if umode.ctx.state == M.State.None then
             break
+        elseif umode.ctx.state == M.State.ReNew then
+            destroy()
+            display(uctx)
         elseif umode.ctx.state == M.State.RePop then
             if api.nvim_win_is_valid(umode.win) then
                 api.nvim_win_close(umode.win, false)
@@ -315,9 +334,8 @@ local function ok_key(uctx)
             vim.notify(("No handler for key '%s'"):format(ukey))
         end
     end
-    if api.nvim_win_is_valid(umode.win) then
-        api.nvim_win_close(umode.win, false)
-    end
+
+    destroy()
     umode.ctx.state = M.State.None
     return umode.ctx.pret
 end
@@ -345,6 +363,7 @@ function M.pop(pctx)
     umode.ctx.pret = nil
     display(umode.ctx)
     if umode.ctx.state == M.State.None then
+        -- M.notify(('Enter usermode with %s panel'):format(pctx.name))
         log('Enter usermode')
         local res = ok_key(umode.ctx)
         log('Level usermode')
@@ -368,22 +387,24 @@ end
 --- @return string?
 function M.input(opts)
     opts.prompt = ' ' .. copts.icons.popc .. ' ' .. opts.prompt
+    opts.cancelreturn = vim.NIL
     if copts.usermode.input == 'snacks' then
         return coroutine.yield((function()
             local caller = coroutine.running()
             require('snacks').input(opts, function(inp)
-                coroutine.resume(caller, inp)
+                coroutine.resume(caller, inp ~= vim.NIL and inp or nil)
             end)
         end)())
     else
-        return fn.input(opts)
+        local res = fn.input(opts)
+        return res ~= vim.NIL and res or nil
     end
 end
 
 --- @param prompt string
 --- @return boolean
 function M.confirm(prompt)
-    return 'y' == M.input({ prompt = prompt .. ' (yN):' })
+    return 'y' == M.input({ prompt = prompt .. ' (yN): ' })
 end
 
 function M.inspect()

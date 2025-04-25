@@ -7,6 +7,9 @@ function M.setup(opts)
     if opts.tabuf.enable then
         require('popc.panel.tabuf').setup()
     end
+    if opts.workspace.enable then
+        require('popc.panel.workspace').setup()
+    end
 
     if opts.debug then
         vim.api.nvim_create_user_command('PopcInspect', function(args)
