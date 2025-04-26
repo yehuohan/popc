@@ -10,6 +10,8 @@
                                        _/
                                       _/
 
+> This doc is only for popc VimL version
+
 
 ================================================================================
 Table of Contents                                                     *popc-toc*
