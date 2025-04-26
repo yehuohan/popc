@@ -24,8 +24,6 @@ local pctx = {
     bkm_sort = 'name',
     --- @type ConfigData
     cfg_data = nil,
-    --- @type table
-    userdata = nil,
 }
 
 --- @return BookmarkItem[]

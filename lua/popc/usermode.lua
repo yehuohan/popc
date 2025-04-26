@@ -361,6 +361,7 @@ end
 
 --- Pop out panel
 --- @param pctx PanelContext
+--- @return any?
 function M.pop(pctx)
     umode.pctx = pctx
     umode.ctx.pctx = pctx
@@ -377,6 +378,7 @@ end
 
 --- Async pop out panel
 --- @param pctx PanelContext
+--- @return any?
 function M.apop(pctx)
     return coroutine.wrap(M.pop)(pctx)
 end
