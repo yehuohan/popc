@@ -10,6 +10,9 @@ function M.setup(opts)
     if opts.workspace.enable then
         require('popc.panel.workspace').setup()
     end
+    if opts.bookmark.enable then
+        require('popc.panel.bookmark').setup()
+    end
 
     if opts.debug then
         vim.api.nvim_create_user_command('PopcInspect', function(args)

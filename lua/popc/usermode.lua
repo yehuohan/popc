@@ -285,6 +285,10 @@ function ukeys.pop_tabuf()
     require('popc.panel.tabuf').pop()
 end
 
+function ukeys.pop_bookmark()
+    require('popc.panel.bookmark').pop()
+end
+
 function ukeys.pop_workspace()
     require('popc.panel.workspace').pop()
 end

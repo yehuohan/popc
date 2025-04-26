@@ -3,6 +3,7 @@ local M = {}
 
 --- @class ConfigData
 --- @field workspaces WorkspaceItem[]
+--- @field bookmarks BookmarkItem[]
 
 M.opts = {
     debug = false,
@@ -43,6 +44,7 @@ M.opts = {
             ['J'] = 'next_page',
             ['K'] = 'prev_page',
             ['h'] = 'pop_tabuf',
+            ['b'] = 'pop_bookmark',
             ['w'] = 'pop_workspace',
         },
     },
@@ -83,6 +85,23 @@ M.opts = {
             ['n'] = 'set_tabpage_label', -- Input empty string means delete label
             ['r'] = 'set_tabpage_dir', -- Support expand environment variables, input empty string means delete dir
             ['p'] = 'toggle_fullpath',
+        },
+    },
+    bookmark = {
+        enable = true,
+        keys = {
+            -- Set false to disable key
+            ['<CR>'] = 'load_bookmark_quit',
+            ['<Space>'] = 'load_bookmark',
+            ['s'] = 'split_bookmark_quit',
+            ['S'] = 'split_bookmark',
+            ['v'] = 'vsplit_bookmark_quit',
+            ['V'] = 'vsplit_bookmark',
+            ['t'] = 'tabnew_bookmark_quit',
+            ['T'] = 'tabnew_bookmark',
+            ['a'] = 'append_bookmark', -- Append current buffer as bookmark
+            ['d'] = 'delete_bookmark',
+            ['g'] = 'sort_bookmark',
         },
     },
     workspace = {
