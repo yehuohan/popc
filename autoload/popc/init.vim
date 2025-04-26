@@ -94,7 +94,9 @@ let s:json = {
 function! popc#init#Init()
     call s:initConfig()
     call s:checkConfig()
-    call s:initJson()
+    if s:conf.useLayer.Bookmark || s:conf.useLayer.Workspace
+        call s:initJson()
+    endif
 
     command! -nargs=1 -complete=customlist,popc#popc#GetLayerList Popc :call popc#popc#Popc(<f-args>)
     if s:conf.useLayer.Buffer

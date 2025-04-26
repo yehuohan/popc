@@ -215,6 +215,7 @@ function! popc#stl#InitHighLight(hi)
     execute printf('highlight default link PopcSl       %s', s:hi.lineTxt)
     call s:createHiSep('PopcSlLabel', 'PopcSl', 'PopcSlSep')
 
+if s:conf.useTabline
     " tabline
     execute printf('highlight default link PopcTlLabel  %s', s:hi.labelTxt)
     execute printf('highlight default link PopcTl       %s', s:hi.lineTxt)
@@ -267,6 +268,7 @@ function! popc#stl#InitHighLight(hi)
     call s:createHiSep('PopcTlM'   , 'PopcTlBlank', 'PopcTlSepB1')
     call s:createHiSep('PopcTlSel' , 'PopcTlBlank', 'PopcTlSepB2')
     call s:createHiSep('PopcTlMSel', 'PopcTlBlank', 'PopcTlSepB3')
+endif
 endfunction
 " }}}
 

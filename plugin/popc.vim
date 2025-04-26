@@ -34,27 +34,36 @@ if exists('g:popc_loaded')
     finish
 endif
 
-let s:err = []
-if v:version < 800
-    call add(s:err, 'Vim8.0 or higher is required.')
-endif
-if &hidden == 0
-    call add(s:err, 'Requires "hidden" option enabled.')
-endif
-if &compatible
-    call add(s:err, 'Requires "nocompatible" option enabled.')
+if has('nvim')
+    let g:Popc_useFloatingWin = 1
+    let g:Popc_useTabline = 0
+    let g:Popc_useLayer = { 'Buffer': 0, 'Bookmark': 0, 'Workspace': 0 }
+    call popc#init#Init()
+    call popc#ui#Init()
+else
+    let s:err = []
+    if v:version < 800
+        call add(s:err, 'Vim8.0 or higher is required.')
+    endif
+    if &hidden == 0
+        call add(s:err, 'Requires "hidden" option enabled.')
+    endif
+    if &compatible
+        call add(s:err, 'Requires "nocompatible" option enabled.')
+    endif
+
+    if !empty(s:err)
+        echohl WarningMsg
+        echomsg '[Popc] Error settings:'
+        for msg in s:err
+            echomsg msg
+        endfor
+        echohl None
+        finish
+    endif
+
+    call popc#popc#Init()
 endif
 
-if !empty(s:err)
-    echohl WarningMsg
-    echomsg '[Popc] Error settings:'
-    for msg in s:err
-        echomsg msg
-    endfor
-    echohl None
-    finish
-endif
-
-call popc#popc#Init()
-let g:popc_version = 'Popc 3.10.4'
+let g:popc_version = 'Popc 3.10.5'
 let g:popc_loaded = 1
