@@ -1,7 +1,7 @@
 # Popc
 
 > **Pop Out Panel of Custom user mode**
-> - For vim user: VimL version (see [old branch](https://github.com/yehuohan/popc/tree/old)) is still kept and disabled for Neovim by default.
+> - For vim user: VimL version code (its `README` can see [old branch](https://github.com/yehuohan/popc/tree/old)) is still kept and disabled for Neovim by default.
 
 Popc is to display a panel and handle all input keys inside an usermode.
 
@@ -52,6 +52,7 @@ opts = {
             border = 'rounded', -- 'none', 'single', 'double', 'rounded'
             number = true,
         },
+        -- Usermode's keys is the first priority handler
         keys = {
             -- Set false to disable key
             ['<Esc>'] = 'quit',
@@ -96,8 +97,11 @@ opts = {
 - `PopcTabuf`: Pop out `Tabuf` panel
 - `PopcBufferSwitchLeft`: Switch to left buffer of current tabpage (works with `opts.tabuf.tabline = true`)
 - `PopcBufferSwitchRight`: Switch to right buffer of current tabpage (works with `opts.tabuf.tabline = true`)
+    - `PopcBufferSwitchLeft` and `PopcBufferSwitchRight` support `v:count1`, e.g. `:3PopcBufferSwitchLeft` will switch to the 3th left buffer
+    - `PopcBufferSwitchLeft` and `PopcBufferSwitchRight` support bang, e.g. `:PopcBufferSwitchLeft!` will switch the last accessed window's buffer to left buffer
 - `PopcBufferJumpPrev`: Jump to previous jumplist location of current buffer
 - `PopcBufferJumpNext`: Jump to next jumplist location of current buffer
+    - `PopcBufferJumpPrev` and `PopcBufferJumpNext` support `v:count1`, e.g. `:3PopcBufferJumpPrev!` will jump to 3th previous jumplist location
 - `PopcBufferClose`: Close current buffer with window kept
 
 ***Default options:***
@@ -154,7 +158,7 @@ opts.tabuf = {
 - `PopcTl<XXX>Pad`: Padding for bar/tabpage/buffer
 
 
-## Workspace
+## `Workspace`
 
 `Workspace` panel is mainly for saving/loading vim sessions along with user data.
 
@@ -210,7 +214,7 @@ vim.api.nvim_create_autocmd('User', {
 ```
 
 
-## Bookmark
+## `Bookmark`
 
 `Bookmark` panel is a convenient container of bookmark files.
 
@@ -243,3 +247,8 @@ opts.Bookmark = {
     },
 }
 ```
+
+
+## `Selection`
+
+> **WIP:** Re-implement [popset](https://github.com/yehuohan/popset)
