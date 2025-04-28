@@ -49,7 +49,7 @@ opts = {
     usermode = {
         input = nil, -- 'snacks'
         win = {
-            border = 'rounded', -- 'none', 'single', 'double', 'rounded'
+            border = vim.o.winborder, -- 'none', 'single', 'double', 'rounded'
             number = true,
         },
         -- Usermode's keys is the first priority handler
