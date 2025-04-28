@@ -117,6 +117,7 @@ function! s:setFloat()
             \ 'col': 1,
             \ 'row': 1,
             \ 'style': 'minimal',
+            \ 'border': 'none',
             \ })
     call nvim_win_set_option(s:hwin_title, 'wrap', v:false)
     call nvim_win_set_option(s:hwin_title, 'foldenable', v:false)
@@ -163,6 +164,7 @@ function! s:setFloat()
             \ 'col': 1,
             \ 'row': 1,
             \ 'style': 'minimal',
+            \ 'border': 'none',
             \ })
     call nvim_win_set_option(s:hwin, 'wrap', v:false)
     call nvim_win_set_option(s:hwin, 'foldenable', v:false)
