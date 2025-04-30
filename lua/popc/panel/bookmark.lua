@@ -138,7 +138,7 @@ function pkeys.append_bookmark(uctx)
         return
     end
     table.insert(pctx.bkm_items, { name = name, path = path })
-    umode.notify(("Appended  bookmark '%s' successful"):format(filepath))
+    save_bkm_items()
 
     setup_bkm_items(pctx.bkm_items)
     uctx.state = umode.State.ReDisp
