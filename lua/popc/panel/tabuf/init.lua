@@ -354,15 +354,19 @@ function M._add_buf(tid, bid)
     if not tabctx[tid] then
         return
     end
+    local tnr = api.nvim_tabpage_get_number(tid)
 
     local info = fn.getbufinfo(bid)[1]
     if not info then
+        log('catch an invalid buffer: tid = %d, tnr = %d, bid = %d', tid, tnr, bid)
         return
     end
     if info.listed == 0 and not bufctx[bid] then
+        log('catch an unlisted buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
         return
     end
     if copts.tabuf.exclude_buffer(bid) then
+        log('catch an excluded buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
         return
     end
 
@@ -370,7 +374,7 @@ function M._add_buf(tid, bid)
     local bid_idx = M.buf_idx(tid, bid)
     if bid_idx then
         tab.icur = bid_idx
-        log('switch buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, api.nvim_tabpage_get_number(tid), bid, info.name)
+        log('switch buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
     else
         table.insert(tab.bufs, bid)
         if bufctx[bid] then
@@ -378,7 +382,7 @@ function M._add_buf(tid, bid)
         else
             bufctx[bid] = { cnt = 1 }
         end
-        log('append buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, api.nvim_tabpage_get_number(tid), bid, info.name)
+        log('append buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
     end
 end
 
@@ -1236,6 +1240,13 @@ function M.cmd_close_buffer()
         umode.notify("Can't close this buffer for it's out of Popc.Tabuf")
         return
     end
+    if
+        bufctx[cur_bid].cnt == 1
+        and fn.getbufvar(cur_bid, '&modified') == 1
+        and (not umode.confirm(("This buffer '%s' contains unsaved changes. Continue anyway?"):format(fn.bufname(cur_bid))))
+    then
+        return
+    end
 
     local wids = M.get_target_wins(cur_tid)
     local num = M.buf_num(cur_tid)
@@ -1252,15 +1263,15 @@ function M.cmd_close_buffer()
                 api.nvim_win_set_buf(wid, alt_bid)
             end
         end
-        M._del_buf(cur_tid, cur_bid)
-        if bufctx[cur_bid].cnt == 0 then
-            vim.cmd.bdelete({ bang = true, count = cur_bid, mods = { silent = true } })
-        end
     else
         local tmp_bid = api.nvim_create_buf(true, true)
         for _, wid in ipairs(wids) do
             api.nvim_win_set_buf(wid, tmp_bid)
         end
+    end
+    M._del_buf(cur_tid, cur_bid)
+    if bufctx[cur_bid].cnt == 0 then
+        vim.cmd.bdelete({ bang = true, count = cur_bid, mods = { silent = true } })
     end
 end
 
