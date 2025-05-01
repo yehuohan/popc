@@ -31,6 +31,7 @@ M.opts = {
     usermode = {
         input = nil, -- 'snacks'
         win = {
+            zindex = 1000,
             border = vim.o.winborder, -- 'none', 'single', 'double', 'rounded'
             number = true,
         },
@@ -118,6 +119,19 @@ M.opts = {
             ['n'] = 'set_workspace_name',
             ['r'] = 'set_workspace_root',
             ['g'] = 'sort_workspace',
+        },
+    },
+    selection = {
+        enable = false,
+        keys = {
+            -- Set false to disable key
+            ['<CR>'] = 'execute_confirm', -- Execute then confirm with 'evt' callback
+            ['<S-CR>'] = 'confirm', -- Confirm with 'evt' callback
+            ['<Space>'] = 'execute',
+            ['n'] = 'next_lst_item',
+            ['p'] = 'prev_lst_item',
+            ['m'] = 'modify', -- Modify the selection value from `input()`
+            ['M'] = 'modify_current', -- Modify the selection value from `input({ default = <current selection value> })`
         },
     },
 }

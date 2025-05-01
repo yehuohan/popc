@@ -145,6 +145,7 @@ local function validate()
             row = 1,
             style = 'minimal',
             focusable = false,
+            zindex = copts.usermode.win.zindex,
         })
         vim.w[win].wrap = false
         vim.w[win].foldenable = false
