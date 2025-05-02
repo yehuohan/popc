@@ -13,7 +13,8 @@
         "lua_ls": {
             "Lua.runtime.version": "LuaJIT", // "Lua 5.2", "LuaJIT"
             "Lua.workspace.library": [
-                "./../plenary.nvim/lua"
+                "./../plenary.nvim/lua",
+                "./tests/lua"
             ],
             "Lua.diagnostics.disable": [
                 "deprecated"
