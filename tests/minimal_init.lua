@@ -5,6 +5,7 @@ end
 
 vim.opt.swapfile = false
 vim.opt.rtp:append('.')
+vim.opt.rtp:append('./tests')
 vim.opt.rtp:append(plenary_dir)
 
 vim.cmd.runtime('plugin/plenary.vim')

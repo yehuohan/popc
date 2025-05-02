@@ -1,5 +1,6 @@
 require('popc').setup({})
 
+local helper = require('popc.helper')
 local tabuf = require('popc.panel.tabuf')
 local fn = vim.fn
 local api = vim.api
@@ -132,15 +133,28 @@ describe('tabuf', function()
     end)
 
     it('. cmd_close_buffer', function()
+        local fns = { { vim.fn, 'input', 'getcharstr' } }
+        local mocked = helper.mock(fns)
+
         vim.cmd.normal('gt')
         local wid = _wids[1]['test.py']
 
         eq(fn.bufnr('test.py'), api.nvim_win_get_buf(wid))
         api.nvim_win_set_buf(wid, fn.bufnr('test.lua'))
         api.nvim_win_set_buf(wid, fn.bufnr('#'))
+
+        helper.override_input('N')
+        tabuf.cmd_close_buffer()
+        eq(fn.bufnr('test.py'), api.nvim_win_get_buf(wid))
+
+        helper.override_input('y')
         tabuf.cmd_close_buffer()
         eq(fn.bufnr('test.lua'), api.nvim_win_get_buf(wid))
+
+        helper.override_input('y')
         tabuf.cmd_close_buffer()
         eq(fn.bufnr('test.vim'), api.nvim_win_get_buf(wid))
+
+        helper.unmock(mocked, fns)
     end)
 end)
