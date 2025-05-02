@@ -125,9 +125,11 @@ M.opts = {
         enable = false,
         keys = {
             -- Set false to disable key
-            ['<CR>'] = 'execute_confirm', -- Execute then confirm with 'evt' callback
+            ['<CR>'] = 'execute_confirm', -- Execute 'cmd' then confirm with 'evt' callback
             ['<S-CR>'] = 'confirm', -- Confirm with 'evt' callback
-            ['<Space>'] = 'execute',
+            ['<Space>'] = 'execute', -- Execute 'cmd' or open/fold sub-selection
+            ['f'] = 'fold_or_open', -- Fold or open sub-selection
+            ['F'] = 'fold_always', -- Fold sub-selection always
             ['n'] = 'next_lst_item',
             ['p'] = 'prev_lst_item',
             ['m'] = 'modify', -- Modify the selection value from `input()`

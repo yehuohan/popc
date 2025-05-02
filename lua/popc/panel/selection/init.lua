@@ -5,22 +5,28 @@ local copts = require('popc.config').opts
 local umode = require('popc.usermode')
 
 --- @class PopSelection
---- @field opt nil|string|fun():string Option name
+--- @field opt nil|string|fun():string
+---        Option name
 --- @field dic nil|table<string,string|PopSelection>|fun(opt:string):table<string,string|PopSelection>
----             * table<string, string>       : 'lst' desctiption
----             * table<string, PopSelection> : sub-selection
+---        * table<string, string>       : 'lst' desctiption
+---        * table<string, PopSelection> : sub-selection
 --- @field lst nil|any[]|fun(opt:string):any[]
----             * any[]    : Selection item list
----             * string[] : Key index list of 'dic'
---- @field dsr nil|string|fun(opt:string):string 'opt' description
---- @field cpl nil|string|fun(opt:string):string 'completion' of `input()`
---- @field cmd nil|fun(opt:string, sel) Command executed with selected item of 'lst'
---- @field get nil|fun(opt:string):any Get the selected item of 'opt'
---- @field evt nil|fun(event:string) Selection event callback
----            * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
----            * 'onQuit' : called at `pctx.on_quit`
+---        * any[]    : Selection item list
+---        * string[] : Key index list of 'dic'
+--- @field dsr nil|string|fun(opt:string):string
+---        'opt' description
+--- @field cpl nil|string|fun(opt:string):string
+---        'completion' of `input()` to modify selection value
+--- @field cmd nil|fun(opt:string, sel)
+---        Command executed with selected item of 'lst'
+--- @field get nil|fun(opt:string):any
+---        Get the selected item of 'opt'
+--- @field evt nil|fun(event:string)
+---        Selection event callback
+---        * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
+---        * 'onQuit' : called at `pctx.on_quit`
 --- @field sub nil|table<string,any|fun(...):any>|fun(opt:string):table<string,any|fun(...):any>
----            Shared 'lst', 'dsr', 'cpl', 'cmd', 'get', 'evt' for 'dic' sub-selection
+---        Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
 
 --- @class ResolvedSelection
 --- @field opt string
@@ -90,6 +96,7 @@ local function get_sel_items(node, base)
     local sel_items = {}
 
     local function add_sel_items(level, rsv_node)
+        local base_idx = #sel_items -- The base node index
         local indent = (' '):rep(2 * level)
 
         for idx, val in ipairs(rsv_node.lst) do
@@ -104,14 +111,20 @@ local function get_sel_items(node, base)
                 -- Get sub-selection description
                 local dsr = subrsv_node.dsr
                 local out = nil -- The output result of sub-selection
-                local is_out = false
                 if not subrsv_node.is_base then
                     out = subrsv_node.get(subrsv_node.opt)
-                    dsr = type(out) == 'string' and out or vim.inspect(out)
-                    is_out = true
+                    -- pctx.items can't contain '\n' or it will failed to display
+                    dsr = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
                 end
                 table.insert(items, { indent .. val, dsr == '' and '' or ':', dsr })
-                table.insert(sel_items, { node = subrsv_node, is_base = true, is_out = is_out, out = out })
+                table.insert(sel_items, {
+                    level = level,
+                    base_node = rsv_node,
+                    base_idx = base_idx,
+                    node = subrsv_node,
+                    idx = #sel_items + 1,
+                    out = out, -- Valid when `not node.is_base = true` or `node = nil`
+                })
 
                 -- Get items recursively
                 if subrsv_node.is_open then
@@ -127,7 +140,14 @@ local function get_sel_items(node, base)
                     icon = (out == val and copts.icons.focus or ' ') .. ' '
                 end
                 table.insert(items, { ('%s%s%s'):format(indent, icon, tostring(val)), dsr == '' and '' or ':', dsr })
-                table.insert(sel_items, { node = rsv_node, is_base = false, is_out = true, out = out, idx = idx })
+                table.insert(sel_items, {
+                    level = level,
+                    base_node = rsv_node,
+                    base_idx = base_idx,
+                    node = nil,
+                    idx = idx,
+                    out = out, -- Valid when `not node.is_base = true` or `node = nil`
+                })
             end
         end
     end
@@ -168,7 +188,12 @@ local function setup_sel_items()
 end
 
 function M.setup()
-    api.nvim_create_user_command('PopcSet', M.pop, { nargs = 0 })
+    api.nvim_create_user_command('PopcSet', function(args)
+        M.pop(args.fargs[1])
+    end, {
+        nargs = '?',
+        complete = require('popc.panel.selection.data').get_complete,
+    })
 end
 
 function M.inspect()
@@ -195,8 +220,8 @@ end
 
 function pkeys.execute_confirm(uctx)
     local item = pctx.sel_items[pctx.index]
-    if item and not item.is_base then
-        item.node.cmd(item.node.opt, item.node.lst[item.idx])
+    if item and not item.node then
+        item.base_node.cmd(item.base_node.opt, item.base_node.lst[item.idx])
     end
 
     pkeys.confirm(uctx)
@@ -208,10 +233,40 @@ function pkeys.execute(uctx)
         return
     end
 
-    if item.is_base then
+    if item.node then
         item.node.is_open = not item.node.is_open
     else
-        item.node.cmd(item.node.opt, item.node.lst[item.idx])
+        item.base_node.cmd(item.base_node.opt, item.base_node.lst[item.idx])
+    end
+    setup_sel_items()
+    uctx.state = umode.State.ReDisp
+end
+
+function pkeys.fold_or_open(uctx)
+    local item = pctx.sel_items[pctx.index]
+    if not item then
+        return
+    end
+
+    if item.node then
+        item.node.is_open = not item.node.is_open
+    else
+        item.base_node.is_open = not item.base_node.is_open
+        pctx.index = item.base_idx
+    end
+    setup_sel_items()
+    uctx.state = umode.State.ReDisp
+end
+
+function pkeys.fold_always(uctx)
+    local item = pctx.sel_items[pctx.index]
+    if not item then
+        return
+    end
+
+    item.base_node.is_open = false
+    if item.level > 0 then
+        pctx.index = item.base_idx
     end
     setup_sel_items()
     uctx.state = umode.State.ReDisp
@@ -223,11 +278,12 @@ function pkeys.next_lst_item(uctx)
         return
     end
 
-    if item.is_out then
-        local cur = table.foreachi(item.node.lst, function(k, v)
+    if (not item.node) or not item.node.is_base then
+        local node = item.node or item.base_node
+        local cur = table.foreachi(node.lst, function(k, v)
             return v == item.out and k or nil
         end) or 0
-        item.node.cmd(item.node.opt, item.node.lst[cur % #item.node.lst + 1])
+        node.cmd(node.opt, node.lst[cur % #node.lst + 1])
         setup_sel_items()
         uctx.state = umode.State.ReDisp
     else
@@ -241,11 +297,12 @@ function pkeys.prev_lst_item(uctx)
         return
     end
 
-    if item.is_out then
-        local cur = table.foreachi(item.node.lst, function(k, v)
+    if (not item.node) or not item.node.is_base then
+        local node = item.node or item.base_node
+        local cur = table.foreachi(node.lst, function(k, v)
             return v == item.out and k or nil
         end) or 1
-        item.node.cmd(item.node.opt, item.node.lst[(cur - 2) % #item.node.lst + 1])
+        node.cmd(node.opt, node.lst[(cur - 2) % #node.lst + 1])
         setup_sel_items()
         uctx.state = umode.State.ReDisp
     else
@@ -259,10 +316,11 @@ function pkeys.modify(uctx)
         return
     end
 
-    if item.is_out then
-        local val = umode.input({ prompt = 'Modify: ', completion = item.node.cpl })
+    if (not item.node) or not item.node.is_base then
+        local node = item.node or item.base_node
+        local val = umode.input({ prompt = 'Modify: ', completion = node.cpl })
         if val then
-            item.node.cmd(item.node.opt, val)
+            node.cmd(node.opt, val)
             setup_sel_items()
             uctx.state = umode.State.ReDisp
         end
@@ -277,10 +335,11 @@ function pkeys.modify_current(uctx)
         return
     end
 
-    if item.is_out then
-        local val = umode.input({ prompt = 'Modify: ', default = item.out, completion = item.node.cpl })
+    if (not item.node) or not item.node.is_base then
+        local node = item.node or item.base_node
+        local val = umode.input({ prompt = 'Modify: ', default = item.out, completion = node.cpl })
         if val then
-            item.node.cmd(item.node.opt, val)
+            node.cmd(node.opt, val)
             setup_sel_items()
             uctx.state = umode.State.ReDisp
         end
@@ -293,7 +352,7 @@ end
 --- @param sel PopSelection
 function M.pop_selection(sel)
     pctx.index = 1
-    pctx.sel = sel
+    pctx.sel = sel or {}
     pctx.sel_root = nil
     pctx.sel_items = nil
     setup_sel_items()
@@ -301,7 +360,12 @@ function M.pop_selection(sel)
 end
 
 --- Pop out selection panel of vim options
-function M.pop()
+--- @param opt string?
+function M.pop(opt)
+    pctx.index = 1
+    pctx.sel = require('popc.panel.selection.data').get_sel(opt)
+    pctx.sel_root = nil
+    pctx.sel_items = nil
     setup_sel_items()
     return umode.pop(pctx)
 end
