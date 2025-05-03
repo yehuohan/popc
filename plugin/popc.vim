@@ -35,11 +35,7 @@ if exists('g:popc_loaded')
 endif
 
 if has('nvim')
-    let g:Popc_useFloatingWin = 1
-    let g:Popc_useTabline = 0
-    let g:Popc_useLayer = { 'Buffer': 0, 'Bookmark': 0, 'Workspace': 0 }
-    call popc#init#Init()
-    call popc#ui#Init()
+    " Disable by default on Neovim
 else
     let s:err = []
     if v:version < 800
@@ -63,7 +59,8 @@ else
     endif
 
     call popc#popc#Init()
+
+    let g:popc_version = 'Popc 3.10.5'
 endif
 
-let g:popc_version = 'Popc 3.10.5'
 let g:popc_loaded = 1
