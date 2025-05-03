@@ -214,7 +214,7 @@ function M.setup_highlights()
     local hint = '#fe8019'
     local text = '#ebdcb4'
     local area = '#504945'
-    local blank = '#32302f'
+    local blank = vim.api.nvim_get_hl(0, { name = 'Normal', link = false, create = false }).bg
     if vim.tbl_contains({ 'single', 'double', 'rounded' }, M.opts.usermode.win.border) then
         M.opts.usermode.win.highlight = 'NormalFloat:PopcFloat,FloatBorder:PopcFloatBorder'
         set_hl(0, 'PopcFloat', { link = 'Normal' })
