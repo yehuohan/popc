@@ -251,4 +251,73 @@ opts.Bookmark = {
 
 ## `Selection`
 
-> **WIP:** Re-implement [popset](https://github.com/yehuohan/popset)
+> `Selection` is a replacement of [popset](https://github.com/yehuohan/popset)
+
+`Selection` panel is to provide selections for setting vim options, executing function with args and so on.
+(`Selection` panel is disabled by default and enable with `opts.selection.enable = true`)
+
+***`Selection` functions:***
+
+- `require(popc).pop_selection([PopSelection])`
+
+```lua
+--- @class PopSelection
+--- @field opt nil|string|fun():string
+---        Option name
+--- @field dic nil|table<string,string|PopSelection>|fun(opt:string):table<string,string|PopSelection>
+---        * table<string, string>       : 'lst' desctiption
+---        * table<string, PopSelection> : sub-selection
+--- @field lst nil|any[]|fun(opt:string):any[]
+---        * any[]    : Selection item list
+---        * string[] : Key index list of 'dic'
+--- @field dsr nil|string|fun(opt:string):string
+---        'opt' description
+--- @field cpl nil|string|fun(opt:string):string
+---        'completion' of `input()` to modify selection value
+--- @field cmd nil|fun(opt:string, sel)
+---        Command executed with selected item of 'lst'
+--- @field get nil|fun(opt:string):any
+---        Get the selected item of 'opt'
+--- @field evt nil|fun(event:string)
+---        Selection event callback
+---        * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
+---        * 'onQuit' : called at `pctx.on_quit`
+--- @field sub nil|table<string,any|fun(...):any>|fun(opt:string):table<string,any|fun(...):any>
+---        Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
+```
+
+An example to setup configs with `pop_selection`:
+
+<div align="center">
+<img alt="SelectionUse" src="README/SelectionUse.gif"  width=80% height=80% />
+</div>
+
+
+***`Selection` commands:***
+
+- `PopcSet`: Pop out selection panel to setup vim options
+
+<div align="center">
+<img alt="SelectionOpt" src="README/SelectionOpt.gif"  width=80% height=80% />
+</div>
+
+
+***Default options:***
+
+```lua
+selection = {
+    enable = false,
+    keys = {
+        -- Set false to disable key
+        ['<CR>'] = 'execute_confirm', -- Execute 'cmd' then confirm with 'evt' callback
+        ['<S-CR>'] = 'confirm', -- Confirm with 'evt' callback
+        ['<Space>'] = 'execute', -- Execute 'cmd' or open/fold sub-selection
+        ['f'] = 'fold_or_open', -- Fold or open sub-selection
+        ['F'] = 'fold_always', -- Fold sub-selection always
+        ['n'] = 'next_lst_item',
+        ['p'] = 'prev_lst_item',
+        ['m'] = 'modify', -- Modify the selection value from `input()`
+        ['M'] = 'modify_current', -- Modify the selection value from `input({ default = <current selection value> })`
+    },
+},
+```
