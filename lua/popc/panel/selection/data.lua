@@ -1,6 +1,7 @@
 --- @class Popc.Panel.SelectionData Selection data for vim options
 local M = {}
 local fn = vim.fn
+local copts = require('popc.config').opts
 
 local sel_shortname = {}
 local sel_option = {
@@ -53,7 +54,42 @@ append_option('cmdheight', 'ch', sel_cmdheight)
 local sel_colorscheme = {
     opt = 'colorscheme',
     lst = function()
-        return fn.getcompletion('', 'color')
+        local colors = fn.getcompletion('', 'color')
+        if not copts.selection.collect_builtin_colorscheme then
+            local builtin = {
+                'blue',
+                'darkblue',
+                'default',
+                'delek',
+                'desert',
+                'elflord',
+                'evening',
+                'habamax',
+                'industry',
+                'koehler',
+                'lunaperche',
+                'morning',
+                'murphy',
+                'pablo',
+                'peachpuff',
+                'quiet',
+                'retrobox',
+                'ron',
+                'shine',
+                'slate',
+                'sorbet',
+                'torte',
+                'unokai',
+                'vim',
+                'wildcharm',
+                'zaibatsu',
+                'zellner',
+            }
+            colors = vim.tbl_filter(function(c)
+                return not vim.tbl_contains(builtin, c)
+            end, colors)
+        end
+        return colors
     end,
     dsr = 'Load color scheme',
     cmd = function(_, arg)

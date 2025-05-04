@@ -173,17 +173,18 @@ local pctx = {
     -- Specified panel data
     --- @type PopSelection
     sel = nil,
-    sel_root = nil, -- Resolved root selection node
+    sel_stack = {}, -- Resolved root selection nodes
     sel_items = nil,
 }
 
 --- Setup selection root and items
 --- @return boolean? Success or not
 local function setup_sel_items()
-    local items, sel_root, sel_items = get_sel_items(pctx.sel_root or pctx.sel)
+    local num = #pctx.sel_stack
+    local items, sel_root, sel_items = get_sel_items(pctx.sel_stack[num])
     pctx.text = sel_root.opt
     pctx.items = items
-    pctx.sel_root = sel_root
+    pctx.sel_stack[num] = sel_root
     pctx.sel_items = sel_items
 end
 
@@ -240,6 +241,30 @@ function pkeys.execute(uctx)
     end
     setup_sel_items()
     uctx.state = umode.State.ReDisp
+end
+
+function pkeys.enter(uctx)
+    local item = pctx.sel_items[pctx.index]
+    if not item then
+        return
+    end
+
+    if item.node then
+        table.insert(pctx.sel_stack, item.node)
+    else
+        item.base_node.cmd(item.base_node.opt, item.base_node.lst[item.idx])
+    end
+    setup_sel_items()
+    uctx.state = umode.State.ReDisp
+end
+
+function pkeys.leave(uctx)
+    local num = #pctx.sel_stack
+    if num > 1 then
+        table.remove(pctx.sel_stack, num)
+        setup_sel_items()
+        uctx.state = umode.State.ReDisp
+    end
 end
 
 function pkeys.fold_or_open(uctx)
@@ -353,7 +378,7 @@ end
 function M.pop_selection(sel)
     pctx.index = 1
     pctx.sel = sel or {}
-    pctx.sel_root = nil
+    pctx.sel_stack = { pctx.sel }
     pctx.sel_items = nil
     setup_sel_items()
     return umode.pop(pctx)
@@ -362,12 +387,7 @@ end
 --- Pop out selection panel of vim options
 --- @param opt string?
 function M.pop(opt)
-    pctx.index = 1
-    pctx.sel = require('popc.panel.selection.data').get_sel(opt)
-    pctx.sel_root = nil
-    pctx.sel_items = nil
-    setup_sel_items()
-    return umode.pop(pctx)
+    return M.pop_selection(require('popc.panel.selection.data').get_sel(opt))
 end
 
 return M

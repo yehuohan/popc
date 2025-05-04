@@ -307,11 +307,14 @@ An example to setup configs with `pop_selection`:
 ```lua
 selection = {
     enable = false,
+    collect_builtin_colorscheme = true, -- `PopcSet` collects neovim builtin colorschemes or not
     keys = {
         -- Set false to disable key
         ['<CR>'] = 'execute_confirm', -- Execute 'cmd' then confirm with 'evt' callback
         ['<S-CR>'] = 'confirm', -- Confirm with 'evt' callback
         ['<Space>'] = 'execute', -- Execute 'cmd' or open/fold sub-selection
+        ['<S-Space>'] = 'enter', -- Enter sub-selection or execute 'cmd'
+        ['u'] = 'leave', -- Leave sub-selection and go back base selection
         ['f'] = 'fold_or_open', -- Fold or open sub-selection
         ['F'] = 'fold_always', -- Fold sub-selection always
         ['n'] = 'next_lst_item',
