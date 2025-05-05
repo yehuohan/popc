@@ -13,6 +13,8 @@ local copts = require('popc.config').opts
 --- @field keys table<string, string|UserkeysHandler>
 --- @field pkeys table<string, UserkeysHandler>
 --- @field on_quit UserkeysHandler?
+---        * ukey = '<Esc>' : Invoke to quit usermode when <Esc> was pressed
+---        * ukey = nil     : Always invoke before quit `on_key`
 --- @field helpctx PanelContext?
 
 --- @class Usermode Custom user mode
@@ -220,12 +222,13 @@ local function display(uctx)
     api.nvim_win_call(umode.win, function()
         fn.winrestview({ topline = 1 })
     end)
-    switch(umode.ctx, uctx.pctx.index)
+    switch(uctx, uctx.pctx.index)
 end
 
 function ukeys.quit(uctx, ukey)
-    if uctx.pctx.on_quit then
-        uctx.pctx.on_quit(uctx, ukey)
+    -- Always invoke `on_quit` of panel, but not panel help
+    if umode.pctx.on_quit then
+        umode.pctx.on_quit(uctx, ukey)
     end
     uctx.state = M.State.None
 end
@@ -296,28 +299,28 @@ end
 
 --- @param uctx UsermodeContext
 --- @return any
-local function ok_key(uctx)
-    umode.ctx.state = M.State.WaitKey
+local function on_key(uctx)
+    uctx.state = M.State.WaitKey
     vim.cmd.redraw()
 
     while true do
         -- Handle state
-        if umode.ctx.state == M.State.None then
+        if uctx.state == M.State.None then
             break
-        elseif umode.ctx.state == M.State.ReNew then
+        elseif uctx.state == M.State.ReNew then
             destroy()
             display(uctx)
-        elseif umode.ctx.state == M.State.RePop then
+        elseif uctx.state == M.State.RePop then
             if api.nvim_win_is_valid(umode.win) then
                 api.nvim_win_close(umode.win, false)
             end
             display(uctx)
-        elseif umode.ctx.state == M.State.ReDisp then
+        elseif uctx.state == M.State.ReDisp then
             display(uctx)
-        elseif umode.ctx.state == M.State.ReDraw then
+        elseif uctx.state == M.State.ReDraw then
             vim.cmd.redraw()
         end
-        umode.ctx.state = M.State.WaitKey
+        uctx.state = M.State.WaitKey
 
         -- Get key
         local ok, c = pcall(vim.fn.getcharstr, -1, { cursor = 'hide' })
@@ -330,19 +333,23 @@ local function ok_key(uctx)
         if umode.keys[ukey] then
             local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
-            handler(umode.ctx, ukey)
+            handler(uctx, ukey)
         elseif uctx.pctx.keys[ukey] then
             local handler = uctx.pctx.keys[ukey]
             handler = vim.is_callable(handler) and handler or uctx.pctx.pkeys[handler]
-            handler(umode.ctx, ukey)
+            handler(uctx, ukey)
         else
             vim.notify(("No handler for key '%s'"):format(ukey))
         end
     end
 
+    if umode.pctx.on_quit then
+        umode.pctx.on_quit(uctx, nil)
+    end
+
     destroy()
-    umode.ctx.state = M.State.None
-    return umode.ctx.pret
+    uctx.state = M.State.None
+    return uctx.pret
 end
 
 local function __on_key()
@@ -371,7 +378,7 @@ function M.pop(pctx)
     if umode.ctx.state == M.State.None then
         -- M.notify(('Enter usermode with %s panel'):format(pctx.name))
         log('Enter usermode')
-        local res = ok_key(umode.ctx)
+        local res = on_key(umode.ctx)
         log('Level usermode')
         return res
     end
@@ -390,10 +397,11 @@ function M.notify(message, level)
 end
 
 --- Input text
---- @param opts table vim.ui.input.Opts
+--- @param opts table? vim.ui.input.Opts
 --- @return string?
 function M.input(opts)
-    opts.prompt = ' ' .. copts.icons.popc .. ' ' .. opts.prompt
+    opts = opts or {}
+    opts.prompt = ' ' .. copts.icons.popc .. ' ' .. (opts.prompt or '')
     opts.cancelreturn = vim.NIL
     if copts.usermode.input == 'snacks' then
         return coroutine.yield((function()
@@ -408,10 +416,10 @@ function M.input(opts)
     end
 end
 
---- @param prompt string
+--- @param prompt string?
 --- @return boolean
 function M.confirm(prompt)
-    return 'y' == M.input({ prompt = prompt .. ' (yN): ' })
+    return 'y' == M.input({ prompt = (prompt or '') .. ' (yN): ' })
 end
 
 function M.inspect()

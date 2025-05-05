@@ -31,7 +31,7 @@ function M.setup(opts)
             bang = true,
             nargs = '?',
             complete = function()
-                return { 'usermode', 'tabuf', 'bookmark', 'workspace' }
+                return { 'usermode', 'tabuf', 'bookmark', 'workspace', 'selection' }
             end,
         })
         vim.api.nvim_create_user_command('PopcLog', function(args)

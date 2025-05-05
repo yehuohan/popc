@@ -201,11 +201,13 @@ function M.inspect()
     return vim.inspect(pctx), pctx
 end
 
-pctx.on_quit = function(uctx)
-    if pctx.sel.evt then
-        pctx.sel.evt('onQuit')
+pctx.on_quit = function(uctx, ukey)
+    if ukey then
+        if pctx.sel.evt then
+            pctx.sel.evt('onQuit')
+        end
+        uctx.pret = false
     end
-    uctx.pret = false
 end
 
 --- Panel keys handler

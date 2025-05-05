@@ -49,8 +49,10 @@ local pctx = {
     index = 1,
     keys = copts.tabuf.keys,
     pkeys = {},
+    on_quit = nil,
     -- Specified panel data
     state = M.State.Sigtab,
+    state_check = false,
     --- @type TabufStateItem[]
     state_items = {},
     state_index = {
@@ -333,6 +335,7 @@ end
 --- @param tid TabID
 function M._add_tab(tid)
     tabctx[tid] = { bufs = {}, icur = 1, istt = 1 }
+    log('append tabpage: tid = %d, tnr = %d', tid, api.nvim_tabpage_get_number(tid))
 end
 
 --- Delete a tabpage (mainly for M.tab_callback)
@@ -544,6 +547,13 @@ function M.inspect()
     return txt, tabctx, bufctx, pctx
 end
 
+pctx.on_quit = function(_, ukey)
+    if ukey == nil then
+        pctx.state_check = true
+        pctx.state_index[pctx.state] = pctx.index
+    end
+end
+
 --- Panel keys handler
 local pkeys = pctx.pkeys
 
@@ -551,17 +561,15 @@ local pkeys = pctx.pkeys
 --- @param state TabufState?
 local function transit_state(state)
     local item = pctx.state_items[pctx.index]
-
     if item then
         -- Store tabpage state item index
         if pctx.state ~= M.State.Listab then
             tabctx[item.tid].istt = item.idx
         end
+        pctx.state_index[pctx.state] = pctx.index
 
         -- Update state item index
         if state then
-            pctx.state_index[pctx.state] = pctx.index
-
             if pctx.state == M.State.Sigtab and state == M.State.Alltab then
                 for _, tid in ipairs(api.nvim_list_tabpages()) do
                     if tid == item.tid then
@@ -571,20 +579,17 @@ local function transit_state(state)
                 end
             elseif pctx.state == M.State.Alltab and state == M.State.Sigtab then
                 pctx.index = item.idx
+            elseif pctx.state ~= M.State.Listab and state == M.State.Listab then
+                pctx.index = pctx.state_index[state]
             elseif pctx.state == M.State.Listab and state == M.State.Sigtab then
-                pctx.index = tabctx[item.tid] and tabctx[item.tid].istt or item.idx
+                pctx.index = tabctx[api.nvim_get_current_tabpage()].istt
             elseif pctx.state == M.State.Listab and state == M.State.Alltab then
                 pctx.index = pctx.state_index[state]
-            elseif pctx.state ~= M.State.Listab and state == M.State.Listab then
-                pctx.index = list_index(api.nvim_list_tabpages(), item.tid) or 1
-            end
-
-            pctx.state = state
-        else
-            if pctx.state == M.State.Sigtab then
-                pctx.index = tabctx[api.nvim_get_current_tabpage()].istt
             end
         end
+    end
+    if state then
+        pctx.state = state
     end
     pctx.items, pctx.state_items = M.get_state_items(pctx.state)
 end
@@ -1140,9 +1145,12 @@ end
 
 function M.pop()
     pctx.text = copts.icons.tabuf .. ' Buffers'
-    pctx.state = M.State.Sigtab -- Pre-set state to avoid transit state
-    pctx.state_items = {} -- Clear previous state items
-    transit_state()
+    -- Re-get state items before transit state, in case of there's buffer or tabpage changes of `pctx.state`
+    if pctx.state_check then
+        pctx.items, pctx.state_items = M.get_state_items(pctx.state)
+        pctx.state_check = false
+    end
+    transit_state(M.State.Sigtab)
     umode.apop(pctx)
 end
 
@@ -1291,9 +1299,15 @@ function M.cmd_clear_all()
     end
 
     -- Close all tabpages and all buffers
-    local all_bufs = vim.tbl_keys(bufctx)
     tabctx = {}
     bufctx = {}
+    pctx.index = 1
+    pctx.state = M.State.Sigtab
+    pctx.state_index = {
+        [M.State.Sigtab] = 1,
+        [M.State.Alltab] = 1,
+        [M.State.Listab] = 1,
+    }
     vim.cmd.tabonly({ bang = true, mods = { noautocmd = true, silent = true } })
     vim.cmd('silent! %bdelete!')
     -- vim.cmd('silent! %bwipeout!') -- TODO: Some dangerous?
