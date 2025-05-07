@@ -53,6 +53,7 @@ opts = {
             number = true,
         },
         -- Usermode's keys is the first priority handler
+        keys_number = 'jump', -- Jump to the pressed number item (disable with false)
         keys = {
             -- Set false to disable key
             ['<Esc>'] = 'quit',

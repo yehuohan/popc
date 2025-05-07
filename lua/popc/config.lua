@@ -35,6 +35,7 @@ M.opts = {
             border = vim.o.winborder, -- 'none', 'single', 'double', 'rounded'
             number = true,
         },
+        keys_number = 'jump', -- Jump to the pressed number item (disable with false)
         keys = {
             -- Set false to disable key
             ['<Esc>'] = 'quit',

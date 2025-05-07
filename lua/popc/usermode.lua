@@ -74,9 +74,9 @@ end
 --- The items will align according to string array:
 --- ```text
 --- {                        {
----     {'abc', 'def'},          'abc def',
----     {'ab', 'cdef'}, ===>     'ab  cdef',
----     {'a', 'bcdef'},          'a   bcdef',
+---     {'abc', 'def'},          ' abc def   ',
+---     {'ab', 'cdef'}, ===>     ' ab  cdef  ',
+---     {'a', 'bcdef'},          ' a   bcdef ',
 --- }                        }
 --- ```
 --- @param items string[][] PanelContext.items
@@ -297,6 +297,53 @@ function ukeys.pop_workspace()
     require('popc.panel.workspace').pop()
 end
 
+local got_number = ''
+--- Handle number keys
+--- @param uctx UsermodeContext
+--- @param ukey string
+--- @return boolean
+local function ukeys_number(uctx, ukey)
+    if copts.usermode.keys_number ~= 'jump' then
+        return false
+    end
+
+    local res = false
+    if got_number ~= '' then
+        if ukey == '<Esc>' then
+            got_number = ''
+            res = true
+        elseif ukey == '<BS>' then
+            got_number = got_number:sub(1, #got_number - 1)
+            res = true
+        elseif ukey == '<CR>' then
+            switch(uctx, tonumber(got_number))
+            got_number = ''
+            res = true
+        end
+    end
+    if ukey:match('^%d$') then
+        got_number = got_number .. ukey
+        local num = tonumber(got_number)
+        if num > math.floor(#uctx.lines / 10) then
+            switch(uctx, num)
+            got_number = ''
+        end
+        res = true
+    else
+        if got_number ~= '' then
+            M.notify('Press number to jump or <Esc> to quit number mode')
+            res = true
+        end
+    end
+
+    if res then
+        local msg = got_number ~= '' and 'Jump: ' .. got_number or got_number
+        api.nvim_echo({ { msg, 'Question' } }, false, {})
+        uctx.state = M.State.ReDraw
+    end
+    return res
+end
+
 --- @param uctx UsermodeContext
 --- @return any
 local function on_key(uctx)
@@ -330,7 +377,9 @@ local function on_key(uctx)
         local ukey = fn.keytrans(c)
 
         -- Handle key
-        if umode.keys[ukey] then
+        if ukeys_number(uctx, ukey) then
+            -- Accept number keys and '<Esc>', '<CR>', '<BS>'
+        elseif umode.keys[ukey] then
             local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
             handler(uctx, ukey)
