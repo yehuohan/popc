@@ -380,6 +380,8 @@ function pkeys.save_workspace_forcely(uctx)
         return
     end
     M.save_workspace(item.name, pctx.wks_path)
+    item.path = pctx.wks_path
+    save_wks_items()
 
     setup_wks_items(pctx.wks_items)
     uctx.state = umode.State.ReDisp
