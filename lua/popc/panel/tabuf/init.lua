@@ -380,6 +380,7 @@ function M._add_buf(tid, bid)
         log('switch buffer: tid = %d, tnr = %d, bid = %d, name = %s', tid, tnr, bid, info.name)
     else
         table.insert(tab.bufs, bid)
+        tab.icur = #tab.bufs
         if bufctx[bid] then
             bufctx[bid].cnt = bufctx[bid].cnt + 1
         else
@@ -441,6 +442,12 @@ function M.buf_callback(args)
         if bid_idx then
             tabctx[cur_tid].icur = bid_idx
         end
+    elseif args.event == 'OptionSet' then
+        -- Sometime 'BufWinEnter' happened before 'OptionSet buflisted=true'
+        local bid = api.nvim_get_current_buf()
+        if vim.v.option_new and not bufctx[bid] then
+            M._add_buf(cur_tid, bid)
+        end
     elseif args.event == 'BufWinEnter' then
         M._add_buf(cur_tid, api.nvim_get_current_buf())
     elseif args.event == 'BufWipeout' then
@@ -451,13 +458,8 @@ function M.buf_callback(args)
                 M._del_buf(tid, bid)
             end
             bufctx[bid] = nil
-            log(
-                'wipeout buffer: tid = %d, tnr = %d, bid = %d, afile = %s',
-                cur_tid,
-                api.nvim_tabpage_get_number(cur_tid),
-                bid,
-                args.file
-            )
+            local tnr = api.nvim_tabpage_get_number(cur_tid)
+            log('wipeout buffer: tid = %d, tnr = %d, bid = %d, afile = %s', cur_tid, tnr, bid, args.file)
         end
     elseif args.event == 'VimEnter' then
         if M.tab_num() == 0 then
@@ -476,6 +478,10 @@ function M.setup()
     api.nvim_create_autocmd(
         { 'TabNew', 'TabClosed' },
         { group = 'Popc.Panel.Tabuf', pattern = { '*' }, callback = M.tab_callback }
+    )
+    api.nvim_create_autocmd(
+        { 'OptionSet' },
+        { group = 'Popc.Panel.Tabuf', pattern = { 'buflisted' }, callback = M.buf_callback }
     )
     api.nvim_create_autocmd(
         { 'BufNew', 'BufEnter', 'BufWinEnter', 'BufWipeout', (not vim.v.vim_did_enter) and 'VimEnter' or nil },
