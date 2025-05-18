@@ -182,10 +182,14 @@ local pctx = {
 local function setup_sel_items()
     local num = #pctx.sel_stack
     local items, sel_root, sel_items = get_sel_items(pctx.sel_stack[num])
-    pctx.text = sel_root.opt
     pctx.items = items
     pctx.sel_stack[num] = sel_root
     pctx.sel_items = sel_items
+
+    pctx.text = pctx.sel_stack[1].opt
+    for k = 2, num do
+        pctx.text = pctx.text .. string.format(' %s %s', copts.icons.pointer, pctx.sel_stack[k].opt)
+    end
 end
 
 function M.setup()
