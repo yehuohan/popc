@@ -11,6 +11,7 @@ M.opts = {
     auto_setup_highlights = true, -- Add ColorScheme event for highlights
     root_marker = { '.git' }, -- Detect root path for tabuf and workspace panel
     icons = {
+        -- Require a nerd font by default
         popc = '󰯙',
         tabuf = '',
         bookmark = '',
@@ -29,10 +30,10 @@ M.opts = {
         nums = { '⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' },
     },
     usermode = {
-        input = nil, -- 'snacks'
+        input = nil, -- Support: 'snacks'
         win = {
             zindex = 1000,
-            border = vim.o.winborder, -- 'none', 'single', 'double', 'rounded'
+            border = vim.o.winborder, -- Support: 'none', 'single', 'double', 'rounded'
             number = true,
         },
         keys_number = 'jump', -- Jump to the pressed number item (disable with false)
@@ -63,9 +64,9 @@ M.opts = {
             ['h'] = 'pop_buffers',
             ['l'] = 'pop_tabpages',
             ['a'] = 'pop_tabpage_buffers',
-            ['<CR>'] = 'load_buffer_or_tabpage_quit', -- Load buffer into current window of current tabpage
+            ['<CR>'] = 'load_buffer_or_tabpage_quit', -- Load buffer into current window of current tabpage, then quit panel
             ['<Space>'] = 'load_buffer_or_tabpage',
-            ['<S-CR>'] = 'goto_buffer_or_tabpage_quit', -- Goto buffer of corresponding window and tabpage
+            ['<S-CR>'] = 'goto_buffer_or_tabpage_quit', -- Goto buffer of corresponding window and tabpage, then quit panel
             ['<S-Space>'] = 'goto_buffer_or_tabpage',
             ['f'] = 'focus_on_window',
             ['s'] = 'split_buffer_quit',
@@ -80,13 +81,13 @@ M.opts = {
             ['D'] = 'close_window_and_buffer', -- Also close window along with buffer
             ['i'] = 'switch_to_prev_tabpage',
             ['o'] = 'switch_to_next_tabpage',
-            ['I'] = 'move_buffer_or_tabpage_to_prev', -- The selected item index follows buffer
+            ['I'] = 'move_buffer_or_tabpage_to_prev', -- Move buffer or tabpage to previous (the selected item index follows buffer)
             ['O'] = 'move_buffer_or_tabpage_to_next',
-            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev', -- The selected item index keeps unchanged
+            ['<M-i>'] = 'move_out_buffer_or_tabpage_to_prev', -- Move buffer or tabpage to previous (the selected item index keeps unchanged)
             ['<M-o>'] = 'move_out_buffer_or_tabpage_to_next',
-            ['n'] = 'set_tabpage_label', -- Input empty string means delete label
-            ['r'] = 'set_tabpage_dir', -- Support expand environment variables, input empty string means delete dir
-            ['p'] = 'toggle_fullpath',
+            ['n'] = 'set_tabpage_label', -- Set tabpage label (also show at tabline, input empty string means delete label)
+            ['r'] = 'set_tabpage_dir', -- Set tabpage directory (input empty string means delete dir, support expand environment variables)
+            ['p'] = 'toggle_fullpath', -- Show buffer fullpath or not
         },
     },
     bookmark = {
@@ -134,8 +135,8 @@ M.opts = {
             ['u'] = 'leave', -- Leave sub-selection and go back base selection
             ['f'] = 'fold_or_open', -- Fold or open sub-selection
             ['F'] = 'fold_always', -- Fold sub-selection always
-            ['n'] = 'next_lst_item',
-            ['p'] = 'prev_lst_item',
+            ['n'] = 'next_lst_item', -- Execute 'cmd' with next 'lst' item
+            ['p'] = 'prev_lst_item', -- Execute 'cmd' with previous 'lst' item
             ['m'] = 'modify', -- Modify the selection value from `input()`
             ['M'] = 'modify_current', -- Modify the selection value from `input({ default = <current selection value> })`
         },

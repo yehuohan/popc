@@ -30,14 +30,24 @@ function M.setup(opts)
         end, {
             bang = true,
             nargs = '?',
-            complete = function()
-                return { 'usermode', 'tabuf', 'bookmark', 'workspace', 'selection' }
+            complete = function(arglead)
+                return vim.tbl_filter(function(name)
+                    return name:match('^' .. arglead)
+                end, { 'usermode', 'tabuf', 'bookmark', 'workspace', 'selection' })
             end,
         })
         vim.api.nvim_create_user_command('PopcLog', function(args)
             local res = require('popc.log').get_logs(args.fargs[1])
             vim[args.bang and 'notify' or 'print'](res)
-        end, { bang = true, nargs = '?', complete = require('popc.log').get_tags })
+        end, {
+            bang = true,
+            nargs = '?',
+            complete = function(arglead)
+                return vim.tbl_filter(function(name)
+                    return name:match('^' .. arglead)
+                end, require('popc.log').get_tags())
+            end,
+        })
     end
 end
 

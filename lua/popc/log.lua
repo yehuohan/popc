@@ -24,6 +24,7 @@ function M.get(tag)
 end
 
 --- Get log tag list
+--- @return string[]
 function M.get_tags()
     return vim.tbl_keys(log)
 end
