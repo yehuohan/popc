@@ -4,7 +4,8 @@
 " SECTION: variables {{{1
 
 let s:conf = {
-    \ 'jsonPath'             : has('nvim') ? stdpath('data'): $HOME,
+    \ 'jsonPath'             : $HOME,
+    \ 'jsonFile'             : '.popc.json',
     \ 'useFloatingWin'       : 0,
     \ 'useNerdSymbols'       : 1,
     \ 'symbols'              : {},
@@ -128,7 +129,7 @@ endfunction
 " FUNCTION: s:initJson() {{{
 function! s:initJson()
     let s:json.dir = s:conf.jsonPath . '/.popc'
-    let s:json.fp_json = s:conf.jsonPath . '/.popc.json'
+    let s:json.fp_json = s:conf.jsonPath . '/' . s:conf.jsonFile
 
     " create .popc.json file
     if !filereadable(s:json.fp_json)
@@ -178,7 +179,7 @@ endfunction
 " FUNCTION: s:initConfig() {{{
 function! s:initConfig()
     " set confiuration's value and list
-    for k in ['jsonPath', 'useFloatingWin', 'useNerdSymbols', 'maxHeight',
+    for k in ['jsonPath', 'jsonFile', 'useFloatingWin', 'useNerdSymbols', 'maxHeight',
             \ 'useTabline', 'useStatusline', 'statusLine', 'tabLine',
             \ 'bufShowUnlisted', 'bufIgnoredType',
             \ 'wksRootPatterns', 'wksSaveUnderRoot',

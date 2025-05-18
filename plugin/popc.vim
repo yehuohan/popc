@@ -1,7 +1,5 @@
-
-" Popc: Popc manager for vim.
-" Maintainer: yehuohan, <yehuohan@qq.com>, <yehuohan@gmail.com>
-" Version: g:popc_version
+" Popc: Pop Out Panel of Custom user mode
+" Maintainer: yehuohan@qq.com
 "
 " MIT License
 " 
@@ -35,7 +33,7 @@ if exists('g:popc_loaded')
 endif
 
 if has('nvim')
-    " Disable by default on Neovim
+    " Disable VimL version by default on Neovim
 else
     let s:err = []
     if v:version < 800
@@ -60,7 +58,7 @@ else
 
     call popc#popc#Init()
 
-    let g:popc_version = 'Popc 3.10.5'
+    let g:popc_version = 'Popc 3.10.6' " Only for VimL version
 endif
 
 let g:popc_loaded = 1
