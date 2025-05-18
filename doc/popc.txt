@@ -66,6 +66,7 @@ config popc. The default is listed below:
 >
     let s:conf = {
         \ 'jsonPath'        : $HOME, " where to store popc's json configuration
+        \ 'jsonFile'        : '.popc.json',
         \ 'useFloatingWin'  : 0,
         \ 'useNerdSymbols'  : 1,
         \ 'symbols'         : {},

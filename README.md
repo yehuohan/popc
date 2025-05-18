@@ -1,7 +1,7 @@
 # Popc
 
 > **Pop Out Panel of Custom user mode**
-> - For vim user: VimL version code (its `README` can see [old branch](https://github.com/yehuohan/popc/tree/old)) is still kept and disabled for Neovim by default.
+> - For vim user: VimL version code (see [README.VimL.md](./README.VimL.md) or [old branch](https://github.com/yehuohan/popc/tree/old)) is still kept and disabled for Neovim by default.
 
 Popc is to display a panel and handle all input keys inside an usermode.
 
@@ -151,7 +151,7 @@ opts.tabuf = {
 
 ***Highlights for `Tabuf` tabline:***
 
-- `PopcTlBar`: Bar to indicate tabpage or buffer 
+- `PopcTlBar`: Bar to indicate tabpage or buffer
 - `PopcTlNormal`: Normal tabpage or buffer
 - `PopcTlCurrent`: Current tabpage or buffer
 - `PopcTlModified`: Tabpage or buffer has modification
