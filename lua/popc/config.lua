@@ -48,10 +48,12 @@ M.opts = {
             ['<Esc>'] = 'quit',
             ['q'] = 'back',
             ['?'] = 'help',
-            ['j'] = 'next',
-            ['k'] = 'prev',
-            ['J'] = 'next_page',
-            ['K'] = 'prev_page',
+            ['j'] = 'next', -- Goto next line
+            ['k'] = 'prev', -- Goto Previous line
+            ['<M-j>'] = 'next_page', -- Goto next page
+            ['<M-k>'] = 'prev_page', -- Goto previous page
+            ['J'] = 'bottom', -- Goto bottom line
+            ['K'] = 'top', -- Goto top line
         },
     },
     tabuf = {

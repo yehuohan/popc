@@ -287,6 +287,14 @@ function ukeys.prev_page(uctx)
     switch(uctx, uctx.pctx.index - api.nvim_win_get_height(umode.win) + 1)
 end
 
+function ukeys.bottom(uctx)
+    switch(uctx, #uctx.lines)
+end
+
+function ukeys.top(uctx)
+    switch(uctx, 1)
+end
+
 function ukeys.pop_tabuf()
     require('popc.panel.tabuf').pop()
 end
