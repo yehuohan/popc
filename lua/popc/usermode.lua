@@ -259,8 +259,10 @@ function ukeys.help(uctx)
             end
         end
 
-        table.insert(items, { '# Panel' })
+        table.insert(items, { '# ' .. umode.pctx.name })
         keys2items(umode.pctx.keys)
+        table.insert(items, { '# Panels' })
+        keys2items(copts.usermode.keys_panels)
         table.insert(items, { '# Usermode' })
         keys2items(umode.keys)
         umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {}, pkeys = {} }
@@ -295,6 +297,20 @@ end
 
 function ukeys.pop_workspace()
     require('popc.panel.workspace').pop()
+end
+
+local got_panels = vim.tbl_values(copts.usermode.keys_panels)
+--- Handle panels keys
+--- @param uctx UsermodeContext
+--- @param ukey string
+--- @return boolean
+local function ukeys_panels(uctx, ukey)
+    local handler = copts.usermode.keys_panels[ukey]
+    if type(handler) == 'string' and vim.list_contains(got_panels, uctx.pctx.name:lower()) then
+        ukeys['pop_' .. handler](uctx, ukey)
+        return true
+    end
+    return false
 end
 
 local got_number = ''
@@ -379,6 +395,7 @@ local function on_key(uctx)
         -- Handle key
         if ukeys_number(uctx, ukey) then
             -- Accept number keys and '<Esc>', '<CR>', '<BS>'
+        elseif ukeys_panels(uctx, ukey) then
         elseif umode.keys[ukey] then
             local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]

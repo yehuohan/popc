@@ -37,6 +37,12 @@ M.opts = {
             number = true,
         },
         keys_number = 'jump', -- Jump to the pressed number item (disable with false)
+        keys_panels = { -- Jump between panels (only support 'tabuf', 'bookmark', 'workspace')
+            -- Set false to disable key
+            ['h'] = 'tabuf',
+            ['b'] = 'bookmark',
+            ['w'] = 'workspace',
+        },
         keys = {
             -- Set false to disable key
             ['<Esc>'] = 'quit',
@@ -46,9 +52,6 @@ M.opts = {
             ['k'] = 'prev',
             ['J'] = 'next_page',
             ['K'] = 'prev_page',
-            ['h'] = 'pop_tabuf',
-            ['b'] = 'pop_bookmark',
-            ['w'] = 'pop_workspace',
         },
     },
     tabuf = {
