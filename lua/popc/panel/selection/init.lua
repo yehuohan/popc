@@ -40,6 +40,7 @@ local umode = require('popc.usermode')
 --- @field is_rsv boolean Is a resolved node
 --- @field is_base boolean Is a base node (has sub-selection)
 --- @field is_open boolean Base node is opened or folded
+--- @field saved_index integer Saved `PanelContext.index`
 
 --- @param node PopSelection
 --- @param base ResolvedSelection?
@@ -173,6 +174,7 @@ local pctx = {
     -- Specified panel data
     --- @type PopSelection
     sel = nil,
+    --- @type ResolvedSelection[]
     sel_stack = {}, -- Resolved root selection nodes
     sel_items = nil,
 }
@@ -256,6 +258,8 @@ function pkeys.enter(uctx)
     end
 
     if item.node then
+        pctx.sel_stack[#pctx.sel_stack].saved_index = pctx.index
+        pctx.index = 1
         table.insert(pctx.sel_stack, item.node)
     else
         item.base_node.cmd(item.base_node.opt, item.base_node.lst[item.idx])
@@ -268,6 +272,7 @@ function pkeys.leave(uctx)
     local num = #pctx.sel_stack
     if num > 1 then
         table.remove(pctx.sel_stack, num)
+        pctx.index = pctx.sel_stack[#pctx.sel_stack].saved_index
         setup_sel_items()
         uctx.state = umode.State.ReDisp
     end
