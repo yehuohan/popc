@@ -104,6 +104,7 @@ opts = {
 ***`Tabuf` commands:***
 
 - `PopcTabuf`: Pop out `Tabuf` panel
+- `PopcTabufResetTabline`: Reset tabline of `Tabuf` panel
 - `PopcBufferSwitchLeft`: Switch to left buffer of current tabpage (works with `opts.tabuf.tabline = true`)
 - `PopcBufferSwitchRight`: Switch to right buffer of current tabpage (works with `opts.tabuf.tabline = true`)
     - `PopcBufferSwitchLeft` and `PopcBufferSwitchRight` support `v:count1`, e.g. `:3PopcBufferSwitchLeft` will switch to the 3th left buffer

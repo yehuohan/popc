@@ -491,10 +491,15 @@ function M.setup()
         M.buf_callback({ event = 'VimEnter' })
     end
 
-    if copts.tabuf.tabline then
+    local reset_tabline = function()
         vim.o.showtabline = 2
         vim.o.tabline = '%{%v:lua.require("popc.panel.tabuf.tabline").eval()%}'
     end
+    if copts.tabuf.tabline then
+        reset_tabline()
+    end
+    api.nvim_create_user_command('PopcTabuf', M.pop, { nargs = 0 })
+    api.nvim_create_user_command('PopcTabufResetTabline', reset_tabline, { nargs = 0 })
 
     local buffer_switch_left = function(args)
         M.cmd_switch_buffer(args.bang, -(args.count == 0 and 1 or args.count))
@@ -508,7 +513,6 @@ function M.setup()
     local buffer_jump_next = function(args)
         M.cmd_jump_inside_buffer(args.count == 0 and 1 or args.count)
     end
-    api.nvim_create_user_command('PopcTabuf', M.pop, { nargs = 0 })
     api.nvim_create_user_command('PopcBufferSwitchLeft', buffer_switch_left, { bang = true, nargs = 0, count = true })
     api.nvim_create_user_command('PopcBufferSwitchRight', buffer_switch_right, { bang = true, nargs = 0, count = true })
     api.nvim_create_user_command('PopcBufferJumpPrev', buffer_jump_prev, { nargs = 0, count = true })
