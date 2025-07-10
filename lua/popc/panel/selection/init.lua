@@ -388,7 +388,7 @@ end
 --- @param sel PopSelection
 function M.pop_selection(sel)
     pctx.index = 1
-    pctx.sel = sel or {}
+    pctx.sel = sel and vim.deepcopy(sel) or {}
     pctx.sel_stack = { pctx.sel }
     pctx.sel_items = nil
     setup_sel_items()
