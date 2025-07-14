@@ -98,7 +98,7 @@ opts = {
 `Tabuf` panel can track all buffers and tabpages automatically. And display hierarchical buffers and tabpages to floating panel and tabline.
 
 <div align="center">
-<img alt="Tabuf" src="README/Tabuf.gif"  width=80% height=80% />
+<img alt="Tabuf" src="README/Tabuf.gif" style="width:80%; height:auto;" />
 </div>
 
 ***`Tabuf` commands:***
@@ -173,7 +173,7 @@ opts.tabuf = {
 `Workspace` panel is mainly for saving/loading vim sessions along with user data.
 
 <div align="center">
-<img alt="Workspace" src="README/Workspace.gif"  width=80% height=80% />
+<img alt="Workspace" src="README/Workspace.gif" style="width:80%; height:auto;" />
 </div>
 
 ***`Workspace` commands:***
@@ -229,7 +229,7 @@ vim.api.nvim_create_autocmd('User', {
 `Bookmark` panel is a convenient container of bookmark files.
 
 <div align="center">
-<img alt="Bookmark" src="README/Bookmark.gif"  width=80% height=80% />
+<img alt="Bookmark" src="README/Bookmark.gif" style="width:80%; height:auto;" />
 </div>
 
 ***`Bookmark` commands:***
@@ -299,7 +299,7 @@ opts.Bookmark = {
 An example to setup configs with `pop_selection`:
 
 <div align="center">
-<img alt="SelectionUse" src="README/SelectionUse.gif"  width=80% height=80% />
+<img alt="SelectionUse" src="README/SelectionUse.gif" style="width:80%; height:auto;" />
 </div>
 
 
@@ -308,7 +308,7 @@ An example to setup configs with `pop_selection`:
 - `PopcSet`: Pop out selection panel to setup vim options
 
 <div align="center">
-<img alt="SelectionOpt" src="README/SelectionOpt.gif"  width=80% height=80% />
+<img alt="SelectionOpt" src="README/SelectionOpt.gif" style="width:80%; height:auto;" />
 </div>
 
 
