@@ -178,7 +178,7 @@ function M.validate_data()
     -- Validate M.opts._data_wdir
     stat = vim.uv.fs_stat(M.opts._data_wdir)
     if (not stat) or stat.type ~= 'directory' then
-        vim.uv.fs_mkdir(M.opts._data_wdir, tonumber('666', 8))
+        vim.uv.fs_mkdir(M.opts._data_wdir, tonumber('750', 8))
 
         -- Port old data
         local old_popc_wdir = vim.fs.joinpath(M.opts.data_path, '.popc')
