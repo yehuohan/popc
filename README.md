@@ -165,7 +165,7 @@ opts.tabuf = {
 - `PopcTlCurrent`: Current tabpage or buffer
 - `PopcTlModified`: Tabpage or buffer has modification
 - `PopcTlCurrentModified`: Current tabpage or buffer has modification
-- `PopcTl<XXX>Pad`: Padding for bar/tabpage/buffer
+- `PopcTl<Bar/Normal/Current/Modified/CurrentModified>Pad`: Paddings between bar/tabpage/buffer
 
 
 ## `Workspace`
