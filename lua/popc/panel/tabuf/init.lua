@@ -513,11 +513,14 @@ function M.setup()
     local buffer_jump_next = function(args)
         M.cmd_jump_inside_buffer(args.count == 0 and 1 or args.count)
     end
+    local buffer_close = function(args)
+        M.cmd_close_buffer(args.bang)
+    end
     api.nvim_create_user_command('PopcBufferSwitchLeft', buffer_switch_left, { bang = true, nargs = 0, count = true })
     api.nvim_create_user_command('PopcBufferSwitchRight', buffer_switch_right, { bang = true, nargs = 0, count = true })
     api.nvim_create_user_command('PopcBufferJumpPrev', buffer_jump_prev, { nargs = 0, count = true })
     api.nvim_create_user_command('PopcBufferJumpNext', buffer_jump_next, { nargs = 0, count = true })
-    api.nvim_create_user_command('PopcBufferClose', M.cmd_close_buffer, { nargs = 0 })
+    api.nvim_create_user_command('PopcBufferClose', buffer_close, { bang = true, nargs = 0 })
 end
 
 function M.inspect()
@@ -1250,7 +1253,8 @@ function M.cmd_jump_inside_buffer(direction)
 end
 
 --- Close current window's buffer
-function M.cmd_close_buffer()
+--- @param bang boolean true to bwipeout buffer, false to bdelete buffer
+function M.cmd_close_buffer(bang)
     local cur_tid = api.nvim_get_current_tabpage()
     local cur_bid = api.nvim_get_current_buf()
     local cur_bid_idx = M.buf_idx(cur_tid, cur_bid)
@@ -1288,8 +1292,12 @@ function M.cmd_close_buffer()
         end
     end
     M._del_buf(cur_tid, cur_bid)
-    if bufctx[cur_bid].cnt == 0 then
-        vim.cmd.bdelete({ bang = true, count = cur_bid, mods = { silent = true } })
+    if bang then
+        vim.cmd.bwipeout({ bang = true, count = cur_bid, mods = { silent = true } })
+    else
+        if bufctx[cur_bid].cnt == 0 then
+            vim.cmd.bdelete({ bang = true, count = cur_bid, mods = { silent = true } })
+        end
     end
 end
 
