@@ -1,6 +1,6 @@
 # Popc
 
-> **Pop Out Panel of Custom user mode**
+> **Pop Out Panel inside Custom user mode**
 > - For vim user: VimL version code (see [README.VimL.md](./README.VimL.md) or [old branch](https://github.com/yehuohan/popc/tree/old)) is still kept and disabled for Neovim by default.
 
 Popc is to display a panel and handle all input keys inside an usermode.
