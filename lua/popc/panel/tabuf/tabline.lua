@@ -85,7 +85,9 @@ function M.adjust(buflst, tablst, padwid, maxwid)
     end
 
     local function get_siei(attr, extsum)
-        local sum = attr.wid[attr.cur] + extsum
+        -- Something when current buffer's filename changed, the buffer will loss current state,
+        -- and there will be no current buffer, so the `attr.cur` will be 0.
+        local sum = (attr.wid[attr.cur] or 0) + extsum
         local si = attr.cur
         local ei = attr.cur
         while ei - si + 1 < attr.num do
