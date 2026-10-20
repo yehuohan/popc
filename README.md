@@ -275,8 +275,8 @@ opts.Bookmark = {
 --- @field opt nil|string|fun():string
 ---        Option name
 --- @field dic nil|table<string,string|PopSelection>|fun(opt:string):table<string,string|PopSelection>
----        * table<string, string>       : 'lst' desctiption
----        * table<string, PopSelection> : sub-selection
+---        * table<string,string>       : 'lst' desctiption
+---        * table<string,PopSelection> : sub-selection
 --- @field lst nil|any[]|fun(opt:string):any[]
 ---        * any[]    : Selection item list
 ---        * string[] : Key index list of 'dic'
@@ -284,7 +284,7 @@ opts.Bookmark = {
 ---        'opt' description
 --- @field cpl nil|string|fun(opt:string):string
 ---        'completion' of `input()` to modify selection value
---- @field cmd nil|fun(opt:string, sel)
+--- @field cmd nil|fun(opt:string,sel)
 ---        Command executed with selected item of 'lst'
 --- @field get nil|fun(opt:string):any
 ---        Get the selected item of 'opt'

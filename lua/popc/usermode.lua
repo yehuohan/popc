@@ -10,8 +10,8 @@ local copts = require('popc.config').opts
 --- @field text string Panel text displayed at floating window title center
 --- @field items string[][] Panel lines displayed at floating window
 --- @field index integer Current selected index item of panel, 1-based
---- @field keys table<string, string|UserkeysHandler>
---- @field pkeys table<string, UserkeysHandler>
+--- @field keys table<string,string|UserkeysHandler>
+--- @field pkeys table<string,UserkeysHandler>
 --- @field on_quit UserkeysHandler?
 ---        * ukey = '<Esc>' : Invoke to quit usermode when <Esc> was pressed
 ---        * ukey = nil     : Always invoke before quit `on_key`
@@ -20,7 +20,7 @@ local copts = require('popc.config').opts
 --- @class Usermode Custom user mode
 --- @field ctx UsermodeContext
 --- @field pctx PanelContext?
---- @field keys table<string, string|UserkeysHandler>
+--- @field keys table<string,string|UserkeysHandler>
 --- @field ns integer
 --- @field buf integer?
 --- @field win integer?
@@ -123,7 +123,7 @@ local umode = {
     ns = api.nvim_create_namespace('Popc.Usermode'),
 }
 --- Usermode keys handler
---- @type table<string, UserkeysHandler>
+--- @type table<string,UserkeysHandler>
 local ukeys = {}
 
 local function validate()
@@ -413,7 +413,7 @@ local function on_key(uctx)
             handler = vim.is_callable(handler) and handler or uctx.pctx.pkeys[handler]
             handler(uctx, ukey)
         else
-            vim.notify(("No handler for key '%s'"):format(ukey))
+            M.notify(("No handler for key '%s'"):format(ukey))
         end
     end
 
@@ -434,7 +434,7 @@ local function __on_key()
             vim.on_key(nil, ns)
         else
             if typed ~= '' then
-                vim.notify(typed)
+                M.notify(typed)
             end
             return ''
         end

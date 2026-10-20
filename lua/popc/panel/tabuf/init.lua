@@ -36,9 +36,9 @@ M.State = { Sigtab = 1, Alltab = 2, Listab = 3 }
 --- @field wid WinID?
 --- @field idx integer? The state item index for buffer
 
---- @type table<TabID, TabContext>
+--- @type table<TabID,TabContext>
 local tabctx = {}
---- @type table<BufID, BufContext>
+--- @type table<BufID,BufContext>
 local bufctx = {}
 --- Tabuf panel context
 --- @type PanelContext
@@ -1167,7 +1167,7 @@ function M.pop()
     umode.apop(pctx)
 end
 
---- @return table<TabID, TabContext>
+--- @return table<TabID,TabContext>
 function M.cmd_get_tabctx()
     return tabctx
 end
@@ -1180,7 +1180,7 @@ function M.cmd_set_tabctx(tid, attr)
     end
 end
 
---- @return table<BufID, BufContext>
+--- @return table<BufID,BufContext>
 function M.cmd_get_bufctx()
     return bufctx
 end
