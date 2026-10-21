@@ -334,3 +334,36 @@ selection = {
     },
 },
 ```
+
+
+# Popc-Extensions
+
+## `popc-conda`
+
+`popc-conda` is an optional extension for managing conda environments.
+
+***Setup:***
+
+The `conda` executable must be available in `PATH`. And one shell (`powershell`, `pwsh`, `bash`, `sh` and `zsh`) is required at least.
+
+```lua
+require('popc').setup(opts)
+require('popc-conda').setup({...})
+```
+
+***`popc-conda` commands:***
+
+- `PopcConda`: Pop out `Conda` panel that lists conda environments
+
+***Default options:***
+
+```lua
+opts = {
+    keys = {
+        -- Set false to disable key
+        ['<Space>'] = 'activate', -- Activate the selected environment
+        ['<CR>'] = 'activate_quit', -- Activate the selected environment, then quit panel
+        ['D'] = 'deactivate_quit', -- Deactivate the current environment, then quit panel
+    },
+}
+```
