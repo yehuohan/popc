@@ -359,11 +359,13 @@ require('popc-conda').setup({...})
 
 ```lua
 opts = {
+    python_servers = {}, -- Python related servers to restart after switch conda environment
     keys = {
         -- Set false to disable key
         ['<Space>'] = 'activate', -- Activate the selected environment
         ['<CR>'] = 'activate_quit', -- Activate the selected environment, then quit panel
-        ['D'] = 'deactivate_quit', -- Deactivate the current environment, then quit panel
+        ['D'] = 'deactivate', -- Deactivate the current environment
+        ['R'] = 'refetch_envs', -- Refetch conda environments
     },
 }
 ```
