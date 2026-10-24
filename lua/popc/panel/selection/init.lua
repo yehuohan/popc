@@ -4,6 +4,9 @@ local api = vim.api
 local copts = require('popc.config').opts
 local umode = require('popc.usermode')
 
+--- @class PopSelectionOpts
+--- @field show_dsr boolean?
+
 --- @class PopSelection
 --- @field opt nil|string|fun():string
 ---        Option name
@@ -89,10 +92,11 @@ end
 
 --- @param node PopSelection|ResolvedSelection
 --- @param base ResolvedSelection?
+--- @param opts PopSelectionOpts
 --- @return string[][] items
 --- @return ResolvedSelection sel_root
 --- @return table[] sel_items
-local function get_sel_items(node, base)
+local function get_sel_items(node, base, opts)
     local items = {}
     local sel_items = {}
 
@@ -110,16 +114,19 @@ local function get_sel_items(node, base)
                 end
 
                 -- Get sub-selection description
-                local dsr = subrsv_node.dsr
+                local dsr = opts.show_dsr and { subrsv_node.dsr, 'Comment' } or nil
                 local out = nil -- The output result of sub-selection
                 if not subrsv_node.is_base then
                     out = subrsv_node.get(subrsv_node.opt)
                     if nil ~= out then
                         -- pctx.items can't contain '\n' or it will failed to display
-                        dsr = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
+                        out = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
+                        if out == '' then
+                            out = '""'
+                        end
                     end
                 end
-                table.insert(items, { indent .. val, dsr == '' and '' or ':', dsr })
+                table.insert(items, { indent .. val, nil == out and '' or '=', out or '', dsr })
                 table.insert(sel_items, {
                     level = level,
                     base_node = rsv_node,
@@ -135,14 +142,14 @@ local function get_sel_items(node, base)
                 end
             else
                 -- Get selection item description
-                local dsr = rsv_node.dic[val] or ''
+                local dsr = opts.show_dsr and { rsv_node.dic[val] or '', 'Comment' } or nil
                 local out = rsv_node.get(rsv_node.opt)
                 local icon = ''
                 if not rsv_node.is_base then
                     -- Only non-base selection need indicate the output result
                     icon = (out == val and copts.icons.focus or ' ') .. ' '
                 end
-                table.insert(items, { ('%s%s%s'):format(indent, icon, tostring(val)), dsr == '' and '' or ':', dsr })
+                table.insert(items, { ('%s%s%s'):format(indent, icon, tostring(val)), '', '', dsr })
                 table.insert(sel_items, {
                     level = level,
                     base_node = rsv_node,
@@ -174,6 +181,8 @@ local pctx = {
     pkeys = {},
     on_quit = nil,
     -- Specified panel data
+    --- @type PopSelectionOpts
+    opts = {},
     --- @type PopSelection
     sel = nil, -- Entry selection
     --- @type ResolvedSelection[]
@@ -185,7 +194,7 @@ local pctx = {
 --- @return boolean? Success or not
 local function setup_sel_items()
     local num = #pctx.sel_stack
-    local items, sel_root, sel_items = get_sel_items(pctx.sel_stack[num])
+    local items, sel_root, sel_items = get_sel_items(pctx.sel_stack[num], nil, pctx.opts)
     pctx.items = items
     pctx.sel_stack[num] = sel_root
     pctx.sel_items = sel_items
@@ -386,10 +395,20 @@ function pkeys.modify_current(uctx)
     end
 end
 
+function pkeys.toggle_dsr(uctx)
+    pctx.opts.show_dsr = not pctx.opts.show_dsr
+    setup_sel_items()
+    uctx.state = umode.State.ReDisp
+end
+
 --- Pop out selection panel of custom selections
 --- @param sel PopSelection
-function M.pop_selection(sel)
+--- @param opts PopSelectionOpts?
+function M.pop_selection(sel, opts)
     pctx.index = 1
+    pctx.opts = opts or {
+        show_dsr = copts.selection.show_dsr,
+    }
     pctx.sel = sel and vim.deepcopy(sel) or {}
     pctx.sel_stack = { pctx.sel }
     pctx.sel_items = nil

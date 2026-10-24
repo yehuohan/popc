@@ -130,6 +130,7 @@ M.opts = {
     },
     selection = {
         enable = false,
+        show_dsr = true,
         collect_builtin_colorscheme = true, -- `PopcSet` collects neovim builtin colorschemes or not
         keys = {
             -- Set false to disable key
@@ -144,6 +145,7 @@ M.opts = {
             ['p'] = 'prev_lst_item', -- Execute 'cmd' with previous 'lst' item
             ['m'] = 'modify', -- Modify the selection value from `input()`
             ['M'] = 'modify_current', -- Modify the selection value from `input({ default = <current selection value> })`
+            ['d'] = 'toggle_dsr', -- Toggle showing `dsr`
         },
     },
 }
