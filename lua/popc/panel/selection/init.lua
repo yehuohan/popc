@@ -114,8 +114,10 @@ local function get_sel_items(node, base)
                 local out = nil -- The output result of sub-selection
                 if not subrsv_node.is_base then
                     out = subrsv_node.get(subrsv_node.opt)
-                    -- pctx.items can't contain '\n' or it will failed to display
-                    dsr = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
+                    if nil ~= out then
+                        -- pctx.items can't contain '\n' or it will failed to display
+                        dsr = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
+                    end
                 end
                 table.insert(items, { indent .. val, dsr == '' and '' or ':', dsr })
                 table.insert(sel_items, {
@@ -173,7 +175,7 @@ local pctx = {
     on_quit = nil,
     -- Specified panel data
     --- @type PopSelection
-    sel = nil,
+    sel = nil, -- Entry selection
     --- @type ResolvedSelection[]
     sel_stack = {}, -- Resolved root selection nodes
     sel_items = nil,
