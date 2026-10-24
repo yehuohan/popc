@@ -31,6 +31,13 @@ local copts = require('popc.config').opts
 --- @field state UsermodeState
 --- @field title string[][]?
 --- @field lines string[]?
+--- @field lines_hl Highlight[]?
+
+--- @class Highlight
+--- @field line integer
+--- @field col integer
+--- @field end_col integer
+--- @field hl_group string
 
 --- @alias UserkeysHandler fun(uctx:UsermodeContext?, ukey:string?) Handle all keys from custom user mode
 
@@ -79,39 +86,55 @@ end
 ---     {'a', 'bcdef'},          ' a   bcdef ',
 --- }                        }
 --- ```
---- @param items string[][] PanelContext.items
---- @return table lines
+--- @param items string[][]|string[2][][] PanelContext.items
+--- @return string[] lines
+--- @return Highlight[] hls
 --- @return integer width
 --- @return integer height
 local function create_lines(items)
     if #items == 0 then
         local lines = { '  Nothing to pop ' }
-        return lines, fn.strdisplaywidth(lines[1]), #lines
+        return lines, {}, fn.strdisplaywidth(lines[1]), #lines
     end
 
     local maxs = {}
-    for _, chunks in ipairs(items) do
-        for k, chunk in ipairs(chunks) do
-            local chunk_wid = fn.strdisplaywidth(chunk)
-            if (not maxs[k]) or chunk_wid > maxs[k] then
-                maxs[k] = chunk_wid
+    local chunks = {}
+    for row, strs in ipairs(items) do
+        chunks[row] = {}
+        for k, str in ipairs(strs) do
+            chunks[row][k] = type(str) == 'string' and str or str[1]
+            local str_wid = fn.strdisplaywidth(chunks[row][k])
+            if (not maxs[k]) or str_wid > maxs[k] then
+                maxs[k] = str_wid
             end
         end
     end
-    local fmt = '  '
-        .. vim.iter(maxs)
-            :map(function(m)
-                return '%-' .. tostring(m) .. 'S'
-            end)
-            :join(' ')
-        .. ' '
-    local lines = vim.iter(items)
-        :map(function(i)
+
+    for _, strs in ipairs(chunks) do
+        for k, str in ipairs(strs) do
             -- Note: string.format can't align in display cells
-            return fn.printf(fmt, unpack(i))
+            strs[k] = fn.printf('%-' .. tostring(maxs[k]) .. 'S', str)
+        end
+    end
+    local lines = vim.iter(chunks)
+        :map(function(c)
+            return '  ' .. table.concat(c, ' ') .. ' '
         end)
         :totable()
-    return lines, fn.strdisplaywidth(lines[1]), #lines
+
+    local hls = {} --- @type Highlight[]
+    for row, strs in ipairs(items) do
+        local col = 2
+        for k, str in ipairs(strs) do
+            local len = string.len(chunks[row][k])
+            if type(str) == 'table' then
+                hls[#hls + 1] = { line = row, col = col, end_col = col + len, hl_group = str[2] }
+            end
+            col = col + len + 1
+        end
+    end
+
+    return lines, hls, fn.strdisplaywidth(lines[1]), #lines
 end
 
 --- @type Usermode
@@ -178,6 +201,14 @@ local function switch(uctx, newidx)
     uctx.pctx.index = newidx
     api.nvim_buf_set_lines(umode.buf, idx - 1, idx, false, { uctx.lines[idx] })
     api.nvim_buf_set_lines(umode.buf, newidx - 1, newidx, false, { uctx.lines[newidx] })
+    for _, hl in ipairs(uctx.lines_hl) do
+        if hl.line ~= newidx then
+            api.nvim_buf_set_extmark(umode.buf, umode.ns, hl.line - 1, hl.col, {
+                end_col = hl.end_col,
+                hl_group = hl.hl_group,
+            })
+        end
+    end
     api.nvim_buf_set_extmark(umode.buf, umode.ns, newidx - 1, 0, {
         end_col = #uctx.lines[newidx],
         hl_group = 'PopcFloatSelect',
@@ -195,7 +226,7 @@ local function display(uctx)
     -- Create title and lines
     local num_wid = 1 -- numberwidth must >= 1
     local win_wid, win_hei
-    uctx.lines, win_wid, win_hei = create_lines(uctx.pctx.items)
+    uctx.lines, uctx.lines_hl, win_wid, win_hei = create_lines(uctx.pctx.items)
     if copts.usermode.win.number then
         num_wid = math.floor(math.log10(win_hei)) + 1
         win_wid = win_wid + num_wid + 1
