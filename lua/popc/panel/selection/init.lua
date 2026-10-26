@@ -116,17 +116,19 @@ local function get_sel_items(node, base, opts)
                 -- Get sub-selection description
                 local dsr = opts.show_dsr and { subrsv_node.dsr, 'Comment' } or nil
                 local out = nil -- The output result of sub-selection
+                local out_str = ''
                 if not subrsv_node.is_base then
                     out = subrsv_node.get(subrsv_node.opt)
                     if nil ~= out then
-                        -- pctx.items can't contain '\n' or it will failed to display
-                        out = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
                         if out == '' then
-                            out = '""'
+                            out_str = '""'
+                        else
+                            -- pctx.items can't contain '\n' or it will failed to display
+                            out_str = type(out) == 'string' and out or vim.inspect(out):gsub('\n', '')
                         end
                     end
                 end
-                table.insert(items, { indent .. val, nil == out and '' or '=', out or '', dsr })
+                table.insert(items, { indent .. val, nil == out and '' or '=', out_str, dsr })
                 table.insert(sel_items, {
                     level = level,
                     base_node = rsv_node,
