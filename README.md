@@ -64,9 +64,8 @@ opts = {
         },
         keys = {
             -- Set false to disable key
-            ['<Esc>'] = 'quit',
-            ['q'] = 'back',
-            ['?'] = 'help',
+            ['<Esc>'] = 'quit', -- Quit panel
+            ['?'] = 'help', -- Toggle help
             ['j'] = 'next', -- Goto next line
             ['k'] = 'prev', -- Goto Previous line
             ['<M-j>'] = 'next_page', -- Goto next page

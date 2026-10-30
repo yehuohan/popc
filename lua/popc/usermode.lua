@@ -264,41 +264,35 @@ function ukeys.quit(uctx, ukey)
     uctx.state = M.State.None
 end
 
-function ukeys.back(uctx)
-    if uctx.pctx == umode.pctx then
-        return
-    end
-    uctx.pctx = umode.pctx
-    uctx.state = M.State.ReDisp
-end
-
 function ukeys.help(uctx)
-    if uctx.pctx == umode.pctx.helpctx then
-        return
-    end
-    if not umode.pctx.helpctx then
-        local items = {}
+    if uctx.pctx == umode.pctx then
+        -- Display help
+        if not umode.pctx.helpctx then
+            local items = {}
 
-        local keys2items = function(keys)
-            for _, k in ipairs(fn.sort(vim.tbl_keys(keys), 'i')) do
-                local f = keys[k]
-                if type(f) == 'function' then
-                    local info = debug.getinfo(f, 'S')
-                    f = ('%s:L%d'):format(info.short_src, info.linedefined)
+            local keys2items = function(keys)
+                for _, k in ipairs(fn.sort(vim.tbl_keys(keys), 'i')) do
+                    local f = keys[k]
+                    if type(f) == 'function' then
+                        local info = debug.getinfo(f, 'S')
+                        f = ('%s:L%d'):format(info.short_src, info.linedefined)
+                    end
+                    table.insert(items, { ('%10s %s'):format(k, f) })
                 end
-                table.insert(items, { ('%10s %s'):format(k, f) })
             end
-        end
 
-        table.insert(items, { '# ' .. umode.pctx.name })
-        keys2items(umode.pctx.keys)
-        table.insert(items, { '# Panels' })
-        keys2items(copts.usermode.keys_panels)
-        table.insert(items, { '# Usermode' })
-        keys2items(umode.keys)
-        umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {}, pkeys = {} }
+            table.insert(items, { '# ' .. umode.pctx.name })
+            keys2items(umode.pctx.keys)
+            table.insert(items, { '# Panels' })
+            keys2items(copts.usermode.keys_panels)
+            table.insert(items, { '# Usermode' })
+            keys2items(umode.keys)
+            umode.pctx.helpctx = { name = umode.pctx.name, text = 'Help', items = items, index = 1, keys = {}, pkeys = {} }
+        end
+        uctx.pctx = umode.pctx.helpctx
+    elseif uctx.pctx == umode.pctx.helpctx then
+        uctx.pctx = umode.pctx
     end
-    uctx.pctx = umode.pctx.helpctx
     uctx.state = M.State.ReDisp
 end
 
