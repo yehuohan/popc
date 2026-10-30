@@ -320,18 +320,6 @@ function ukeys.top(uctx)
     switch(uctx, 1)
 end
 
-function ukeys.pop_tabuf()
-    require('popc.panel.tabuf').pop()
-end
-
-function ukeys.pop_bookmark()
-    require('popc.panel.bookmark').pop()
-end
-
-function ukeys.pop_workspace()
-    require('popc.panel.workspace').pop()
-end
-
 local got_panels = vim.tbl_values(copts.usermode.keys_panels)
 --- Handle panels keys
 --- @param uctx UsermodeContext
@@ -340,7 +328,7 @@ local got_panels = vim.tbl_values(copts.usermode.keys_panels)
 local function ukeys_panels(uctx, ukey)
     local handler = copts.usermode.keys_panels[ukey]
     if type(handler) == 'string' and vim.list_contains(got_panels, uctx.pctx.name:lower()) then
-        ukeys['pop_' .. handler](uctx, ukey)
+        require('popc.panel.' .. handler).pop()
         return true
     end
     return false
@@ -429,6 +417,7 @@ local function on_key(uctx)
         if ukeys_number(uctx, ukey) then
             -- Accept number keys and '<Esc>', '<CR>', '<BS>'
         elseif ukeys_panels(uctx, ukey) then
+            -- Jump between panels
         elseif umode.keys[ukey] then
             local handler = umode.keys[ukey]
             handler = vim.is_callable(handler) and handler or ukeys[handler]
