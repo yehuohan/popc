@@ -1,10 +1,17 @@
---- @class PopcConda Conda panel extension for popc
+--- @class Popc.Ext.Conda Conda panel extension for popc
 local M = {}
 local api = vim.api
 local umode = require('popc.usermode')
 local conda = require('popc-conda.conda')
 
+--- @class PopcCondaOpts
+--- @field conda_bin string
+--- @field python_servers string[]
+--- @field keys table<string,string|UserkeysHandler>
+
+--- @type PopcCondaOpts
 M.opts = {
+    conda_bin = 'conda', -- Path to the executable conda binary
     python_servers = {}, -- Python related servers to restart after switch conda environment
     keys = {
         -- Set false to disable key
@@ -76,6 +83,7 @@ function M.setup(opts)
         M.opts = vim.tbl_deep_extend('force', M.opts, opts)
     end
     pctx.keys = M.opts.keys
+    conda.setup(M.opts)
 
     api.nvim_create_user_command('PopcConda', M.pop, { nargs = 0 })
     require('popc.inspect').register('conda', 'popc-conda')

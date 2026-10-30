@@ -1,4 +1,4 @@
---- @class PopcConda.Conda Conda environment manager
+--- @class Conda Conda environment manager
 local M = {}
 local fn = vim.fn
 local log = require('popc.log').get('conda')
@@ -48,7 +48,7 @@ end
 local function conda_activate(env_name)
     local sub = env_name and 'activate' or 'deactivate'
     local shell = fn.has('win32') == 1 and 'powershell' or fn.fnamemodify(vim.o.shell, ':t'):lower()
-    local lines, err = run_cmd({ 'conda', 'shell.' .. shell, sub, env_name })
+    local lines, err = run_cmd({ M.opts.conda_bin, 'shell.' .. shell, sub, env_name })
     if not lines then
         return false, err
     end
@@ -87,7 +87,7 @@ end
 --- Check whether the conda command is available
 --- @return boolean
 function M.is_available()
-    return fn.executable('conda') == 1
+    return fn.executable(M.opts.conda_bin) == 1
 end
 
 --- List conda environment names, with `base` first
@@ -98,7 +98,7 @@ function M.list_envs()
         return nil, 'The conda command is not available'
     end
 
-    local lines, err = run_cmd({ 'conda', 'env', 'list' })
+    local lines, err = run_cmd({ M.opts.conda_bin, 'env', 'list' })
     if not lines then
         return nil, err
     end
@@ -142,6 +142,11 @@ function M.deactivate()
     end
 
     return conda_activate(nil)
+end
+
+function M.setup(opts)
+    --- @type PopcCondaOpts
+    M.opts = opts
 end
 
 return M

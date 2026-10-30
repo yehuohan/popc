@@ -346,7 +346,7 @@ selection = {
 
 ***Setup:***
 
-The `conda` executable must be available in `PATH`. And one shell (`powershell`, `pwsh`, `bash`, `sh` and `zsh`) is required at least.
+Require one shell (`powershell`, `pwsh`, `bash`, `sh` or `zsh`) is required at least.
 
 ```lua
 require('popc').setup(opts)
@@ -361,6 +361,7 @@ require('popc-conda').setup({...})
 
 ```lua
 opts = {
+    conda_bin = 'conda', -- Path to the executable conda binary
     python_servers = {}, -- Python related servers to restart after switch conda environment
     keys = {
         -- Set false to disable key
