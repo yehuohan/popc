@@ -227,7 +227,7 @@ function M.setup_highlights()
     local area = '#504945'
     local blank = vim.api.nvim_get_hl(0, { name = 'Normal', link = false, create = false }).bg
     if vim.tbl_contains({ 'single', 'double', 'rounded' }, M.opts.usermode.win.border) then
-        M.opts.usermode.win.highlight = 'NormalFloat:PopcFloat,FloatBorder:PopcFloatBorder'
+        M.opts.usermode.win.highlight = 'NormalFloat:PopcFloat,FloatBorder:PopcFloatBorder,Search:Normal'
         set_hl(0, 'PopcFloat', { link = 'Normal' })
         set_hl(0, 'PopcFloatBorder', { link = 'Normal' })
 
@@ -237,7 +237,7 @@ function M.setup_highlights()
         set_hl(0, 'PopcFloatTitleBarPad', { fg = hint, bg = blank })
     else
         M.opts.usermode.win.border = { ' ', ' ', ' ', ' ', '', '', '', ' ' }
-        M.opts.usermode.win.highlight = 'NormalFloat:PopcFloat,FloatBorder:Normal'
+        M.opts.usermode.win.highlight = 'NormalFloat:PopcFloat,FloatBorder:Normal,Search:PopcFloat'
         set_hl(0, 'PopcFloat', { link = 'Pmenu' })
         set_hl(0, 'PopcFloatBorder', { link = 'Pmenu' })
 
