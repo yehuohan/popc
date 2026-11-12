@@ -43,7 +43,7 @@ describe('selection', function()
         tst.cur = 0
         tst.num = 0
         local res = pop_selection(tst)
-        eq((1 + 11) + (1 + 22) + (1 + 33) + (1 + 22), tst.num)
+        eq((1 + 11) + (1 + 22) + (1 + 33), tst.num)
         eq('foo', tst.opt)
         eq(true, res)
 

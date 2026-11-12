@@ -66,7 +66,7 @@ describe('usermode', function()
         neq(nil, vim.trim(uctx.lines[2]):match('^<CR> .*popc/tests/usermode_spec.lua:L%d*$'))
         eq('<Space> tst_space', vim.trim(uctx.lines[3]))
 
-        helper.override_getcharstr('?', 'q')
+        helper.override_getcharstr('?', '?')
         umode.apop(pctx)
         eq({ ' Nothing to pop ' }, uctx.lines)
     end)
