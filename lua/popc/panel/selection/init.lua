@@ -8,28 +8,37 @@ local umode = require('popc.usermode')
 --- @field show_dsr boolean?
 
 --- @class PopSelection
+---
+--- Option name
 --- @field opt nil|string|fun():string
----        Option name
+---
+--- * table<string,string>       : 'lst' desctiption
+--- * table<string,PopSelection> : sub-selection
 --- @field dic nil|table<string,string|PopSelection>|fun(opt:string):table<string,string|PopSelection>
----        * table<string,string>       : 'lst' desctiption
----        * table<string,PopSelection> : sub-selection
+---
+--- * any[]    : Selection item list
+--- * string[] : Key index list of 'dic'
 --- @field lst nil|any[]|fun(opt:string):any[]
----        * any[]    : Selection item list
----        * string[] : Key index list of 'dic'
+---
+--- 'opt' description
 --- @field dsr nil|string|fun(opt:string):string
----        'opt' description
+---
+--- 'completion' of `input()` to modify selection value
 --- @field cpl nil|string|fun(opt:string):string
----        'completion' of `input()` to modify selection value
+---
+--- Command executed with selected item of 'lst'
 --- @field cmd nil|fun(opt:string, sel)
----        Command executed with selected item of 'lst'
+---
+--- Get the selected item of 'opt'
 --- @field get nil|fun(opt:string):any
----        Get the selected item of 'opt'
+---
+--- Selection event callback
+--- * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
+--- * 'onQuit' : called at `pctx.on_quit`
 --- @field evt nil|fun(event:string)
----        Selection event callback
----        * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
----        * 'onQuit' : called at `pctx.on_quit`
+---
+--- Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
 --- @field sub nil|table<string,any|fun(...):any>|fun(opt:string):table<string,any|fun(...):any>
----        Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
 
 --- @class ResolvedSelection
 --- @field opt string
@@ -44,6 +53,30 @@ local umode = require('popc.usermode')
 --- @field is_base boolean Is a base node (has sub-selection)
 --- @field is_open boolean Base node is opened or folded
 --- @field saved_index integer Saved `PanelContext.index`
+
+--- The special selection item data for each item of `pctx.items`
+--- @class SelectionItem
+---
+--- @field level integer
+---
+--- The `pctx.index` points to one item from `base_node.lst`
+--- @field base_node ResolvedSelection
+---
+--- The `pctx.sel_items[base_idx]` is `SelectionItem` for `base_node`,
+--- or 0 means `base_node` is a root selection
+--- @field base_idx integer
+---
+--- The `pctx.index` points to a `node` that is one sub-selection from `base_node.lst`,
+--- or nil means `pctx.index` doesn't point to a sub-selection
+--- @field node ResolvedSelection?
+---
+--- The `pctx.sel_items[idx]` is `SelectionItem` for `node`,
+--- or `pctx.index` points to `base_node.lst[idx]` if `node` is nil
+--- @field idx integer
+---
+--- The `out` is result `node.get()`,
+--- or is `base_node.get()` when `node` is nil
+--- @field out any
 
 --- @param node PopSelection
 --- @param base ResolvedSelection?
@@ -95,7 +128,7 @@ end
 --- @param opts PopSelectionOpts
 --- @return string[][] items
 --- @return ResolvedSelection sel_root
---- @return table[] sel_items
+--- @return SelectionItem[] sel_items
 local function get_sel_items(node, base, opts)
     local items = {}
     local sel_items = {}
@@ -188,7 +221,8 @@ local pctx = {
     --- @type PopSelection
     sel = nil, -- Entry selection
     --- @type ResolvedSelection[]
-    sel_stack = {}, -- Resolved root selection nodes
+    sel_stack = {}, -- Resolved parent selection nodes
+    --- @type SelectionItem[]
     sel_items = nil,
 }
 
@@ -327,7 +361,7 @@ function pkeys.next_lst_item(uctx)
         return
     end
 
-    if (not item.node) or not item.node.is_base then
+    if (nil == item.node and not item.base_node.is_base) or (nil ~= item.node and not item.node.is_base) then
         local node = item.node or item.base_node
         local cur = table.foreachi(node.lst, function(k, v)
             return v == item.out and k or nil
@@ -346,7 +380,7 @@ function pkeys.prev_lst_item(uctx)
         return
     end
 
-    if (not item.node) or not item.node.is_base then
+    if (nil == item.node and not item.base_node.is_base) or (nil ~= item.node and not item.node.is_base) then
         local node = item.node or item.base_node
         local cur = table.foreachi(node.lst, function(k, v)
             return v == item.out and k or nil
@@ -365,7 +399,7 @@ function pkeys.modify(uctx)
         return
     end
 
-    if (not item.node) or not item.node.is_base then
+    if (nil == item.node and not item.base_node.is_base) or (nil ~= item.node and not item.node.is_base) then
         local node = item.node or item.base_node
         local val = umode.input({ prompt = 'Modify: ', completion = node.cpl })
         if val then
@@ -384,7 +418,7 @@ function pkeys.modify_current(uctx)
         return
     end
 
-    if (not item.node) or not item.node.is_base then
+    if (nil == item.node and not item.base_node.is_base) or (nil ~= item.node and not item.node.is_base) then
         local node = item.node or item.base_node
         local val = umode.input({ prompt = 'Modify: ', default = item.out, completion = node.cpl })
         if val then

@@ -271,28 +271,37 @@ opts.Bookmark = {
 
 ```lua
 --- @class PopSelection
+---
+--- Option name
 --- @field opt nil|string|fun():string
----        Option name
+---
+--- * table<string,string>       : 'lst' desctiption
+--- * table<string,PopSelection> : sub-selection
 --- @field dic nil|table<string,string|PopSelection>|fun(opt:string):table<string,string|PopSelection>
----        * table<string,string>       : 'lst' desctiption
----        * table<string,PopSelection> : sub-selection
+---
+--- * any[]    : Selection item list
+--- * string[] : Key index list of 'dic'
 --- @field lst nil|any[]|fun(opt:string):any[]
----        * any[]    : Selection item list
----        * string[] : Key index list of 'dic'
+---
+--- 'opt' description
 --- @field dsr nil|string|fun(opt:string):string
----        'opt' description
+---
+--- 'completion' of `input()` to modify selection value
 --- @field cpl nil|string|fun(opt:string):string
----        'completion' of `input()` to modify selection value
---- @field cmd nil|fun(opt:string,sel)
----        Command executed with selected item of 'lst'
+---
+--- Command executed with selected item of 'lst'
+--- @field cmd nil|fun(opt:string, sel)
+---
+--- Get the selected item of 'opt'
 --- @field get nil|fun(opt:string):any
----        Get the selected item of 'opt'
+---
+--- Selection event callback
+--- * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
+--- * 'onQuit' : called at `pctx.on_quit`
 --- @field evt nil|fun(event:string)
----        Selection event callback
----        * 'onCR'   : called at `pkeys.confirm` (called after executed 'cmd')
----        * 'onQuit' : called at `pctx.on_quit`
+---
+--- Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
 --- @field sub nil|table<string,any|fun(...):any>|fun(opt:string):table<string,any|fun(...):any>
----        Shared 'lst', 'dsr', 'cpl', 'cmd', 'get' for 'dic' sub-selection
 ```
 
 An example to setup configs with `pop_selection`:

@@ -12,9 +12,10 @@ local copts = require('popc.config').opts
 --- @field index integer Current selected index item of panel, 1-based
 --- @field keys table<string,string|UserkeysHandler>
 --- @field pkeys table<string,UserkeysHandler>
+--- Callback on quit operation
+---     * ukey = '<Esc>' : invoke when quit usermode with <Esc> was pressed
+---     * ukey = nil     : always invoke before quit `on_key`
 --- @field on_quit UserkeysHandler?
----        * ukey = '<Esc>' : Invoke to quit usermode when <Esc> was pressed
----        * ukey = nil     : Always invoke before quit `on_key`
 --- @field helpctx PanelContext?
 
 --- @class Usermode Custom user mode
